@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net5.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="ExpectedObjects" Version="3.5.2" />
+		<PackageReference Include="Machine.Specifications" Version="1.0.0" />
+		<PackageReference Include="Machine.Specifications.Runner.VisualStudio" Version="2.10.1" />
+		<PackageReference Include="Machine.Specifications.Should" Version="1.0.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.0-preview-20201123-03" />
+		<PackageReference Include="Moq" Version="4.16.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\NetStreams\NetStreams.csproj" />
+	</ItemGroup>
+
+</Project>
