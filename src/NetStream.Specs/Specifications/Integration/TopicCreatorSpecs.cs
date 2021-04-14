@@ -16,7 +16,7 @@ namespace NetStreams.Specs.Specifications.Integration
             static string _sourceTopic;
             static ExpectedObject _expectedSourceTopic;
             static ExpectedObject _expectedDestinationTopic;
-            static INetStream<TestMessage> _stream;
+            static INetStream<string, TestMessage> _stream;
 
             Establish context = () =>
             {
@@ -61,9 +61,9 @@ namespace NetStreams.Specs.Specifications.Integration
                 });
 
                 _stream = builder
-                    .Stream<TestMessage>(_sourceTopic)
-                    .Handle(context => new TestEvent())
-                    .ToTopic(_destinationTopic);
+                    .Stream<string, TestMessage>(_sourceTopic)
+                    .Handle<string, TestEvent>(context => new TestEvent())
+                    .ToTopic(_destinationTopic, message => message.Key);
             };
 
             Because of = () => _stream.StartAsync(CancellationToken.None);

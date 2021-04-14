@@ -3,14 +3,12 @@ using System.Threading.Tasks;
 
 namespace NetStreams
 {
-    public interface IStreamWriter<TMessage, TResponse> : IStreamWriter<TResponse>
-        where TMessage : IMessage
-        where TResponse : IMessage
+    public interface IStreamWriter<TKey, TMessage, TResponseKey, TResponse> : IStreamWriter<TResponseKey, TResponse>
     {
-        INetStream<TMessage> To(string topic);
+        INetStream<TKey, TMessage> To(string topic);
     }
 
-    public interface IStreamWriter<TMessage> : IDisposable
+    public interface IStreamWriter<TKey, TMessage> : IDisposable
     {
         Task WriteAsync(TMessage context);
     }

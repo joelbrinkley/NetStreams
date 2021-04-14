@@ -13,9 +13,9 @@ namespace NetStreams
             setup(_configurationContext);
         }
 
-        public INetStream<T> Stream<T>(string topic) where T : IMessage
+        public INetStream<TKey, TMessage> Stream<TKey, TMessage>(string topic)
         {
-            return new NetStream<T>(topic,
+            return new NetStream<TKey, TMessage>(topic,
                 _configurationContext,
                 new ConsumerFactory(),
                 new ProducerFactory(),

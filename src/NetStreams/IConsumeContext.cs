@@ -1,7 +1,8 @@
 ﻿namespace NetStreams
 {
-    public interface IConsumeContext<IMessage>
+    public interface IConsumeContext<TKey, TMessage>
     {
-        IMessage Message { get; }
+        TKey Key { get; }
+        TMessage Message { get; }
     }
 }

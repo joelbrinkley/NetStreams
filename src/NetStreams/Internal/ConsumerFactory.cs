@@ -13,7 +13,7 @@ namespace NetStreams.Internal
         public IConsumer<TKey, TValue> Create<TKey, TValue>(INetStreamConfigurationContext config)
         {
             return new ConsumerBuilder<TKey, TValue>(config.ToConsumerConfig())
-                 .SetValueDeserializer(new JsonSer<TValue>())
+                 .SetValueDeserializer(new NetStreamSerializer<TValue>())
                  .Build();
         }
     }

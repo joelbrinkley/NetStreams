@@ -3,48 +3,46 @@ using System.Threading.Tasks;
 
 namespace NetStreams.Internal
 {
-    internal class HandleFunction<T, TResponse> : IHandle<T, TResponse>
-        where T : IMessage
-        where TResponse : IMessage
+    internal class HandleFunction<TKey, TMessage, TResponseKey, TResponse> : IHandle<TKey, TMessage, TResponseKey, TResponse>
     {
-        IStreamWriter<TResponse> _writer;
-        Func<IConsumeContext<T>, TResponse> _handle;
-        INetStream<T> _stream;
+        IStreamWriter<TKey, TMessage, TResponseKey, TResponse> _writer;
+        Func<IConsumeContext<TKey, TMessage>, TResponse> _handle;
+        INetStream<TKey, TMessage> _stream;
 
-        public INetStream<T> Stream => _stream;
+        public INetStream<TKey, TMessage> Stream => _stream;
 
-        public HandleFunction(Func<IConsumeContext<T>, TResponse> handle, INetStream<T> netStream)
+        public HandleFunction(Func<IConsumeContext<TKey, TMessage>, TResponse> handle, INetStream<TKey, TMessage> netStream)
         {
             _handle = handle;
             _stream = netStream;
         }
 
-        public async Task Handle(IConsumeContext<T> consumeContext)
+        public async Task Handle(IConsumeContext<TKey, TMessage> consumeContext)
         {
             var response = _handle(consumeContext);
             await _writer.WriteAsync(response);
         }
 
-        public void Write(IStreamWriter<TResponse> writer)
+        public void Write(IStreamWriter<TKey, TMessage, TResponseKey, TResponse> writer)
         {
             _writer = writer;
         }
     }
 
-    internal class HandleAction<T> : IHandle<T> where T : IMessage
+    internal class HandleAction<TKey, TMessage> : IHandle<TKey, TMessage>
     {
-        private Action<IConsumeContext<T>> _handle;
-        private INetStream<T> _stream;
+        private Action<IConsumeContext<TKey, TMessage>> _handle;
+        private INetStream<TKey, TMessage> _stream;
 
-        public INetStream<T> Stream => _stream;
+        public INetStream<TKey, TMessage> Stream => _stream;
 
-        public HandleAction(Action<IConsumeContext<T>> handle, INetStream<T> stream)
+        public HandleAction(Action<IConsumeContext<TKey, TMessage>> handle, INetStream<TKey, TMessage> stream)
         {
             _handle = handle;
             _stream = stream;
         }
 
-        public Task Handle(IConsumeContext<T> consumeContext)
+        public Task Handle(IConsumeContext<TKey, TMessage> consumeContext)
         {
             _handle(consumeContext);
             return Task.CompletedTask;

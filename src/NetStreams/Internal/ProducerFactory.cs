@@ -11,13 +11,13 @@ namespace NetStreams.Internal
         {
         }
 
-        public IMessageProducer<TMessage> Create<TMessage>(INetStreamConfigurationContext config) where TMessage: IMessage
+        public IMessageProducer<TKey, TMessage> Create<TKey, TMessage>(INetStreamConfigurationContext config)
         {
-            var producer = new ProducerBuilder<string, TMessage>(config.ToProducerConfig())
-                 .SetValueSerializer(new JsonSer<TMessage>())
+            var producer = new ProducerBuilder<TKey, TMessage>(config.ToProducerConfig())
+                 .SetValueSerializer(new NetStreamSerializer<TMessage>())
                  .Build();
 
-            return new NetStreamProducer<TMessage>(producer);
+            return new NetStreamProducer<TKey, TMessage>(producer);
         }
     }
 }

@@ -4,20 +4,22 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Text;
+using NetStreams.Internal;
 
 namespace NetStreams.Serialization
 {
-    public class JsonSer<TType> : ISerializer<TType>, IDeserializer<TType>
+    public class NetStreamSerializer<TType> : ISerializer<TType>, IDeserializer<TType>
     {
         public TType Deserialize(ReadOnlySpan<byte> data, bool isNull, SerializationContext context)
         {
-            var typeHeader = context.Headers.FirstOrDefault(c => c.Key == "Type");
+            var typeHeader = context.Headers.FirstOrDefault(c => c.Key == Constants.HEADER_TYPE);
+            var str = Encoding.UTF8.GetString(data.ToArray());
 
-            if (isNull || typeHeader == null) return default(TType);
+            if (isNull) return default(TType);
+
+            if (typeHeader == null) return JsonConvert.DeserializeObject<TType>(str);
 
             var typeString = Encoding.UTF8.GetString(typeHeader.GetValueBytes());
-
-            var str = Encoding.UTF8.GetString(data.ToArray());
 
             var type = Type.GetType(typeString);
 

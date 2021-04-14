@@ -9,10 +9,9 @@ namespace BasicStream
 {
     class Program
     {
-        public class MyMessage : IMessage
+        public class MyMessage
         {
             public int Value { get; set; }
-            public string Key => NullKey.Value;
 
         }
         static void Main(string[] args)
@@ -30,20 +29,20 @@ namespace BasicStream
                     });
                 });
 
-            var startTask = builder.Stream<MyMessage>(sourceTopic)
+            var startTask = builder.Stream<Null, MyMessage>(sourceTopic)
                                    .Filter(context => context.Message.Value % 3 == 0)
                                    .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
                                    .StartAsync(new CancellationToken());
 
 
-            IProducer<string, MyMessage> producer = new ProducerBuilder<string, MyMessage>(new ProducerConfig() { BootstrapServers = "localhost:9092" })
-                                                    .SetValueSerializer(new JsonSer<MyMessage>())
+            IProducer<Null, MyMessage> producer = new ProducerBuilder<Null, MyMessage>(new ProducerConfig() { BootstrapServers = "localhost:9092" })
+                                                    .SetValueSerializer(new NetStreamSerializer<MyMessage>())
                                                     .Build();
 
             for (int i = 0; i < 100; i++)
             {
                 var message = new MyMessage() { Value = i };
-                producer.ProduceAsync(sourceTopic, new Message<string, MyMessage> { Key = message.Key, Value = message });
+                producer.ProduceAsync(sourceTopic, new Message<Null, MyMessage> { Value = message });
             }
 
             Task.WaitAll(startTask);

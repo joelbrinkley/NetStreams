@@ -14,7 +14,7 @@ namespace NetStreams.Specs.Specifications.Component
         {
             static Action<INetStreamConfigurationBuilderContext> _configure;
             static ExpectedObject _expectedConfiguration;
-            static INetStream<TestMessage> _stream;
+            static INetStream<string, TestMessage> _stream;
 
             Establish context = () =>
             {
@@ -34,7 +34,7 @@ namespace NetStreams.Specs.Specifications.Component
                 }.ToExpectedObject();
             };
 
-            Because of = () => _stream = new NetStreamBuilder(_configure).Stream<TestMessage>("topic");
+            Because of = () => _stream = new NetStreamBuilder(_configure).Stream<string, TestMessage>("topic");
 
             It should_set_configuration_values = () => _expectedConfiguration.ShouldMatch(_stream.Configuration);
         }

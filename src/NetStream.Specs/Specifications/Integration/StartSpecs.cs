@@ -15,8 +15,8 @@ namespace NetStreams.Specs.Specifications.Integration
         class when_a_stream_is_started
         {
             static string _sourceTopic = $"start.{Guid.NewGuid()}";
-            static INetStream<TestMessage> _stream;
-            static TestProducerService<TestMessage> _producerService;
+            static INetStream<string, TestMessage> _stream;
+            static TestProducerService<string, TestMessage> _producerService;
             static List<TestMessage> _actualMessages = new List<TestMessage>();
             static List<TestMessage> _expectedMessages = new List<TestMessage>();
 
@@ -24,7 +24,7 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateDefaultTopic(_sourceTopic);
 
-                _producerService = new TestProducerService<TestMessage>(_sourceTopic);
+                _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
 
                 var builder = new NetStreamBuilder(cfg =>
                {
@@ -32,7 +32,7 @@ namespace NetStreams.Specs.Specifications.Integration
                    cfg.ConsumerGroup = $"start.{Guid.NewGuid().ToString()}";
                });
 
-                _stream = builder.Stream<TestMessage>(_sourceTopic)
+                _stream = builder.Stream<string, TestMessage>(_sourceTopic)
                                  .Handle(context => _actualMessages.Add(context.Message));
                            
                 _stream.StartAsync(CancellationToken.None);
@@ -41,7 +41,7 @@ namespace NetStreams.Specs.Specifications.Integration
                 _expectedMessages.Add(new TestMessage() { Description = "world" });
             };
 
-            Because of = () => Task.Run(() => _expectedMessages.ForEach(x => _producerService.Produce(x))).BlockUntil(() => _actualMessages.Count == _expectedMessages.Count).Await();
+            Because of = () => Task.Run(() => _expectedMessages.ForEach(x => _producerService.Produce(x.Key, x))).BlockUntil(() => _actualMessages.Count == _expectedMessages.Count).Await();
 
             It should_consume_messages = () => _expectedMessages.Count.ShouldEqual(_actualMessages.Count);
         }

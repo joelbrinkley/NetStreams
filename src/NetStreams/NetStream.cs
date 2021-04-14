@@ -7,15 +7,15 @@ using NetStreams.Configuration;
 
 namespace NetStreams
 {
-    public class NetStream<T> : INetStream<T> where T : IMessage
+    public class NetStream<TKey, TMessage> : INetStream<TKey, TMessage>
     {
-        IHandle<T> _handler;
-        IConsumer<string, T> _consumer;
+        IHandle<TKey, TMessage> _handler;
+        IConsumer<TKey, TMessage> _consumer;
         IConsumerFactory _consumerFactory;
         IProducerFactory _producerFactory;
         readonly ITopicCreator _topicCreator;
         string _topic;
-        Func<IConsumeContext<T>, bool> _filterPredicate = (consumeContext) => true;
+        Func<IConsumeContext<TKey, TMessage>, bool> _filterPredicate = (consumeContext) => true;
         NetStreamConfiguration _configuration;
         bool disposedValue;
 
@@ -42,7 +42,7 @@ namespace NetStreams
                 CreateTopics().Wait(token);
             }
 
-            _consumer = _consumerFactory.Create<string, T>(Configuration);
+            _consumer = _consumerFactory.Create<TKey, TMessage>(Configuration);
             _consumer.Subscribe(_topic);
 
             return Task.Factory.StartNew(async () =>
@@ -53,7 +53,7 @@ namespace NetStreams
                     {
                         var consumeResult = _consumer.Consume(100);
 
-                        var consumeContext = new ConsumeContext<T>(consumeResult);
+                        var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult);
 
                         if (consumeResult != null)
                         {
@@ -82,20 +82,20 @@ namespace NetStreams
             }
         }
 
-        public IHandle<T, TResponse> Handle<TResponse>(Func<IConsumeContext<T>, TResponse> handle) where TResponse : IMessage
+        public IHandle<TKey, TMessage, TResponseKey, TResponse> Handle<TResponseKey, TResponse>(Func<IConsumeContext<TKey, TMessage>, TResponse> handle)
         {
-            var handler = new HandleFunction<T, TResponse>(handle, this);
+            var handler = new HandleFunction<TKey, TMessage, TResponseKey, TResponse>(handle, this);
             _handler = handler;
             return handler;
         }
 
-        public INetStream<T> Handle(Action<IConsumeContext<T>> handle)
+        public INetStream<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handle)
         {
-            _handler = new HandleAction<T>(handle, this);
+            _handler = new HandleAction<TKey, TMessage>(handle, this);
             return this;
         }
 
-        public INetStream<T> Filter(Func<IConsumeContext<T>, bool> filterPredicate)
+        public INetStream<TKey, TMessage> Filter(Func<IConsumeContext<TKey, TMessage>, bool> filterPredicate)
         {
             _filterPredicate = filterPredicate;
             return this;

@@ -1,26 +1,26 @@
-﻿using NetStreams.Internal.Exceptions;
+﻿using System;
+using NetStreams.Internal.Exceptions;
 using System.Threading.Tasks;
 
 namespace NetStreams.Internal
 {
-    internal class KafkaTopicWriter<TMessage, TResponse> : IStreamWriter<TMessage, TResponse>
-        where TMessage : IMessage
-        where TResponse : IMessage
+    internal class KafkaTopicWriter<TKey, TMessage, TResponseKey, TResponse> : IStreamWriter<TKey, TMessage, TResponseKey, TResponse>
     {
-        readonly INetStream<TMessage> _stream;
-        readonly IMessageProducer<TResponse> _producer;
-        readonly IHandle<TMessage, TResponse> _handle;
+        readonly INetStream<TKey, TMessage> _stream;
+        readonly IMessageProducer<TResponseKey, TResponse> _producer;
         string _topic;
+        readonly Func<TResponse, TResponseKey> _resolveKey;
 
         public KafkaTopicWriter(
             string topic,
             IProducerFactory producerFactory,
-            IHandle<TMessage, TResponse> handle)
+            IHandle<TKey, TMessage, TResponseKey, TResponse> handle,
+            Func<TResponse, TResponseKey> resolveKey)
         {
             _topic = topic;
+            _resolveKey = resolveKey;
             _stream = handle.Stream;
-            _handle = handle;
-            _producer = producerFactory.Create<TResponse>(_stream.Configuration);
+            _producer = producerFactory.Create<TResponseKey, TResponse>(_stream.Configuration);
         }
 
         public async Task WriteAsync(TResponse message)
@@ -30,10 +30,10 @@ namespace NetStreams.Internal
                 throw new NullOrEmptyTopicException(_topic);
             }
      
-            await _producer.ProduceAsync(_topic, message);
+            await _producer.ProduceAsync(_topic, _resolveKey(message), message);
         }
 
-        public INetStream<TMessage> To(string topic)
+        public INetStream<TKey, TMessage> To(string topic)
         {
             this._topic = topic;
             return _stream;
