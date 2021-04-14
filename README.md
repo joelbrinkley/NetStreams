@@ -20,7 +20,7 @@ docker-compose up -d
             cfg.ConsumerGroup = "MyConsumer";
         });
 
-   builder.Stream<MyMessage>(sourceTopic)
+   builder.Stream<Null, MyMessage>(sourceTopic)
          .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
          .StartAsync(new CancellationToken());
 ```
@@ -36,7 +36,7 @@ docker-compose up -d
             cfg.ConsumerGroup = "MyConsumer";
         });
 
-  builder.Stream<MyMessage>(sourceTopic)
+  builder.Stream<Null, MyMessage>(sourceTopic)
          .Filter(context => context.Message.Value % 3 == 0)
          .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
          .StartAsync(new CancellationToken());
@@ -55,9 +55,9 @@ var builder = new NetStreamBuilder(
         cfg.ConsumerGroup = "Orders.Consumer";
     });
 
-    builder.Stream<OrderCommand>(sourceTopic)
-            .Handle(context => (OrderEvent)mediator.Send(context.Message).Result)
-            .ToTopic("Order.Events")
+    builder.Stream<string, OrderCommand>(sourceTopic)
+            .Handle<String, OrderEvent>(context => (OrderEvent)mediator.Send(context.Message).Result)
+            .ToTopic("Order.Events", message => message.Key)
             .StartAsync(CancellationToken.None);
 ```
 
@@ -84,8 +84,8 @@ This example leverages mediator to dispatch a command and then writes the output
             });
         });
 
-    builder.Stream<OrderCommand>(sourceTopic)
-            .Handle(context => (OrderEvent)mediator.Send(context.Message).Result)
-            .ToTopic("Order.Events")
+    builder.Stream<string, OrderCommand>(sourceTopic)
+            .Handle<string, OrderEvent>(context => (OrderEvent)mediator.Send(context.Message).Result)
+            .ToTopic("Order.Events", message => message.Key)
             .StartAsync(CancellationToken.None);
 ```
