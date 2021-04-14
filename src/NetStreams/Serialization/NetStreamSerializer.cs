@@ -13,6 +13,7 @@ namespace NetStreams.Serialization
         public TType Deserialize(ReadOnlySpan<byte> data, bool isNull, SerializationContext context)
         {
             var typeHeader = context.Headers.FirstOrDefault(c => c.Key == Constants.HEADER_TYPE);
+
             var str = Encoding.UTF8.GetString(data.ToArray());
 
             if (isNull) return default(TType);

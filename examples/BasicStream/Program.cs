@@ -35,6 +35,7 @@ namespace BasicStream
                                    .StartAsync(new CancellationToken());
 
 
+
             IProducer<Null, MyMessage> producer = new ProducerBuilder<Null, MyMessage>(new ProducerConfig() { BootstrapServers = "localhost:9092" })
                                                     .SetValueSerializer(new NetStreamSerializer<MyMessage>())
                                                     .Build();
