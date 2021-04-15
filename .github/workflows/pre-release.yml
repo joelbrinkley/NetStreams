@@ -27,3 +27,5 @@ jobs:
     - run: npm run pre-release
 
     - run: npm run build
+
+    - run: npm run publish
