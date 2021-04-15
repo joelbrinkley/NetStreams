@@ -1,15 +1,21 @@
 {
   "name": "NetStreams",
   "projectName": "NetStreams",
-  "version": "1.0.1",
+  "version": "1.0.2-0",
   "configuration": "Release",
   "description": "A Kafka library",
+  "config": {
+    "projectName": "NetStreams",
+    "configuration": "Release",
+    "publishSource": "https://www.nuget.org/api/v2/package"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/joelbrinkley/NetStreams.git"
   },
   "scripts": {
-    "ci:release": "standard-version -a --releaseCommitMessageFormat=\"chore(release): {{currentTag}}; [skip ci]\"",
+    "release": "standard-version",
+    "pre-release": "npm run release -- --prerelease",
     "clean": "rimraf dist build",
     "prebuild": "npm run clean",
     "build": "npm-run-all build:restore build:compile test package",
@@ -26,6 +32,7 @@
     "test:fail:halt": "exit -1",
     "package": "npm-run-all package:*",
     "package:netstreams": "cross-env-shell globstar -- dotnet pack \"./src/**/${npm_package_projectName}.csproj\" -c ${npm_package_configuration} --no-build -o dist --include-symbols /p:VersionPrefix=${npm_config_version_prefix:-${npm_package_version}} --version-suffix=${npm_config_version_suffix}",
+    "publish": "globstar -- dotnet nuget push dist/*.nupkg --source ${npm_package_publishSource} --skip-duplicate",
     "publish:private": "cross-env-shell copyfiles --flat --error dist/*.nupkg ${APPDATA}/Packages/"
   },
   "keywords": [
