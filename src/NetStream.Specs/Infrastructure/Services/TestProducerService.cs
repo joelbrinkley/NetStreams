@@ -13,7 +13,7 @@ namespace NetStreams.Specs.Infrastructure.Services
         public TestProducerService(string topic)
         {
             var kafkaProducer = new ProducerBuilder<TKey, TMessage>(new ProducerConfig() { BootstrapServers = "localhost:9092" })
-                .SetValueSerializer(new NetStreamSerializer<TMessage>())
+                .SetValueSerializer(new HeaderSerializationStrategy<TMessage>())
                 .Build();
 
             _producer = new NetStreamProducer<TKey, TMessage>(kafkaProducer);

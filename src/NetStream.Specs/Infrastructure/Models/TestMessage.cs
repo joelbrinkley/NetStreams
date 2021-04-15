@@ -9,4 +9,9 @@ namespace NetStreams.Specs.Infrastructure.Models
 
         public string Key => Id;
     }
+
+    public class ChildTestMessage : TestMessage
+    {
+        public string ExtraField = Guid.NewGuid().ToString();
+    }
 }

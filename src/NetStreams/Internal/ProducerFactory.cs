@@ -14,7 +14,7 @@ namespace NetStreams.Internal
         public IMessageProducer<TKey, TMessage> Create<TKey, TMessage>(INetStreamConfigurationContext config)
         {
             var producer = new ProducerBuilder<TKey, TMessage>(config.ToProducerConfig())
-                 .SetValueSerializer(new NetStreamSerializer<TMessage>())
+                 .SetValueSerializer(new HeaderSerializationStrategy<TMessage>())
                  .Build();
 
             return new NetStreamProducer<TKey, TMessage>(producer);

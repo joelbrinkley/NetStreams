@@ -42,7 +42,7 @@ namespace MediatrStream
 
             var producer = new ProducerBuilder<string, OrderCommand>(
                             new ProducerConfig() { BootstrapServers = "localhost:9092" })
-                                .SetValueSerializer(new NetStreamSerializer<OrderCommand>())
+                                .SetValueSerializer(new HeaderSerializationStrategy<OrderCommand>())
                                 .Build();
 
             var messageProducer = new NetStreamProducer<string, OrderCommand>(producer);

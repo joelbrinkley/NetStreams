@@ -28,7 +28,7 @@ namespace NetStreams
                 Headers = new Headers()
             };
 
-            kafkaMessage.Headers.Add(new Header(Constants.HEADER_TYPE, Encoding.UTF8.GetBytes(message.GetType().AssemblyQualifiedName.ToString())));
+            kafkaMessage.Headers.Add(new Header(NetStreamConstants.HEADER_TYPE, Encoding.UTF8.GetBytes(message.GetType().AssemblyQualifiedName.ToString())));
 
             await _producer.ProduceAsync(topic, kafkaMessage);
         }

@@ -37,7 +37,7 @@ namespace BasicStream
 
 
             IProducer<Null, MyMessage> producer = new ProducerBuilder<Null, MyMessage>(new ProducerConfig() { BootstrapServers = "localhost:9092" })
-                                                    .SetValueSerializer(new NetStreamSerializer<MyMessage>())
+                                                    .SetValueSerializer(new HeaderSerializationStrategy<MyMessage>())
                                                     .Build();
 
             for (int i = 0; i < 100; i++)

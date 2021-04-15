@@ -8,11 +8,11 @@ using NetStreams.Internal;
 
 namespace NetStreams.Serialization
 {
-    public class NetStreamSerializer<TType> : ISerializer<TType>, IDeserializer<TType>
+    public class HeaderSerializationStrategy<TType> : ISerializer<TType>, IDeserializer<TType>
     {
         public TType Deserialize(ReadOnlySpan<byte> data, bool isNull, SerializationContext context)
         {
-            var typeHeader = context.Headers.FirstOrDefault(c => c.Key == Constants.HEADER_TYPE);
+            var typeHeader = context.Headers.FirstOrDefault(c => c.Key == NetStreamConstants.HEADER_TYPE);
 
             var str = Encoding.UTF8.GetString(data.ToArray());
 
