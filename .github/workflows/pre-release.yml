@@ -19,7 +19,7 @@ jobs:
 
     - run: npm ci
 
-    - run: npm run pre-release
+    - run: npm run pre-release --date=${{ steps.date.outputs.date }}
 
     - run: npm run build
 
