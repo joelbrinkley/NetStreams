@@ -28,4 +28,4 @@ jobs:
 
     - run: npm run build
 
-    - run: npm run publish
+    - run: npm run publish --api_key ${{ secrets.NUGET_API_KEY }}
