@@ -26,7 +26,7 @@ jobs:
     - run: npm ci
       name: Npm install
 
-    - run: npm run pre-release --suffix=${{ steps.current-time.outputs.readableTime }}
+    - run: npm run pre-release --suffix=alpha
       name: Increment Pre-Release version
 
     - run: npm run build
