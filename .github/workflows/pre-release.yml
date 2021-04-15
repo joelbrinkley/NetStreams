@@ -16,6 +16,11 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
+    
+    - name: Setup NuGet.exe for use with actions
+      uses: NuGet/setup-nuget@v1.0.5
+      with:
+        nuget-api-key: ${{ secrets.NUGET_API_KEY }}
 
     - run: npm ci
 
