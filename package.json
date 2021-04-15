@@ -11,7 +11,7 @@
   },
   "scripts": {
     "release": "standard-version",
-    "pre-release": "npm run release -- --prerelease pre${npm_config_date}",
+    "pre-release": "npm run release -- --prerelease \"pre-${npm_config_suffix}\"",
     "clean": "rimraf dist build",
     "prebuild": "npm run clean",
     "build": "npm-run-all build:restore build:compile test package",

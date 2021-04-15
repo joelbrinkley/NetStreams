@@ -20,7 +20,7 @@ jobs:
     - run: npm ci
       name: Npm install
 
-    - run: npm run pre-release --date=${{ steps.date.outputs.date }}
+    - run: npm run pre-release --suffix=${{ steps.date.outputs.date }}
       name: Increment Pre-Release version
 
     - run: npm run build
