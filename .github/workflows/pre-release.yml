@@ -20,5 +20,13 @@ jobs:
         dotnet-version: 5.0.x
 
     - run: npm ci
-    - run: npm run pre-release
+
+    - name: Increment pre-release
+      if: ${{ github.event_name == 'pull_request' }}
+      run: npm run pre-release
+
+    - name: Increment pre-release
+      if: ${{ github.event_name == 'push' }}
+      run: npm run release
+
     - run: npm run build
