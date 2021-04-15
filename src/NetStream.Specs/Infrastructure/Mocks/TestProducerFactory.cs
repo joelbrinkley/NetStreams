@@ -12,9 +12,9 @@ namespace NetStreams.Specs.Infrastructure.Mocks
             _mock = mock;
         }
 
-        public IMessageProducer<TMessage> Create<TMessage>(INetStreamConfigurationContext config) where TMessage : IMessage
+        public IMessageProducer<TKey, TMessage> Create<TKey, TMessage>(INetStreamConfigurationContext config)
         {
-            return ((Mock<IMessageProducer<TMessage>>)_mock).Object;
+            return ((Mock<IMessageProducer<TKey, TMessage>>)_mock).Object;
         }
     }
 }

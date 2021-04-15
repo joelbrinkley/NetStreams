@@ -35,17 +35,17 @@ namespace MediatrStream
                 });
 
             var startTask =
-                builder.Stream<OrderCommand>(sourceTopic)
-                       .Handle(context => (OrderEvent)mediator.Send(context.Message).Result)
-                       .ToTopic("Order.Events")
+                builder.Stream<string, OrderCommand>(sourceTopic)
+                       .Handle<string, OrderEvent>(context => (OrderEvent)mediator.Send(context.Message).Result)
+                       .ToTopic("Order.Events", message => message.Key)
                        .StartAsync(CancellationToken.None);
 
             var producer = new ProducerBuilder<string, OrderCommand>(
                             new ProducerConfig() { BootstrapServers = "localhost:9092" })
-                                .SetValueSerializer(new JsonSer<OrderCommand>())
+                                .SetValueSerializer(new HeaderSerializationStrategy<OrderCommand>())
                                 .Build();
 
-            var messageProducer = new NetStreamProducer<OrderCommand>(producer);
+            var messageProducer = new NetStreamProducer<string, OrderCommand>(producer);
 
             for (int i = 0; i < 100; i++)
             {
@@ -55,7 +55,7 @@ namespace MediatrStream
                     OrderDescription = $"{(i % 6) + 1} widgets"
                 };
 
-                messageProducer.ProduceAsync(sourceTopic, message).Wait();
+                messageProducer.ProduceAsync(sourceTopic, message.Key, message).Wait();
             }
 
             Task.WaitAll(startTask);

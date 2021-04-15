@@ -28,7 +28,7 @@ namespace NetStreams.Specs.Specifications.Component
                 mockConsumer.Setup(x => x.Consume(Parameter.IsAny<int>()))
                     .Returns((ConsumeResult<string, TestMessage>)null);
 
-                var netStream = new NetStream<TestMessage>(
+                var netStream = new NetStream<string, TestMessage>(
                     Guid.NewGuid().ToString(),
                      new NetStreamConfiguration(),
                      new TestConsumerFactory(mockConsumer),

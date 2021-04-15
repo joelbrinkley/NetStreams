@@ -2,7 +2,7 @@
 
 namespace MediatrStream.Orders
 {
-    public abstract class OrderCommand : IMessage
+    public abstract class OrderCommand
     {
         public OrderCommand()
         {

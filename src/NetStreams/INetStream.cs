@@ -5,12 +5,12 @@ using NetStreams.Configuration;
 
 namespace NetStreams
 {
-    public interface INetStream<T> : IDisposable where T : IMessage
+    public interface INetStream<TKey, TMessage> : IDisposable
     {
         INetStreamConfigurationContext Configuration { get; }
-        INetStream<T> Filter(Func<IConsumeContext<T>, bool> filterPredicate);
-        IHandle<T, TResponse> Handle<TResponse>(Func<IConsumeContext<T>, TResponse> handleConsumeContext) where TResponse : IMessage;
-        INetStream<T> Handle(Action<IConsumeContext<T>> handleConsumeContext);
+        INetStream<TKey, TMessage> Filter(Func<IConsumeContext<TKey, TMessage>, bool> filterPredicate);
+        IHandle<TKey, TMessage, TResponseKey, TResponse> Handle<TResponseKey, TResponse>(Func<IConsumeContext<TKey, TMessage>, TResponse> handleConsumeContext);
+        INetStream<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handleConsumeContext);
         Task StartAsync(CancellationToken token);
     }
 }

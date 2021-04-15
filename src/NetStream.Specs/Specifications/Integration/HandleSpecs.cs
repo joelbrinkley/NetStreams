@@ -15,7 +15,7 @@ namespace NetStreams.Specs.Specifications.Integration
         {
             static string _sourceTopic = $"output.source.{Guid.NewGuid()}";
             static string _destinationTopic = $"output.dest.{Guid.NewGuid()}";
-            static TestProducerService<TestMessage> _producerService;
+            static TestProducerService<string, TestMessage> _producerService;
             static TestMessage _message;
             static List<TestEvent> _expectedMessages = new List<TestEvent>();
             static List<TestEvent> _actualMessages = new List<TestEvent>();
@@ -27,7 +27,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _message = new TestMessage() { Description = "Hello World" };
 
-                _producerService = new TestProducerService<TestMessage>(_sourceTopic);
+                _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
 
                 var builder = new NetStreamBuilder(cfg =>
                 {
@@ -43,18 +43,18 @@ namespace NetStreams.Specs.Specifications.Integration
                 _expectedMessages.Add(testEvent);
 
                 var stream1 = builder
-                               .Stream<TestMessage>(_sourceTopic)
-                               .Handle(context => testEvent)
-                               .ToTopic(_destinationTopic)
+                               .Stream<string, TestMessage>(_sourceTopic)
+                               .Handle<string, TestEvent>(context => testEvent)
+                               .ToTopic(_destinationTopic, message => message.Key)
                                .StartAsync(CancellationToken.None);
 
                 var stream2 = builder
-                             .Stream<TestEvent>(_destinationTopic)
+                             .Stream<string, TestEvent>(_destinationTopic)
                              .Handle(context => _actualMessages.Add(context.Message))
                              .StartAsync(CancellationToken.None);
             };
 
-            Because of = () => _producerService.ProduceAsync(_message).BlockUntil(() => _actualMessages.Count == 1).Await();
+            Because of = () => _producerService.ProduceAsync(_message.Key, _message).BlockUntil(() => _actualMessages.Count == 1).Await();
 
             It should_write_output_to_topic = () => _expectedMessages.Count.ShouldEqual(_actualMessages.Count);
         }

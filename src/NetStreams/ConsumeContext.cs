@@ -2,15 +2,17 @@
 
 namespace NetStreams
 {
-    public class ConsumeContext<T>: IConsumeContext<T>
+    public class ConsumeContext<TKey, TMessage> : IConsumeContext<TKey, TMessage>
     {
-        readonly ConsumeResult<string, T> _consumeResult;
+        readonly ConsumeResult<TKey, TMessage> _consumeResult;
 
-        public ConsumeContext(ConsumeResult<string, T> consumeResult)
+        public ConsumeContext(ConsumeResult<TKey, TMessage> consumeResult)
         {
             _consumeResult = consumeResult;
         }
 
-        public T Message => _consumeResult.Message.Value;
+        public TMessage Message => _consumeResult.Message.Value;
+
+        public TKey Key => _consumeResult.Message.Key;
     }
 }

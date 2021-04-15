@@ -4,6 +4,6 @@ namespace NetStreams
 {
     public interface IProducerFactory
     {
-        IMessageProducer<TMessage> Create<TMessage>(INetStreamConfigurationContext config) where TMessage: IMessage;
+        IMessageProducer<TKey, TMessage> Create<TKey, TMessage>(INetStreamConfigurationContext config);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace NetStreams.Specs.Infrastructure.Models
 {
-    public class TestEvent : IMessage
+    public class TestEvent
     {
         public string Id { get; } = Guid.NewGuid().ToString();
         public string Description { get; set; }
