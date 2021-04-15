@@ -23,9 +23,7 @@ namespace NetStreams.Serialization
             var typeString = Encoding.UTF8.GetString(typeHeader.GetValueBytes());
 
             var type = Type.GetType(typeString);
-
-            if (type == null) throw new DeserializationException($"Unable to deserialize type {type} found in header.");
-
+            
             return (TType)JsonConvert.DeserializeObject(str, type);
         }
 

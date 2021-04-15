@@ -69,5 +69,29 @@ namespace NetStreams.Specs.Specifications.Component
 
             It should_deserialize_to_the_namespace_in_the_header = () => _expectedResult.GetType().ShouldEqual(typeof(TestMessage));
         }
+
+        [Subject("Serialization")]
+        class when_deserializing_with_null
+        {
+            static HeaderSerializationStrategy<int> _serializer;
+            static SerializationContext _serializationContext;
+            static int _expectedResult;
+
+            Establish context = () =>
+            {
+                _serializationContext = new SerializationContext(
+                    MessageComponentType.Value,
+                    Guid.NewGuid().ToString(),
+                    new Headers());
+
+                _serializer = new HeaderSerializationStrategy<int>();
+            };
+
+            Because of = () =>
+                _expectedResult = _serializer.Deserialize(
+                    new ReadOnlySpan<byte>(Encoding.UTF8.GetBytes(string.Empty)), true, _serializationContext);
+
+            It should_deserialize_to_the_default = () => _expectedResult.ShouldEqual(0);
+        }
     }
 }
