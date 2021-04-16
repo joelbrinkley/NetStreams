@@ -10,6 +10,7 @@ namespace NetStreams.Configuration
         string ConsumerGroup { get; }
         List<ITopicConfiguration> TopicConfigurations { get; }
         bool TopicCreationEnabled { get;  }
+        DeliveryMode DeliveryMode { get; set; }
 
         INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg);
     }

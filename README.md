@@ -89,3 +89,32 @@ This example leverages mediator to dispatch a command and then writes the output
             .ToTopic("Order.Events", message => message.Key)
             .StartAsync(CancellationToken.None);
 ```
+
+## Delivery Mode
+
+```  
+
+A delivery mode can be configured to control committing the offset.
+
+For more information regarding delivery modes, check out this [article](https://dzone.com/articles/kafka-clients-at-most-once-at-least-once-exactly-o)
+
+Options:
+- At Most Once (Default Behavior if left blank)
+- At Least Once
+- Custom Delivery Mode
+
+var builder = new NetStreamBuilder(
+        cfg =>
+        {
+            cfg.BootstrapServers = "localhost:9092";
+            cfg.ConsumerGroup = "MyConsumer";
+            cfg.DeliveryMode = DeliveryMode.At_Least_Once
+            //cfg.DeliveryMode = DeliveryMode.At_Most_Once
+            //cfg.DeliveryMode = new DeliveryMode(true, 10000);
+        });
+
+  builder.Stream<Null, MyMessage>(sourceTopic)
+         .Filter(context => context.Message.Value % 3 == 0)
+         .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
+         .StartAsync(new CancellationToken());
+```

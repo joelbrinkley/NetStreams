@@ -43,6 +43,7 @@ namespace NetStreams
             }
 
             _consumer = _consumerFactory.Create<TKey, TMessage>(Configuration);
+            
             _consumer.Subscribe(_topic);
 
             return Task.Factory.StartNew(async () =>
@@ -64,6 +65,8 @@ namespace NetStreams
                                     await _handler.Handle(consumeContext);
                                 }
                             }
+
+                            if (!Configuration.DeliveryMode.EnableAutoCommit) _consumer.Commit();
                         }
                     }
                     catch (Exception e)
