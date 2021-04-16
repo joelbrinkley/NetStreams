@@ -72,6 +72,7 @@ namespace NetStreams
                     }
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
         }
 
         async Task CreateTopics()

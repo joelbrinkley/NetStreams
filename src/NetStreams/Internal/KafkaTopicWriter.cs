@@ -17,6 +17,8 @@ namespace NetStreams.Internal
             IHandle<TKey, TMessage, TResponseKey, TResponse> handle,
             Func<TResponse, TResponseKey> resolveKey)
         {
+            if (resolveKey == null) resolveKey = response => default;
+
             _topic = topic;
             _resolveKey = resolveKey;
             _stream = handle.Stream;
@@ -29,7 +31,7 @@ namespace NetStreams.Internal
             {
                 throw new NullOrEmptyTopicException(_topic);
             }
-     
+
             await _producer.ProduceAsync(_topic, _resolveKey(message), message);
         }
 
