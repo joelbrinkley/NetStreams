@@ -1,0 +1,43 @@
+name: release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: fregante/setup-git-user@v1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+
+    - run: npm ci
+      name: NPM install
+
+    - run: |
+        git branch -D ${{github.head_ref:11}}
+        git fetch -p -P
+        git checkout ${{github.head_ref:11}}
+      name: Switch source branch
+
+    - run: git tag -l | xargs git tag -d && git fetch -t
+      name: Purge tags
+
+    - run: npm run release
+      name: Increment Version
+
+    - run: npm run build
+      name: Build
+
+    - run: npm run publish:nuget --api_key=${{ secrets.NUGET_API_KEY }}
+      name: Push packages to Nuget
+
+    - run: git push --follow-tags origin ${{github.head_ref:11}}
+      name: Push tags and release version
+
