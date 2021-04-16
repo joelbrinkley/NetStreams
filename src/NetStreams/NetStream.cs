@@ -62,6 +62,11 @@ namespace NetStreams
                                 if (_handler != null)
                                 {
                                     await _handler.Handle(consumeContext);
+
+                                    //if (Configuration.Mode == ExactlyOnce)
+                                    //{
+                                    //    _consumer.Commit();
+                                    //}
                                 }
                             }
                         }

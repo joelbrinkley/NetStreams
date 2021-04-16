@@ -22,24 +22,17 @@ namespace NetStreams
 
         public async Task ProduceAsync(string topic, TKey key, TMessage message)
         {
-            try
+            var kafkaMessage = new Message<TKey, TMessage>()
             {
-                var kafkaMessage = new Message<TKey, TMessage>()
-                {
-                    Key = key,
-                    Value = message,
-                    Headers = new Headers()
-                };
+                Key = key,
+                Value = message,
+                Headers = new Headers()
+            };
 
-                kafkaMessage.Headers.Add(new Header(NetStreamConstants.HEADER_TYPE,
-                    Encoding.UTF8.GetBytes(message.GetType().AssemblyQualifiedName.ToString())));
+            kafkaMessage.Headers.Add(new Header(NetStreamConstants.HEADER_TYPE,
+                Encoding.UTF8.GetBytes(message.GetType().AssemblyQualifiedName.ToString())));
 
-                await _producer.ProduceAsync(topic, kafkaMessage);
-            }
-            catch (Exception e)
-            {
-                Console.Write(e);
-            }
+            await _producer.ProduceAsync(topic, kafkaMessage);
         }
     }
 

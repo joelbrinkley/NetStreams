@@ -27,20 +27,12 @@ namespace NetStreams.Internal
 
         public async Task WriteAsync(TResponse message)
         {
-            try
+            if (string.IsNullOrEmpty(_topic))
             {
-                if (string.IsNullOrEmpty(_topic))
-                {
-                    throw new NullOrEmptyTopicException(_topic);
-                }
-
-                await _producer.ProduceAsync(_topic, _resolveKey(message), message);
-            }
-            catch (Exception e)
-            {
-                Console.Write(e);
+                throw new NullOrEmptyTopicException(_topic);
             }
 
+            await _producer.ProduceAsync(_topic, _resolveKey(message), message);
         }
 
         public INetStream<TKey, TMessage> To(string topic)
