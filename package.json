@@ -1,10 +1,10 @@
 {
   "name": "NetStreams",
   "projectName": "NetStreams",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "configuration": "Release",
   "description": "A Kafka library",
-  "defaultPublishSource": "https://api.nuget.org/v3/index.json",  
+  "defaultPublishSource": "https://api.nuget.org/v3/index.json",
   "repository": {
     "type": "git",
     "url": "https://github.com/joelbrinkley/NetStreams.git"
