@@ -25,6 +25,7 @@ jobs:
         git fetch -p -P
         git checkout ${{github.head_ref:11}}
       name: Switch source branch
+      shell: bash
 
     - run: git tag -l | xargs git tag -d && git fetch -t
       name: Purge tags
@@ -40,4 +41,5 @@ jobs:
 
     - run: git push --follow-tags origin ${{github.head_ref:11}}
       name: Push tags and release version
+      shell: bash
 
