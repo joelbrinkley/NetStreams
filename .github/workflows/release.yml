@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Extract branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF##*/})"
+      id: extract_branch
+
     - uses: actions/checkout@v2
     - uses: fregante/setup-git-user@v1
     - name: Setup .NET
@@ -21,9 +26,9 @@ jobs:
       name: NPM install
 
     - run: |
-        git branch -D ${{github.head_ref:11}}
+        git branch -D ${{ steps.extract_branch.outputs.branch }}
         git fetch -p -P
-        git checkout ${{github.head_ref:11}}
+        git checkout ${{ steps.extract_branch.outputs.branch }}
       name: Switch source branch
 
     - run: git tag -l | xargs git tag -d && git fetch -t
@@ -38,6 +43,6 @@ jobs:
     - run: npm run publish:nuget --api_key=${{ secrets.NUGET_API_KEY }}
       name: Push packages to Nuget
 
-    - run: git push --follow-tags origin ${{github.head_ref:11}}
+    - run: git push --follow-tags origin ${{ steps.extract_branch.outputs.branch }}
       name: Push tags and release version
 
