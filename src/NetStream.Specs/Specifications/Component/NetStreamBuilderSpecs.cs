@@ -40,6 +40,7 @@ namespace NetStreams.Specs.Specifications.Component
         }
     }
 
+    [Subject("Configure:DeliveryMode")]
     class when_configuring_an_at_most_once_stream
     {
         static TestMessage _message;
@@ -67,6 +68,7 @@ namespace NetStreams.Specs.Specifications.Component
         It should_set_auto_commit_interval = () => _stream.Configuration.ToConsumerConfig().AutoCommitIntervalMs.ShouldEqual(5000);
     }
 
+    [Subject("Configure:DeliveryMode")]
     class when_configuring_an_at_least_once_stream
     {
         static INetStream<string, TestMessage> _stream;
@@ -91,6 +93,7 @@ namespace NetStreams.Specs.Specifications.Component
         It should_disable_auto_commit = () => _stream.Configuration.ToConsumerConfig().EnableAutoCommit.ShouldEqual(false);
     }
 
+    [Subject("Configure:DeliveryMode")]
     class when_configuring_a_custom_delivery_mode
     {
         static INetStream<string, TestMessage> _stream;
