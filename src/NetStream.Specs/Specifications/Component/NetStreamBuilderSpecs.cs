@@ -43,7 +43,6 @@ namespace NetStreams.Specs.Specifications.Component
     [Subject("Configure:DeliveryMode")]
     class when_configuring_an_at_most_once_stream
     {
-        static TestMessage _message;
         static INetStream<string, TestMessage> _stream;
         static Action<INetStreamConfigurationBuilderContext> _configure;
 
