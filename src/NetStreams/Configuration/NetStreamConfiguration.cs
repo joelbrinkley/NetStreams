@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Confluent.Kafka;
 
 namespace NetStreams.Configuration
 {
     public class NetStreamConfiguration : INetStreamConfigurationContext, INetStreamConfigurationBuilderContext
     {
+        public DeliveryMode DeliveryMode { get; set; } = DeliveryMode.At_Most_Once;
         public string BootstrapServers { get; set; }
         public string ConsumerGroup { get; set; }
         public List<ITopicConfiguration> TopicConfigurations { get; set; } = new List<ITopicConfiguration>();
@@ -41,6 +41,7 @@ namespace NetStreams.Configuration
     {
         string ConsumerGroup { get; set; }
         string BootstrapServers { get; set; }
+        DeliveryMode DeliveryMode { get; set; }
         INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg);
     }
 }

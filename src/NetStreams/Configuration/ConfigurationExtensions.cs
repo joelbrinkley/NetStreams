@@ -2,7 +2,7 @@
 
 namespace NetStreams.Configuration.Internal
 {
-    internal static class ConfigurationExtensions
+    public static class ConfigurationExtensions
     {
         public static ProducerConfig ToProducerConfig(this INetStreamConfigurationContext config)
         {
@@ -18,7 +18,8 @@ namespace NetStreams.Configuration.Internal
             {
                 BootstrapServers = config.BootstrapServers,
                 GroupId = config.ConsumerGroup,
-                EnableAutoCommit = true,
+                EnableAutoCommit = config.DeliveryMode.EnableAutoCommit,
+                AutoCommitIntervalMs = config.DeliveryMode.AutoCommitIntervalMs,
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
         }
