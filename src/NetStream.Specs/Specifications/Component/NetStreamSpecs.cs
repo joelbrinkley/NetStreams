@@ -89,13 +89,13 @@ namespace NetStreams.Specs.Specifications.Component
                     DeliveryMode = DeliveryMode.At_Least_Once
                 };
 
-                var stream = new NetStream<string, TestMessage>(Guid.NewGuid().ToString(), configuration,
+                _stream = new NetStream<string, TestMessage>(Guid.NewGuid().ToString(), configuration,
                     consumerFactoryMock, new TestProducerFactory(mockProducer), new NullTopicCreator());
 
-                stream.Handle(x => testMessages.Clear()).StartAsync(_cancellationTokenSource.Token);
+                testMessages.Add(_messageAdded);
             };
 
-            Because of = () => Task.Run(() => testMessages.Add(_messageAdded)).BlockUntil(() => testMessages.Count == 0).Await();
+            Because of = () => _stream.Handle(x => testMessages.Clear()).StartAsync(_cancellationTokenSource.Token).BlockUntil(() => testMessages.Count == 0).Await();
 
             It should_commit = () => _mockConsumer.Verify(x => x.Commit(), Times.Exactly(1));
         }
