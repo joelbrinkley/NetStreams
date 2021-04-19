@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.1.1 (2021-04-19)
+
+
+### Bug Fixes
+
+* refactor test to not be flakey ([a5d2997](https://github.com/joelbrinkley/NetStreams/commit/a5d29977f42242bd9879c315efca645cb1b1c52c))
+
 ## 1.1.0 (2021-04-16)
 
 
