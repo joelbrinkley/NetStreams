@@ -41,7 +41,7 @@ namespace NetStreams.Specs.Specifications.Integration
                 _expectedMessages.Add(new TestMessage() { Description = "world" });
             };
 
-            Because of = () => Task.Run(() => _expectedMessages.ForEach(x => _producerService.Produce(x.Key, x))).BlockUntil(() => _actualMessages.Count == _expectedMessages.Count).Await();
+            Because of = () => Task.Run(() => _expectedMessages.ForEach(x => _producerService.Produce(x.Id, x))).BlockUntil(() => _actualMessages.Count == _expectedMessages.Count).Await();
 
             It should_consume_messages = () => _expectedMessages.Count.ShouldEqual(_actualMessages.Count);
         }

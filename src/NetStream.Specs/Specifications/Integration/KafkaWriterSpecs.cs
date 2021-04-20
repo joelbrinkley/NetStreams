@@ -12,6 +12,46 @@ namespace NetStreams.Specs.Specifications.Integration
     internal class KafkaWriterSpecs
     {
         [Subject("KafkaWriter")]
+        class when_configuring_a_kafka_writer_with_a_resolve_key_function
+        {
+            static TestProducerService<string, TestMessage> _producerService;
+            static string _actualKey;
+            static string _sourceTopic = $"kwkey.source.{Guid.NewGuid()}";
+            static string _destinationTopic = $"kwkey.dest.{Guid.NewGuid()}";
+            static TestMessage _message;
+
+            Establish context = () =>
+            {
+                new TopicService().CreateDefaultTopic(_sourceTopic);
+                new TopicService().CreateDefaultTopic(_destinationTopic);
+
+                _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
+
+                _message = new TestMessage { Description = "Hello World" };
+
+                var builder = new NetStreamBuilder(cfg =>
+                {
+                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
+                    cfg.BootstrapServers = "localhost:9092";
+                });
+
+                var _stream1 = builder
+                    .Stream<string, TestMessage>(_sourceTopic)
+                    .Handle<string, TestMessage>(context => context.Message)
+                    .ToTopic(_destinationTopic, message => message.Id)
+                    .StartAsync(CancellationToken.None);
+
+                var stream2 = builder
+                    .Stream<string, TestMessage>(_destinationTopic)
+                    .Handle(context => _actualKey = context.Key)
+                    .StartAsync(CancellationToken.None);
+            };
+            Because of = () => _producerService.ProduceAsync(_message.Id, _message).BlockUntil(() => _actualKey != null).Await();
+
+            It should_resolve_the_key = () => _actualKey.ShouldEqual(_message.Id);
+        }
+
+        [Subject("KafkaWriter")]
         class when_configuring_a_kafka_writer_with_no_resolve_key_function_for_a_reference_type
         {
             static TestProducerService<string, TestMessage> _producerService;

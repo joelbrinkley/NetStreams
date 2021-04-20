@@ -54,7 +54,7 @@ namespace NetStreams.Specs.Specifications.Integration
                              .StartAsync(CancellationToken.None);
             };
 
-            Because of = () => _producerService.ProduceAsync(_message.Key, _message).BlockUntil(() => _actualMessages.Count == 1).Await();
+            Because of = () => _producerService.ProduceAsync(_message.Id, _message).BlockUntil(() => _actualMessages.Count == 1).Await();
 
             It should_write_output_to_topic = () => _expectedMessages.Count.ShouldEqual(_actualMessages.Count);
         }
