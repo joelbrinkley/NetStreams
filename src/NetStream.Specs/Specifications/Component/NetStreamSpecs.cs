@@ -72,7 +72,7 @@ namespace NetStreams.Specs.Specifications.Component
                             {
                                 Message = new Message<string, TestMessage>
                                 {
-                                    Key = _messageAdded.Key,
+                                    Key = _messageAdded.Id,
                                     Value = _messageAdded
                                 }
                             };
