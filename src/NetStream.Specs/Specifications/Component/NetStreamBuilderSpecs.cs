@@ -30,7 +30,8 @@ namespace NetStreams.Specs.Specifications.Component
                 _expectedConfiguration = new
                 {
                     BootstrapServers = "localhost:9021",
-                    ConsumerGroup = "consumergroup"
+                    ConsumerGroup = "consumergroup",
+                    DeliveryMode = DeliveryMode.At_Least_Once
                 }.ToExpectedObject();
             };
 
