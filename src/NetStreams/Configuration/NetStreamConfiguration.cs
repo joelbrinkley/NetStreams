@@ -5,7 +5,7 @@ namespace NetStreams.Configuration
 {
     public class NetStreamConfiguration : INetStreamConfigurationContext, INetStreamConfigurationBuilderContext
     {
-        public DeliveryMode DeliveryMode { get; set; } = DeliveryMode.At_Most_Once;
+        public DeliveryMode DeliveryMode { get; set; } = DeliveryMode.At_Least_Once;
         public string BootstrapServers { get; set; }
         public string ConsumerGroup { get; set; }
         public List<ITopicConfiguration> TopicConfigurations { get; set; } = new List<ITopicConfiguration>();
