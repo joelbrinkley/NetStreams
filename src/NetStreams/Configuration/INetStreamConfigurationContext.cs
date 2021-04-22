@@ -11,6 +11,10 @@ namespace NetStreams.Configuration
         List<ITopicConfiguration> TopicConfigurations { get; }
         bool TopicCreationEnabled { get;  }
         DeliveryMode DeliveryMode { get; set; }
+        string SecurityProtocol { get; set; }
+        string SslCertificateLocation { get; set; }
+        string SslCaLocation { get; set; }
+        string SslKeystoreLocation { get; set; }
 
         INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg);
     }

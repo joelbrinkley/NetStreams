@@ -10,6 +10,10 @@ namespace NetStreams.Configuration
         public string ConsumerGroup { get; set; }
         public List<ITopicConfiguration> TopicConfigurations { get; set; } = new List<ITopicConfiguration>();
         public bool TopicCreationEnabled { get; private set; }
+        public string SecurityProtocol { get; set; }
+        public string SslCertificateLocation { get; set; }
+        public string SslCaLocation { get; set; }
+        public string SslKeystoreLocation { get; set; }
 
         public INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg)
         {
@@ -42,6 +46,11 @@ namespace NetStreams.Configuration
         string ConsumerGroup { get; set; }
         string BootstrapServers { get; set; }
         DeliveryMode DeliveryMode { get; set; }
+        string SecurityProtocol { get; set; }
+        string SslCertificateLocation { get; set; }
+        string SslCaLocation { get; set; }
+        string SslKeystoreLocation { get; set; }
+
         INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg);
     }
 }
