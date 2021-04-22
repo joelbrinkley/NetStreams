@@ -1,4 +1,5 @@
 ﻿using System;
+using Confluent.Kafka;
 using ExpectedObjects;
 using Machine.Specifications;
 using NetStreams.Configuration;
@@ -14,6 +15,8 @@ namespace NetStreams.Specs.Specifications.Component
         {
             static Action<INetStreamConfigurationBuilderContext> _configure;
             static ExpectedObject _expectedConfiguration;
+            static ExpectedObject _expectedKafkaConsumerConfiguration;
+            static ExpectedObject _expectedKafkaProducerConfiguration;
             static INetStream<string, TestMessage> _stream;
 
             Establish context = () =>
@@ -22,6 +25,10 @@ namespace NetStreams.Specs.Specifications.Component
                 {
                     cfg.BootstrapServers = "localhost:9021";
                     cfg.ConsumerGroup = "consumergroup";
+                    cfg.SecurityProtocol = "SSL";
+                    cfg.SslCertificateLocation = "broker.certificate.pem";
+                    cfg.SslCaLocation = "snakeoil-ca-1.crt";
+                    cfg.SslKeystoreLocation = "broker.key";
                 };
 
                 var config = new NetStreamConfiguration();
@@ -31,13 +38,40 @@ namespace NetStreams.Specs.Specifications.Component
                 {
                     BootstrapServers = "localhost:9021",
                     ConsumerGroup = "consumergroup",
-                    DeliveryMode = DeliveryMode.At_Least_Once
+                    DeliveryMode = DeliveryMode.At_Least_Once,
+                    SecurityProtocol = "SSL",
+                    SslCertificateLocation = "broker.certificate.pem",
+                    SslCaLocation = "snakeoil-ca-1.crt",
+                    SslKeystoreLocation = "broker.key",
+                }.ToExpectedObject();
+
+                _expectedKafkaConsumerConfiguration = new
+                {
+                    BootstrapServers = "localhost:9021",
+                    GroupId = "consumergroup",
+                    SecurityProtocol = SecurityProtocol.Ssl,
+                    SslCertificateLocation = "broker.certificate.pem",
+                    SslCaLocation = "snakeoil-ca-1.crt",
+                    SslKeystoreLocation = "broker.key",
+                }.ToExpectedObject();
+
+                _expectedKafkaProducerConfiguration = new
+                {
+                    BootstrapServers = "localhost:9021",
+                    SecurityProtocol = SecurityProtocol.Ssl,
+                    SslCertificateLocation = "broker.certificate.pem",
+                    SslCaLocation = "snakeoil-ca-1.crt",
+                    SslKeystoreLocation = "broker.key",
                 }.ToExpectedObject();
             };
 
             Because of = () => _stream = new NetStreamBuilder(_configure).Stream<string, TestMessage>("topic");
 
             It should_set_configuration_values = () => _expectedConfiguration.ShouldMatch(_stream.Configuration);
+
+            It should_map_config_values_to_kafka_consumer_config = () => _expectedKafkaConsumerConfiguration.ShouldMatch(_stream.Configuration.ToConsumerConfig());
+
+            It should_map_config_values_to_kafka_producer_config = () => _expectedKafkaProducerConfiguration.ShouldMatch(_stream.Configuration.ToProducerConfig());
         }
     }
 
