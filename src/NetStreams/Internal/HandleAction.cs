@@ -76,6 +76,7 @@ namespace NetStreams.Internal
 
 
 	}
+	
 	internal class HandleActionTask<TKey, TMessage> : IHandle<TKey, TMessage>
 	{
 		private Func<IConsumeContext<TKey, TMessage>, Task> _handle;

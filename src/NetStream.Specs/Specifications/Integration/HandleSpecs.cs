@@ -12,7 +12,7 @@ namespace NetStreams.Specs.Specifications.Integration
 	class HandleSpecs
 	{
 		[Subject("Handle")]
-		class when_streaming_output_to_a_topic
+		class when_handling_a_function
 		{
 			static string _sourceTopic = $"output.source.{Guid.NewGuid()}";
 			static string _destinationTopic = $"output.dest.{Guid.NewGuid()}";
@@ -61,7 +61,7 @@ namespace NetStreams.Specs.Specifications.Integration
 		}
 
 		[Subject("HandleAsync")]
-		class when_streaming_output_to_a_topic_that_handles_with_a_task
+		class when_handling_a_task_that_returns_a_response
 		{
 			static string _sourceTopic = $"output.source.{Guid.NewGuid()}";
 			static string _destinationTopic = $"output.dest.{Guid.NewGuid()}";
@@ -110,7 +110,7 @@ namespace NetStreams.Specs.Specifications.Integration
 		}
 
 		[Subject("HandleAsync")]
-		class when_providing_a_task_to_handle
+		class when_handling_a_task
 		{
 			static string _sourceTopic = $"output.source.{Guid.NewGuid()}";
 			static string _destinationTopic = $"output.dest.{Guid.NewGuid()}";
@@ -140,7 +140,47 @@ namespace NetStreams.Specs.Specifications.Integration
 
 				builder
 					.Stream<string, TestMessage>(_sourceTopic)
-					.HandleAsync(async context => await Task.Run(() => { _wasHandled = true; }))
+					.HandleAsync(async context => await Task.Run(() => _wasHandled = true))
+					.StartAsync(CancellationToken.None);
+			};
+
+			Because of = () => _producerService.ProduceAsync(_message.Id, _message).BlockUntil(() => _wasHandled == true).Await();
+
+			It should_handle_the_message = () => _wasHandled.ShouldBeTrue();
+		}
+
+		[Subject("HandleAsync")]
+		class when_handling_an_action
+		{
+			static string _sourceTopic = $"output.source.{Guid.NewGuid()}";
+			static string _destinationTopic = $"output.dest.{Guid.NewGuid()}";
+			static TestProducerService<string, TestMessage> _producerService;
+			static TestMessage _message;
+			static bool _wasHandled = false;
+
+			Establish context = () =>
+			{
+				new TopicService().CreateDefaultTopic(_sourceTopic);
+				new TopicService().CreateDefaultTopic(_destinationTopic);
+
+				_message = new TestMessage() { Description = "Hello World" };
+
+				_producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
+
+				var builder = new NetStreamBuilder(cfg =>
+				{
+					cfg.ConsumerGroup = Guid.NewGuid().ToString();
+					cfg.BootstrapServers = "localhost:9092";
+				});
+
+				var testEvent = new TestEvent()
+				{
+					Description = $"Handled Message with id {_message.Id}"
+				};
+
+				builder
+					.Stream<string, TestMessage>(_sourceTopic)
+					.Handle(context => _wasHandled = true)
 					.StartAsync(CancellationToken.None);
 			};
 
