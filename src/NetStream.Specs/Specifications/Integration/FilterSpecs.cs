@@ -47,7 +47,7 @@ namespace NetStreams.Specs.Specifications.Integration
             Because of = () => _producerService.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage { Description = "hello" })
                                                .BlockUntil(() => _actualHandledMessages.Count == _expectedHandledMessages.Count).Await();
             
-            It should_only_handle_messages_that_satisify_the_filter = () => _expectedHandledMessages.Count.ShouldEqual(_actualHandledMessages.Count);
+            It should_only_handle_messages_that_satisfy_the_filter = () => _expectedHandledMessages.Count.ShouldEqual(_actualHandledMessages.Count);
         }
     }
 }

@@ -10,8 +10,8 @@
     "url": "https://github.com/joelbrinkley/NetStreams.git"
   },
   "scripts": {
-    "release": "standard-version",
-    "pre-release": "npm run release -- --prerelease \"pre-${npm_config_suffix}\"",
+    "release": "standard-version -- --prerelease rc",
+    "pre-release": "standard-version -- --prerelease \"pre-${npm_config_suffix}\"",
     "clean": "rimraf dist build",
     "prebuild": "npm run clean",
     "build": "npm-run-all build:restore build:compile test package",

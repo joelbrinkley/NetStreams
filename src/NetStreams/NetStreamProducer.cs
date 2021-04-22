@@ -8,10 +8,12 @@ namespace NetStreams
 {
     public class NetStreamProducer<TKey, TMessage> : IMessageProducer<TKey, TMessage>
     {
+        readonly string _topic;
         readonly IProducer<TKey, TMessage> _producer;
 
-        public NetStreamProducer(IProducer<TKey, TMessage> producer)
+        public NetStreamProducer(string topic, IProducer<TKey, TMessage> producer)
         {
+            _topic = topic;
             _producer = producer;
         }
 
@@ -20,7 +22,7 @@ namespace NetStreams
             _producer?.Dispose();
         }
 
-        public async Task ProduceAsync(string topic, TKey key, TMessage message)
+        public async Task ProduceAsync(TKey key, TMessage message)
         {
             var kafkaMessage = new Message<TKey, TMessage>()
             {
@@ -32,13 +34,13 @@ namespace NetStreams
             kafkaMessage.Headers.Add(new Header(NetStreamConstants.HEADER_TYPE,
                 Encoding.UTF8.GetBytes(message.GetType().AssemblyQualifiedName.ToString())));
 
-            await _producer.ProduceAsync(topic, kafkaMessage);
+            await _producer.ProduceAsync(_topic, kafkaMessage);
         }
     }
 
     public interface IMessageProducer<TKey, TMessage> : IDisposable
     {
-        Task ProduceAsync(string topic, TKey key, TMessage message);
+        Task ProduceAsync(TKey key, TMessage message);
     }
 
 }
