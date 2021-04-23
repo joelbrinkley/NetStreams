@@ -26,9 +26,10 @@ namespace NetStreams.Specs.Specifications.Component
                     cfg.BootstrapServers = "localhost:9021";
                     cfg.ConsumerGroup = "consumergroup";
                     cfg.SecurityProtocol = "SSL";
-                    cfg.SslCertificateLocation = "broker.certificate.pem";
-                    cfg.SslCaLocation = "snakeoil-ca-1.crt";
-                    cfg.SslKeystoreLocation = "broker.key";
+                    cfg.SslCertificateLocation = "certloc.pem";
+                    cfg.SslCaLocation = "ca.crt";
+                    cfg.SslKeystoreLocation = "store.key";
+                    cfg.SslKeyPassword = "p4$$wurd";
                 };
 
                 var config = new NetStreamConfiguration();
@@ -40,9 +41,10 @@ namespace NetStreams.Specs.Specifications.Component
                     ConsumerGroup = "consumergroup",
                     DeliveryMode = DeliveryMode.At_Least_Once,
                     SecurityProtocol = "SSL",
-                    SslCertificateLocation = "broker.certificate.pem",
-                    SslCaLocation = "snakeoil-ca-1.crt",
-                    SslKeystoreLocation = "broker.key",
+                    SslCertificateLocation = "certloc.pem",
+                    SslCaLocation = "ca.crt",
+                    SslKeystoreLocation = "store.key",
+                    SslKeyPassword = "p4$$wurd"
                 }.ToExpectedObject();
 
                 _expectedKafkaConsumerConfiguration = new
@@ -50,18 +52,20 @@ namespace NetStreams.Specs.Specifications.Component
                     BootstrapServers = "localhost:9021",
                     GroupId = "consumergroup",
                     SecurityProtocol = SecurityProtocol.Ssl,
-                    SslCertificateLocation = "broker.certificate.pem",
-                    SslCaLocation = "snakeoil-ca-1.crt",
-                    SslKeystoreLocation = "broker.key",
+                    SslCertificateLocation = "certloc.pem",
+                    SslCaLocation = "ca.crt",
+                    SslKeystoreLocation = "store.key",
+                    SslKeyPassword = "p4$$wurd"
                 }.ToExpectedObject();
 
                 _expectedKafkaProducerConfiguration = new
                 {
                     BootstrapServers = "localhost:9021",
                     SecurityProtocol = SecurityProtocol.Ssl,
-                    SslCertificateLocation = "broker.certificate.pem",
-                    SslCaLocation = "snakeoil-ca-1.crt",
-                    SslKeystoreLocation = "broker.key",
+                    SslCertificateLocation = "certloc.pem",
+                    SslCaLocation = "ca.crt",
+                    SslKeystoreLocation = "store.key",
+                    SslKeyPassword = "p4$$wurd"
                 }.ToExpectedObject();
             };
 

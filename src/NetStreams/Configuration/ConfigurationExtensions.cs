@@ -13,7 +13,8 @@ namespace NetStreams.Configuration.Internal
                 SecurityProtocol = ParseSecurityProtocol(config),
                 SslCertificateLocation = config.SslCertificateLocation,
                 SslCaLocation = config.SslCaLocation,
-                SslKeystoreLocation = config.SslKeystoreLocation
+                SslKeystoreLocation = config.SslKeystoreLocation,
+                SslKeyPassword = config.SslKeyPassword
             };
         }
 
@@ -29,7 +30,8 @@ namespace NetStreams.Configuration.Internal
                 SecurityProtocol = ParseSecurityProtocol(config),
                 SslCertificateLocation = config.SslCertificateLocation,
                 SslCaLocation = config.SslCaLocation,
-                SslKeystoreLocation = config.SslKeystoreLocation
+                SslKeystoreLocation = config.SslKeystoreLocation,
+                SslKeyPassword = config.SslKeyPassword
             };
         }
 
