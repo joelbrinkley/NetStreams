@@ -14,6 +14,7 @@ namespace NetStreams.Configuration
         public string SslCertificateLocation { get; set; }
         public string SslCaLocation { get; set; }
         public string SslKeystoreLocation { get; set; }
+        public string SslKeyPassword { get; set; }
 
         public INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg)
         {
@@ -50,6 +51,7 @@ namespace NetStreams.Configuration
         string SslCertificateLocation { get; set; }
         string SslCaLocation { get; set; }
         string SslKeystoreLocation { get; set; }
+        string SslKeyPassword { get; set; }
 
         INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg);
     }

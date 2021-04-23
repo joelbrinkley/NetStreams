@@ -29,6 +29,7 @@ namespace NetStreams.Specs.Specifications.Component
                     cfg.SslCertificateLocation = "broker.certificate.pem";
                     cfg.SslCaLocation = "snakeoil-ca-1.crt";
                     cfg.SslKeystoreLocation = "broker.key";
+                    cfg.SslKeyPassword = "p4$$wurd";
                 };
 
                 var config = new NetStreamConfiguration();
@@ -43,6 +44,7 @@ namespace NetStreams.Specs.Specifications.Component
                     SslCertificateLocation = "broker.certificate.pem",
                     SslCaLocation = "snakeoil-ca-1.crt",
                     SslKeystoreLocation = "broker.key",
+                    SslKeyPassword = "p4$$wurd"
                 }.ToExpectedObject();
 
                 _expectedKafkaConsumerConfiguration = new
@@ -53,6 +55,7 @@ namespace NetStreams.Specs.Specifications.Component
                     SslCertificateLocation = "broker.certificate.pem",
                     SslCaLocation = "snakeoil-ca-1.crt",
                     SslKeystoreLocation = "broker.key",
+                    SslKeyPassword = "p4$$wurd"
                 }.ToExpectedObject();
 
                 _expectedKafkaProducerConfiguration = new
@@ -62,6 +65,7 @@ namespace NetStreams.Specs.Specifications.Component
                     SslCertificateLocation = "broker.certificate.pem",
                     SslCaLocation = "snakeoil-ca-1.crt",
                     SslKeystoreLocation = "broker.key",
+                    SslKeyPassword = "p4$$wurd"
                 }.ToExpectedObject();
             };
 
