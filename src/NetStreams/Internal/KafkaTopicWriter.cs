@@ -22,7 +22,7 @@ namespace NetStreams.Internal
             _topic = topic;
             _resolveKey = resolveKey;
             _stream = handle.Stream;
-            _producer = producerFactory.Create<TResponseKey, TResponse>(_stream.Configuration);
+            _producer = producerFactory.Create<TResponseKey, TResponse>(_topic, _stream.Configuration);
         }
 
         public async Task WriteAsync(TResponse message)
@@ -32,7 +32,7 @@ namespace NetStreams.Internal
                 throw new NullOrEmptyTopicException(_topic);
             }
 
-            await _producer.ProduceAsync(_topic, _resolveKey(message), message);
+            await _producer.ProduceAsync(_resolveKey(message), message);
         }
 
         public INetStream<TKey, TMessage> To(string topic)

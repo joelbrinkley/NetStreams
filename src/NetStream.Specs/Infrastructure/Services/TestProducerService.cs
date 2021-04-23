@@ -16,18 +16,18 @@ namespace NetStreams.Specs.Infrastructure.Services
                 .SetValueSerializer(new HeaderSerializationStrategy<TMessage>())
                 .Build();
 
-            _producer = new NetStreamProducer<TKey, TMessage>(kafkaProducer);
+            _producer = new NetStreamProducer<TKey, TMessage>(topic, kafkaProducer);
             _topic = topic;
         }
 
         public void Produce(TKey key, TMessage message)
         {
-            _producer.ProduceAsync(_topic, key,  message).Await();
+            _producer.ProduceAsync(key,  message).Await();
         }
 
         public async Task ProduceAsync(TKey key, TMessage message)
         {
-            await _producer.ProduceAsync(_topic, key, message);
+            await _producer.ProduceAsync(key, message);
         }
     }
 }

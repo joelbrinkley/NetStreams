@@ -12,7 +12,6 @@ namespace NetStreams
         IHandle<TKey, TMessage> _handler;
         IConsumer<TKey, TMessage> _consumer;
         IConsumerFactory _consumerFactory;
-        IProducerFactory _producerFactory;
         readonly ITopicCreator _topicCreator;
         string _topic;
         Func<IConsumeContext<TKey, TMessage>, bool> _filterPredicate = (consumeContext) => true;
@@ -31,7 +30,6 @@ namespace NetStreams
             _configuration = configuration;
             _topic = topic;
             _consumerFactory = consumerFactory;
-            _producerFactory = producerFactory;
             _topicCreator = topicCreator;
         }
 
@@ -93,9 +91,22 @@ namespace NetStreams
             return handler;
         }
 
+        public IHandle<TKey, TMessage, TResponseKey, TResponse> HandleAsync<TResponseKey, TResponse>(Func<IConsumeContext<TKey, TMessage>, Task<TResponse>> handle)
+        {
+            var handler = new HandleFunctionTask<TKey, TMessage, TResponseKey, TResponse>(handle, this);
+            _handler = handler;
+            return handler;
+        }
+
         public INetStream<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handle)
         {
             _handler = new HandleAction<TKey, TMessage>(handle, this);
+            return this;
+        }
+
+        public INetStream<TKey, TMessage> HandleAsync(Func<IConsumeContext<TKey, TMessage>, Task> handleTask)
+        {
+            _handler = new HandleActionTask<TKey, TMessage>(handleTask, this);
             return this;
         }
 
