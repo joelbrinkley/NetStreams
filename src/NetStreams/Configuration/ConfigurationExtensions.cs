@@ -14,7 +14,7 @@ namespace NetStreams.Configuration.Internal
                 SslCertificateLocation = config.SslCertificateLocation,
                 SslCaLocation = config.SslCaLocation,
                 SslKeystoreLocation = config.SslKeystoreLocation,
-                SslKeyPassword = config.SslKeyPassword
+                SslKeystorePassword = config.SslKeystorePassword
             };
         }
 
@@ -31,7 +31,7 @@ namespace NetStreams.Configuration.Internal
                 SslCertificateLocation = config.SslCertificateLocation,
                 SslCaLocation = config.SslCaLocation,
                 SslKeystoreLocation = config.SslKeystoreLocation,
-                SslKeyPassword = config.SslKeyPassword
+                SslKeystorePassword = config.SslKeystorePassword
             };
         }
 
