@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 1.3.0-rc.1 (2021-04-23)
+
+
+### Features
+
+* ssl cert passwords ([#22](https://github.com/joelbrinkley/NetStreams/issues/22)) ([0e73d82](https://github.com/joelbrinkley/NetStreams/commit/0e73d82538a0bf5615f19e1150dfc6431bfe7a0f))
+
 ## 1.3.0-rc.0 (2021-04-23)
 
 
