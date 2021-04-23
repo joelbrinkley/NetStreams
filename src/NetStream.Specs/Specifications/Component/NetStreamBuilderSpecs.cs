@@ -29,7 +29,7 @@ namespace NetStreams.Specs.Specifications.Component
                     cfg.SslCertificateLocation = "certloc.pem";
                     cfg.SslCaLocation = "ca.crt";
                     cfg.SslKeystoreLocation = "store.key";
-                    cfg.SslKeyPassword = "p4$$wurd";
+                    cfg.SslKeystorePassword = "p4$$wurd";
                 };
 
                 var config = new NetStreamConfiguration();
@@ -44,7 +44,7 @@ namespace NetStreams.Specs.Specifications.Component
                     SslCertificateLocation = "certloc.pem",
                     SslCaLocation = "ca.crt",
                     SslKeystoreLocation = "store.key",
-                    SslKeyPassword = "p4$$wurd"
+                    SslKeystorePassword = "p4$$wurd"
                 }.ToExpectedObject();
 
                 _expectedKafkaConsumerConfiguration = new
@@ -55,7 +55,7 @@ namespace NetStreams.Specs.Specifications.Component
                     SslCertificateLocation = "certloc.pem",
                     SslCaLocation = "ca.crt",
                     SslKeystoreLocation = "store.key",
-                    SslKeyPassword = "p4$$wurd"
+                    SslKeystorePassword = "p4$$wurd"
                 }.ToExpectedObject();
 
                 _expectedKafkaProducerConfiguration = new
@@ -65,7 +65,7 @@ namespace NetStreams.Specs.Specifications.Component
                     SslCertificateLocation = "certloc.pem",
                     SslCaLocation = "ca.crt",
                     SslKeystoreLocation = "store.key",
-                    SslKeyPassword = "p4$$wurd"
+                    SslKeystorePassword = "p4$$wurd"
                 }.ToExpectedObject();
             };
 
