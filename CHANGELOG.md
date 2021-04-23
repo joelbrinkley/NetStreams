@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 1.3.0-rc.0 (2021-04-23)
+
+
+### Features
+
+* handle and handle async support ([#21](https://github.com/joelbrinkley/NetStreams/issues/21)) ([6375dc5](https://github.com/joelbrinkley/NetStreams/commit/6375dc55ceecdaf79b0cfb71693229b3133e6cfc))
+
 ### 1.2.1-rc.1 (2021-04-22)
 
 ### 1.2.1-rc.0 (2021-04-22)
