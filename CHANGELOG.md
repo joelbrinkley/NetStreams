@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 1.3.0-rc.3 (2021-04-26)
+
+
+### Bug Fixes
+
+* Configure Key instead of Keystore. Configure Security on TopicCreator ([#24](https://github.com/joelbrinkley/NetStreams/issues/24)) ([bd00e66](https://github.com/joelbrinkley/NetStreams/commit/bd00e66a48103156d13d70ccae732284d171ac8b))
+
 ## 1.3.0-rc.2 (2021-04-23)
 
 
