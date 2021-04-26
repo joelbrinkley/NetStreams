@@ -5,6 +5,7 @@ using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using NetStreams.Configuration;
 using NetStreams.Internal.Extensions;
+using NetStreams.Configuration.Internal;
 
 namespace NetStreams.Internal
 {
@@ -19,7 +20,12 @@ namespace NetStreams.Internal
 
             var adminConfig = new AdminClientConfig
             {
-                BootstrapServers = configuration.BootstrapServers
+                BootstrapServers = configuration.BootstrapServers,
+                SslCertificateLocation = configuration.SslCertificateLocation,
+                SslCaLocation = configuration.SslCaLocation,
+                SslKeyLocation = configuration.SslKeyLocation,
+                SslKeyPassword = configuration.SslKeyPassword,
+                SecurityProtocol = configuration.ParseSecurityProtocol()
             };
 
             _adminClient = new AdminClientBuilder(adminConfig).Build();

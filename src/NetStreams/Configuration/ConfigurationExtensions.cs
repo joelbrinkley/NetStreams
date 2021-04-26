@@ -13,8 +13,8 @@ namespace NetStreams.Configuration.Internal
                 SecurityProtocol = ParseSecurityProtocol(config),
                 SslCertificateLocation = config.SslCertificateLocation,
                 SslCaLocation = config.SslCaLocation,
-                SslKeystoreLocation = config.SslKeystoreLocation,
-                SslKeystorePassword = config.SslKeystorePassword
+                SslKeyLocation = config.SslKeyLocation,
+                SslKeyPassword = config.SslKeyPassword
             };
         }
 
@@ -30,12 +30,12 @@ namespace NetStreams.Configuration.Internal
                 SecurityProtocol = ParseSecurityProtocol(config),
                 SslCertificateLocation = config.SslCertificateLocation,
                 SslCaLocation = config.SslCaLocation,
-                SslKeystoreLocation = config.SslKeystoreLocation,
-                SslKeystorePassword = config.SslKeystorePassword
+                SslKeyLocation = config.SslKeyLocation,
+                SslKeyPassword = config.SslKeyPassword
             };
         }
 
-        private static SecurityProtocol? ParseSecurityProtocol(this INetStreamConfigurationContext config)
+        public static SecurityProtocol? ParseSecurityProtocol(this INetStreamConfigurationContext config)
         {
             if (!string.IsNullOrEmpty(config.SecurityProtocol))
             {

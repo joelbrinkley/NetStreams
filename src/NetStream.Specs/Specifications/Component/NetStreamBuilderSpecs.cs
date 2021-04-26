@@ -28,8 +28,8 @@ namespace NetStreams.Specs.Specifications.Component
                     cfg.SecurityProtocol = "SSL";
                     cfg.SslCertificateLocation = "certloc.pem";
                     cfg.SslCaLocation = "ca.crt";
-                    cfg.SslKeystoreLocation = "store.key";
-                    cfg.SslKeystorePassword = "p4$$wurd";
+                    cfg.SslKeyLocation = "store.key";
+                    cfg.SslKeyPassword = "p4$$wurd";
                 };
 
                 var config = new NetStreamConfiguration();
@@ -43,8 +43,8 @@ namespace NetStreams.Specs.Specifications.Component
                     SecurityProtocol = "SSL",
                     SslCertificateLocation = "certloc.pem",
                     SslCaLocation = "ca.crt",
-                    SslKeystoreLocation = "store.key",
-                    SslKeystorePassword = "p4$$wurd"
+                    SslKeyLocation = "store.key",
+                    SslKeyPassword = "p4$$wurd"
                 }.ToExpectedObject();
 
                 _expectedKafkaConsumerConfiguration = new
@@ -54,8 +54,8 @@ namespace NetStreams.Specs.Specifications.Component
                     SecurityProtocol = SecurityProtocol.Ssl,
                     SslCertificateLocation = "certloc.pem",
                     SslCaLocation = "ca.crt",
-                    SslKeystoreLocation = "store.key",
-                    SslKeystorePassword = "p4$$wurd"
+                    SslKeyLocation = "store.key",
+                    SslKeyPassword = "p4$$wurd"
                 }.ToExpectedObject();
 
                 _expectedKafkaProducerConfiguration = new
@@ -64,8 +64,8 @@ namespace NetStreams.Specs.Specifications.Component
                     SecurityProtocol = SecurityProtocol.Ssl,
                     SslCertificateLocation = "certloc.pem",
                     SslCaLocation = "ca.crt",
-                    SslKeystoreLocation = "store.key",
-                    SslKeystorePassword = "p4$$wurd"
+                    SslKeyLocation = "store.key",
+                    SslKeyPassword = "p4$$wurd"
                 }.ToExpectedObject();
             };
 
