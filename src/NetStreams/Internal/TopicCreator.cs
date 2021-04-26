@@ -12,7 +12,7 @@ namespace NetStreams.Internal
     internal class TopicCreator : ITopicCreator
     {
         readonly NetStreamConfiguration _configuration;
-        readonly IAdminClient _adminClient;
+        readonly Lazy<IAdminClient> _adminClient;
 
         public TopicCreator(NetStreamConfiguration configuration)
         {
@@ -28,12 +28,13 @@ namespace NetStreams.Internal
                 SecurityProtocol = configuration.ParseSecurityProtocol()
             };
 
-            _adminClient = new AdminClientBuilder(adminConfig).Build();
+            var adminClientBuilder = new AdminClientBuilder(adminConfig);
+            _adminClient = new Lazy<IAdminClient>(() => adminClientBuilder.Build());
         }
 
         public async Task Create(ITopicConfiguration topicConfig)
         {
-            if (!_adminClient.TopicExists(topicConfig.Name, out _))
+            if (!_adminClient.Value.TopicExists(topicConfig.Name, out _))
             {
                 TopicSpecification topicSpecification = new TopicSpecification
                 {
@@ -48,20 +49,20 @@ namespace NetStreams.Internal
 
                 try
                 {
-                    await _adminClient.CreateTopicsAsync(new[] { topicSpecification });
+                    await _adminClient.Value.CreateTopicsAsync(new[] { topicSpecification });
                 }
                 catch (CreateTopicsException ex)
                 {
                     Console.WriteLine(ex);
                 }
 
-                _adminClient.EnsureTopicCreation(topicConfig.Name);
+                _adminClient.Value.EnsureTopicCreation(topicConfig.Name);
             }
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _adminClient.Value.Dispose();
         }
 
     }
