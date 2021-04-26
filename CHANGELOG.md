@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 1.3.0-rc.2 (2021-04-23)
+
+
+### Bug Fixes
+
+* Set SslKeystorePassword, not SslKeyPassword ([#23](https://github.com/joelbrinkley/NetStreams/issues/23)) ([5450d84](https://github.com/joelbrinkley/NetStreams/commit/5450d84740f89a27b65998d3233c14c0bb66316f))
+
 ## 1.3.0-rc.1 (2021-04-23)
 
 
