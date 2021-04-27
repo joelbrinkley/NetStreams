@@ -17,7 +17,7 @@ namespace NetStreams
         Func<IConsumeContext<TKey, TMessage>, bool> _filterPredicate = (consumeContext) => true;
         NetStreamConfiguration _configuration;
         bool disposedValue;
-        Action<Exception> _onError;
+        Action<Exception> _onError = exception =>  { };
 
         public INetStreamConfigurationContext Configuration => _configuration;
 
@@ -41,7 +41,7 @@ namespace NetStreams
             }
 
             _consumer = _consumerFactory.Create<TKey, TMessage>(Configuration);
-            
+
             _consumer.Subscribe(_topic);
 
             return Task.Factory.StartNew(async () =>
