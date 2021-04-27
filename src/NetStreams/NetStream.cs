@@ -17,6 +17,7 @@ namespace NetStreams
         Func<IConsumeContext<TKey, TMessage>, bool> _filterPredicate = (consumeContext) => true;
         NetStreamConfiguration _configuration;
         bool disposedValue;
+        Action<Exception> _onError;
 
         public INetStreamConfigurationContext Configuration => _configuration;
 
@@ -24,7 +25,6 @@ namespace NetStreams
             string topic,
             NetStreamConfiguration configuration,
             IConsumerFactory consumerFactory,
-            IProducerFactory producerFactory,
             ITopicCreator topicCreator)
         {
             _configuration = configuration;
@@ -67,9 +67,9 @@ namespace NetStreams
                             if (!Configuration.DeliveryMode.EnableAutoCommit) _consumer.Commit();
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception ex)
                     {
-                        Console.WriteLine(e);
+                        _onError(ex);
                     }
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
@@ -113,6 +113,12 @@ namespace NetStreams
         public INetStream<TKey, TMessage> Filter(Func<IConsumeContext<TKey, TMessage>, bool> filterPredicate)
         {
             _filterPredicate = filterPredicate;
+            return this;
+        }
+
+        public INetStream<TKey, TMessage> OnError(Action<Exception> onError)
+        {
+            _onError = onError;
             return this;
         }
 

@@ -18,7 +18,6 @@ namespace NetStreams
             return new NetStream<TKey, TMessage>(topic,
                 _configurationContext,
                 new ConsumerFactory(),
-                new ProducerFactory(),
                 new TopicCreator(_configurationContext));
         }
     }
