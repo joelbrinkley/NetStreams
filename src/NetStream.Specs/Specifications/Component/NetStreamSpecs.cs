@@ -8,6 +8,7 @@ using ExpectedObjects;
 using Machine.Specifications;
 using Moq;
 using NetStreams.Configuration;
+using NetStreams.Exceptions;
 using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Mocks;
@@ -31,7 +32,7 @@ namespace NetStreams.Specs.Specifications.Component
                 var mockConsumer = new Mock<IConsumer<string, TestMessage>>();
 
                 mockConsumer.Setup(x => x.Consume(Parameter.IsAny<int>()))
-                    .Returns((ConsumeResult<string, TestMessage>) null);
+                    .Returns((ConsumeResult<string, TestMessage>)null);
 
                 var netStream = new NetStream<string, TestMessage>(
                     Guid.NewGuid().ToString(),
@@ -146,6 +147,48 @@ namespace NetStreams.Specs.Specifications.Component
                 _stream.StartAsync(_cancellationTokenSource.Token).BlockUntil(() => _actualException != null).Await();
 
             It should_call_on_error_with_expected_exception = () => _expectedException.ShouldMatch(_actualException);
+        }
+
+        [Subject("ErrorHandling")]
+        class when_an_error_occurs_while_streaming_with_no_handler_defined
+        {
+            static NetStream<string, TestMessage> _stream;
+            static CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+            static Mock<IConsumer<string, TestMessage>> _mockConsumer;
+            static ExpectedObject _expectedInnerException;
+            static Exception _actualException;
+
+            Establish context = () =>
+            {
+                _mockConsumer = new
+                    Mock<IConsumer<string, TestMessage>>();
+
+                var innerException = new Exception("Boom!");
+                _expectedInnerException = innerException.ToExpectedObject();
+
+                _mockConsumer
+                    .Setup(x => x.Consume(Parameter.IsAny<int>()))
+                    .Throws(innerException);
+
+                var consumerFactoryMock = new TestConsumerFactory(_mockConsumer);
+                var configuration = new NetStreamConfiguration
+                {
+                    DeliveryMode = DeliveryMode.At_Least_Once
+                };
+
+                _stream = new NetStream<string, TestMessage>(
+                    Guid.NewGuid().ToString(),
+                    configuration,
+                    consumerFactoryMock, new NullTopicCreator());
+
+                _stream.Handle(x => Console.WriteLine(x));
+            };
+
+            Because of = () => _actualException = Catch.Exception(() => _stream.StartAsync(_cancellationTokenSource.Token).BlockUntil(() => _actualException != null).Await());
+            
+            It should_throw_the_exception = () => _actualException.GetType().ShouldEqual(typeof(NetStreamsException));
+
+            It should_have_inner_exception = () => _expectedInnerException.ShouldMatch(_actualException.InnerException);
         }
     }
 }

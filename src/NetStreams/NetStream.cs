@@ -4,6 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NetStreams.Configuration;
+using NetStreams.Exceptions;
 
 namespace NetStreams
 {
@@ -17,7 +18,7 @@ namespace NetStreams
         Func<IConsumeContext<TKey, TMessage>, bool> _filterPredicate = (consumeContext) => true;
         NetStreamConfiguration _configuration;
         bool disposedValue;
-        Action<Exception> _onError = exception =>  { };
+        Action<Exception> _onError = ex => throw new NetStreamsException("NetStreams encountered a problem.", ex);
 
         public INetStreamConfigurationContext Configuration => _configuration;
 
