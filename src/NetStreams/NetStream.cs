@@ -4,6 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NetStreams.Configuration;
+using NetStreams.Internal.Exceptions;
 
 namespace NetStreams
 {
@@ -17,7 +18,8 @@ namespace NetStreams
         Func<IConsumeContext<TKey, TMessage>, bool> _filterPredicate = (consumeContext) => true;
         NetStreamConfiguration _configuration;
         bool disposedValue;
-        Action<Exception> _onError = exception =>  { };
+        Action<Exception> _onError = exception => { throw new StreamFaultedException(exception); };
+        Task _streamTask;
 
         public INetStreamConfigurationContext Configuration => _configuration;
 
@@ -44,7 +46,7 @@ namespace NetStreams
 
             _consumer.Subscribe(_topic);
 
-            return Task.Factory.StartNew(async () =>
+            _streamTask = Task.Factory.StartNew(() =>
             {
                 while (!token.IsCancellationRequested)
                 {
@@ -60,7 +62,7 @@ namespace NetStreams
                             {
                                 if (_handler != null)
                                 {
-                                    await _handler.Handle(consumeContext);
+                                    _handler.Handle(consumeContext).Wait(token);
                                 }
                             }
 
@@ -74,6 +76,7 @@ namespace NetStreams
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
+            return _streamTask;
         }
 
         async Task CreateTopics()
