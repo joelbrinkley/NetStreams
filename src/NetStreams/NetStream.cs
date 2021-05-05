@@ -46,7 +46,7 @@ namespace NetStreams
 
             _consumer.Subscribe(_topic);
 
-            _streamTask = Task.Run(async () =>
+            _streamTask = Task.Factory.StartNew(async () =>
             {
                 while (!token.IsCancellationRequested)
                 {
@@ -74,7 +74,7 @@ namespace NetStreams
                         _onError(ex);
                     }
                 }
-            }, token);
+            }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
 
             return _streamTask;
         }
