@@ -4,6 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NetStreams.Configuration;
+using NetStreams.Internal.Exceptions;
 
 namespace NetStreams
 {
@@ -17,6 +18,8 @@ namespace NetStreams
         Func<IConsumeContext<TKey, TMessage>, bool> _filterPredicate = (consumeContext) => true;
         NetStreamConfiguration _configuration;
         bool disposedValue;
+        Action<Exception> _onError = exception => { throw new StreamFaultedException(exception); };
+        Task _streamTask;
 
         public INetStreamConfigurationContext Configuration => _configuration;
 
@@ -24,7 +27,6 @@ namespace NetStreams
             string topic,
             NetStreamConfiguration configuration,
             IConsumerFactory consumerFactory,
-            IProducerFactory producerFactory,
             ITopicCreator topicCreator)
         {
             _configuration = configuration;
@@ -41,10 +43,10 @@ namespace NetStreams
             }
 
             _consumer = _consumerFactory.Create<TKey, TMessage>(Configuration);
-            
+
             _consumer.Subscribe(_topic);
 
-            return Task.Factory.StartNew(async () =>
+            _streamTask = Task.Factory.StartNew(async () =>
             {
                 while (!token.IsCancellationRequested)
                 {
@@ -60,20 +62,21 @@ namespace NetStreams
                             {
                                 if (_handler != null)
                                 {
-                                    await _handler.Handle(consumeContext);
+                                    _handler.Handle(consumeContext).Wait(token);
                                 }
                             }
 
                             if (!Configuration.DeliveryMode.EnableAutoCommit) _consumer.Commit();
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception ex)
                     {
-                        Console.WriteLine(e);
+                        _onError(ex);
                     }
                 }
-            }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
 
+            return _streamTask;
         }
 
         async Task CreateTopics()
@@ -113,6 +116,12 @@ namespace NetStreams
         public INetStream<TKey, TMessage> Filter(Func<IConsumeContext<TKey, TMessage>, bool> filterPredicate)
         {
             _filterPredicate = filterPredicate;
+            return this;
+        }
+
+        public INetStream<TKey, TMessage> OnError(Action<Exception> onError)
+        {
+            _onError = onError;
             return this;
         }
 

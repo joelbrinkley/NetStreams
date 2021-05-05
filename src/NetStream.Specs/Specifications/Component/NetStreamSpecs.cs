@@ -4,9 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using ExpectedObjects;
 using Machine.Specifications;
 using Moq;
 using NetStreams.Configuration;
+using NetStreams.Internal.Exceptions;
 using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Mocks;
@@ -30,13 +32,12 @@ namespace NetStreams.Specs.Specifications.Component
                 var mockConsumer = new Mock<IConsumer<string, TestMessage>>();
 
                 mockConsumer.Setup(x => x.Consume(Parameter.IsAny<int>()))
-                    .Returns((ConsumeResult<string, TestMessage>)null);
+                    .Returns((ConsumeResult<string, TestMessage>) null);
 
                 var netStream = new NetStream<string, TestMessage>(
                     Guid.NewGuid().ToString(),
                     new NetStreamConfiguration(),
                     new TestConsumerFactory(mockConsumer),
-                    new TestProducerFactory(null),
                     new NullTopicCreator());
 
                 _startTask = netStream.StartAsync(_tokenSource.Token);
@@ -54,7 +55,7 @@ namespace NetStreams.Specs.Specifications.Component
         {
             static CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
             static TestMessage _messageAdded = new TestMessage();
-            static List<TestMessage> testMessages = new List<TestMessage>();
+            static List<TestMessage> _testMessages = new List<TestMessage>();
             static Mock<IConsumer<string, TestMessage>> _mockConsumer;
             static NetStream<string, TestMessage> _stream;
 
@@ -66,8 +67,7 @@ namespace NetStreams.Specs.Specifications.Component
                     .Setup(x => x.Consume(Parameter.IsAny<int>()))
                     .Returns(() =>
                     {
-                        if (testMessages.Any())
-                        {
+                        if (_testMessages.Any())
                             return new ConsumeResult<string, TestMessage>
                             {
                                 Message = new Message<string, TestMessage>
@@ -76,7 +76,6 @@ namespace NetStreams.Specs.Specifications.Component
                                     Value = _messageAdded
                                 }
                             };
-                        }
 
                         return null;
                     })
@@ -84,20 +83,121 @@ namespace NetStreams.Specs.Specifications.Component
 
                 var mockProducer = new Mock<IProducer<string, TestMessage>>();
                 var consumerFactoryMock = new TestConsumerFactory(_mockConsumer);
-                var configuration = new NetStreamConfiguration()
+                var configuration = new NetStreamConfiguration
+                {
+                    DeliveryMode = DeliveryMode.At_Least_Once
+                };
+
+                _stream = new NetStream<string, TestMessage>(
+                    Guid.NewGuid().ToString(),
+                    configuration,
+                    consumerFactoryMock,
+                    new NullTopicCreator());
+
+                _testMessages.Add(_messageAdded);
+            };
+
+            Because of = () =>
+                _stream.Handle(x => _testMessages.Clear()).StartAsync(_cancellationTokenSource.Token)
+                    .BlockUntil(() => _testMessages.Count == 0).Await();
+
+            It should_commit = () => _mockConsumer.Verify(x => x.Commit(), Times.Exactly(1));
+        }
+
+        [Subject("ErrorHandling")]
+        class when_an_error_occurs_while_streaming
+        {
+            static NetStream<string, TestMessage> _stream;
+            static CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+            static Mock<IConsumer<string, TestMessage>> _mockConsumer;
+            static ExpectedObject _expectedException;
+            static Task _streamTask;
+            static Task _streamResult;
+            static Exception _actualException;
+
+            Establish context = () =>
+            {
+                _mockConsumer = new
+                    Mock<IConsumer<string, TestMessage>>();
+
+                var exceptionToThrow = new Exception("Boom!");
+                _expectedException = exceptionToThrow.ToExpectedObject();
+
+                _mockConsumer
+                    .Setup(x => x.Consume(Parameter.IsAny<int>()))
+                    .Throws(exceptionToThrow);
+
+                var consumerFactoryMock = new TestConsumerFactory(_mockConsumer);
+                var configuration = new NetStreamConfiguration
                 {
                     DeliveryMode = DeliveryMode.At_Least_Once
                 };
 
                 _stream = new NetStream<string, TestMessage>(Guid.NewGuid().ToString(), configuration,
-                    consumerFactoryMock, new TestProducerFactory(mockProducer), new NullTopicCreator());
+                    consumerFactoryMock, new NullTopicCreator());
 
-                testMessages.Add(_messageAdded);
+                _stream
+                    .Handle(x => Console.WriteLine(x));
+
+                _streamTask = _stream.StartAsync(_cancellationTokenSource.Token);
             };
 
-            Because of = () => _stream.Handle(x => testMessages.Clear()).StartAsync(_cancellationTokenSource.Token).BlockUntil(() => testMessages.Count == 0).Await();
+            Because of = () => _actualException = Catch.Exception(() => _streamTask.Wait());
 
-            It should_commit = () => _mockConsumer.Verify(x => x.Commit(), Times.Exactly(1));
+            It should_stop_the_task = () => _streamTask.Status.ShouldEqual(TaskStatus.Faulted);
+
+            It should_report_an_exception_on_the_task = () => _streamTask.Exception.ShouldNotBeNull();
+
+            It should_report_a_stream_exception_on_the_task = () => _streamTask.Exception.InnerExceptions.Single().ShouldBeAssignableTo(typeof(StreamFaultedException));
+
+            It should_report_original_exception_on_the_task = () => _expectedException.ShouldMatch(((StreamFaultedException)_streamTask.Exception.InnerExceptions.Single()).InnerException);
+        }
+
+        [Subject("ErrorHandling")]
+        class when_an_error_occurs_while_streaming_with_an_onerror
+        {
+            static NetStream<string, TestMessage> _stream;
+            static CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+            static Mock<IConsumer<string, TestMessage>> _mockConsumer;
+            static ExpectedObject _expectedException;
+            static Exception _actualException;
+            static Task _streamTask;
+
+            Establish context = () =>
+            {
+                _mockConsumer = new
+                    Mock<IConsumer<string, TestMessage>>();
+
+                var exceptionToThrow = new Exception("Boom!");
+                _expectedException = exceptionToThrow.ToExpectedObject();
+
+                _mockConsumer
+                    .Setup(x => x.Consume(Parameter.IsAny<int>()))
+                    .Throws(exceptionToThrow);
+
+                var consumerFactoryMock = new TestConsumerFactory(_mockConsumer);
+                var configuration = new NetStreamConfiguration
+                {
+                    DeliveryMode = DeliveryMode.At_Least_Once
+                };
+
+                _stream = new NetStream<string, TestMessage>(Guid.NewGuid().ToString(), configuration,
+                    consumerFactoryMock, new NullTopicCreator());
+
+                _stream
+                    .Handle(x => Console.WriteLine(x))
+                    .OnError(ex =>
+                    {
+                        _actualException = ex;
+                        _cancellationTokenSource.Cancel();
+                    });
+
+                _streamTask = _stream.StartAsync(_cancellationTokenSource.Token);
+            };
+
+            Because of = () => _streamTask.BlockUntil(() => _actualException != null).Await();
+
+            It should_call_on_error_with_exception = () => _expectedException.ShouldMatch(_actualException);
         }
     }
 }

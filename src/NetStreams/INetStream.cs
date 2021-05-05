@@ -14,5 +14,6 @@ namespace NetStreams
         INetStream<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handleConsumeContext);
         INetStream<TKey, TMessage> HandleAsync(Func<IConsumeContext<TKey, TMessage>, Task> handleTask);
         Task StartAsync(CancellationToken token);
+        INetStream<TKey, TMessage> OnError(Action<Exception> onError);
     }
 }
