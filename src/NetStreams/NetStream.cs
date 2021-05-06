@@ -63,7 +63,7 @@ namespace NetStreams
                             {
                                 if (_handler != null)
                                 {
-                                    await _handler.Handle(consumeContext).ConfigureAwait(false); ;
+                                    await _handler.Handle(consumeContext).ConfigureAwait(false); 
                                 }
                             }
 
