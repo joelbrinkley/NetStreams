@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using ExpectedObjects;
 using Machine.Specifications;
 using NetStreams.Specs.Infrastructure.Models;
@@ -18,7 +19,7 @@ namespace NetStreams.Specs.Specifications.Integration
             static ExpectedObject _expectedDestinationTopic;
             static INetStream _stream;
 
-            Establish context = () =>
+            private Establish context = () =>
             {
                 _sourceTopic = $"auto.{Guid.NewGuid()}";
                 _destinationTopic = $"auto.{Guid.NewGuid()}";
@@ -64,11 +65,12 @@ namespace NetStreams.Specs.Specifications.Integration
                     .Stream<string, TestMessage>(_sourceTopic)
                     .Transform(context => new TestEvent())
                     .ToTopic<string, TestEvent>(_destinationTopic, message => message.Key);
+                _stream.StartAsync(CancellationToken.None);
             };
 
-            Because of = () => _stream.StartAsync(CancellationToken.None);
+            Because of = () => Task.Delay(TimeSpan.FromSeconds(1)).Await();
 
-            It should_create_the_destination_topic_with_configuration = () =>
+            It should_create_the_destination_topic_with_configuration = () => 
                 _expectedDestinationTopic.ShouldMatch(new TopicService().GetTopic(_destinationTopic));
             
             It should_create_the_source_topic_with_configuration = () =>

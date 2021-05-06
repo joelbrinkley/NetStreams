@@ -36,11 +36,11 @@ namespace NetStreams
             _topicCreator = topicCreator;
         }
 
-        public Task StartAsync(CancellationToken token)
+        public async Task StartAsync(CancellationToken token)
         {
             if (Configuration.TopicCreationEnabled)
             {
-                CreateTopics().Wait(token);
+                await _topicCreator.CreateAll(Configuration.TopicConfigurations);
             }
 
             _consumer = _consumerFactory.Create<TKey, TMessage>(Configuration);
@@ -76,18 +76,8 @@ namespace NetStreams
                     }
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
-
-            return _streamTask;
         }
-
-        async Task CreateTopics()
-        {
-            foreach (var topicConfig in Configuration.TopicConfigurations)
-            {
-                await _topicCreator.Create(topicConfig);
-            }
-        }
-
+        
         public INetStream<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handle)
         {
             Func<IConsumeContext<TKey, TMessage>, object> actionWrapper = (context) =>

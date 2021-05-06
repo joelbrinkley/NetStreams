@@ -60,6 +60,14 @@ namespace NetStreams.Internal
             }
         }
 
+        public async Task CreateAll(IEnumerable<ITopicConfiguration> topicConfigurations)
+        {
+            foreach (var topicConfig in topicConfigurations)
+            {
+                await Create(topicConfig);
+            }
+        }
+
         public void Dispose()
         {
             _adminClient.Value.Dispose();
@@ -69,5 +77,6 @@ namespace NetStreams.Internal
     public interface ITopicCreator : IDisposable
     {
         Task Create(ITopicConfiguration topicConfig);
+        Task CreateAll(IEnumerable<ITopicConfiguration> topicConfigurations);
     }
 }
