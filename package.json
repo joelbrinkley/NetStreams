@@ -1,7 +1,7 @@
 {
   "name": "NetStreams",
   "projectName": "NetStreams",
-  "version": "1.3.0-rc.3",
+  "version": "1.3.0-rc.4",
   "configuration": "Release",
   "description": "A Kafka library",
   "defaultPublishSource": "https://api.nuget.org/v3/index.json",
