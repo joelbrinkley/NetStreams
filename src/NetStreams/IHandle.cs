@@ -2,14 +2,14 @@
 
 namespace NetStreams
 {
-    public interface IHandle<TKey, TMessage>
+    public interface IHandle<TKey, TMessage> :IHandle
     {
-        Task Handle(IConsumeContext<TKey, TMessage> consumeContext);
-        INetStream<TKey, TMessage> Stream { get; }
-    }
-    public interface IHandle<TKey, TMessage, TResponseKey, TResponse> : IHandle<TKey, TMessage>
-    {
-        void Write(IStreamWriter<TKey, TMessage, TResponseKey, TResponse> writer);
+        Task<HandleResult> Handle(IConsumeContext<TKey, TMessage> consumeContext);
     }
 
+    public interface IHandle
+    {
+        INetStream Stream { get; }
+        void SetWriter(IStreamWriter writer);
+    }
 }

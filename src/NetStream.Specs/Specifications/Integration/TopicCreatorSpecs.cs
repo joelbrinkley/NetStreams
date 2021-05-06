@@ -16,7 +16,7 @@ namespace NetStreams.Specs.Specifications.Integration
             static string _sourceTopic;
             static ExpectedObject _expectedSourceTopic;
             static ExpectedObject _expectedDestinationTopic;
-            static INetStream<string, TestMessage> _stream;
+            static INetStream _stream;
 
             Establish context = () =>
             {
@@ -62,16 +62,15 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _stream = builder
                     .Stream<string, TestMessage>(_sourceTopic)
-                    .Handle<string, TestEvent>(context => new TestEvent())
-                    .ToTopic(_destinationTopic, message => message.Key);
+                    .Transform(context => new TestEvent())
+                    .ToTopic<string, TestEvent>(_destinationTopic, message => message.Key);
             };
 
             Because of = () => _stream.StartAsync(CancellationToken.None);
 
             It should_create_the_destination_topic_with_configuration = () =>
                 _expectedDestinationTopic.ShouldMatch(new TopicService().GetTopic(_destinationTopic));
-
-
+            
             It should_create_the_source_topic_with_configuration = () =>
                 _expectedSourceTopic.ShouldMatch(new TopicService().GetTopic(_sourceTopic));
         }

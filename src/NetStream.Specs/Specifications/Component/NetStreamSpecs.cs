@@ -112,7 +112,6 @@ namespace NetStreams.Specs.Specifications.Component
             static Mock<IConsumer<string, TestMessage>> _mockConsumer;
             static ExpectedObject _expectedException;
             static Task _streamTask;
-            static Task _streamResult;
             static Exception _actualException;
 
             Establish context = () =>
@@ -136,8 +135,7 @@ namespace NetStreams.Specs.Specifications.Component
                 _stream = new NetStream<string, TestMessage>(Guid.NewGuid().ToString(), configuration,
                     consumerFactoryMock, new NullTopicCreator());
 
-                _stream
-                    .Handle(x => Console.WriteLine(x));
+                _stream.Handle(Console.WriteLine);
 
                 _streamTask = _stream.StartAsync(_cancellationTokenSource.Token);
             };
