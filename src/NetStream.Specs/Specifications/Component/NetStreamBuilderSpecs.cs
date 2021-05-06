@@ -143,7 +143,7 @@ namespace NetStreams.Specs.Specifications.Component
             {
                 cfg.BootstrapServers = "localhost:9021";
                 cfg.ConsumerGroup = "consumergroup";
-                cfg.DeliveryMode = new DeliveryMode {EnableAutoCommit = false, AutoCommitIntervalMs = 10000};
+                cfg.DeliveryMode = new DeliveryMode { EnableAutoCommit = false, AutoCommitIntervalMs = 10000 };
             };
 
             var config = new NetStreamConfiguration();

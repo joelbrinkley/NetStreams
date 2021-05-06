@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetStreams.Internal
 {
-    internal class AsyncConsumeTransformer<TKey, TMessage> : ITransform<TKey, TMessage>
+    internal class AsyncConsumeTransformer<TKey, TMessage> : ConsumeBehavior<TKey, TMessage>
     {
         IStreamWriter _writer;
         Func<IConsumeContext<TKey, TMessage>, Task<object>> _handle;
@@ -17,7 +18,7 @@ namespace NetStreams.Internal
             _stream = netStream;
         }
 
-        public async Task<TransformResult> Handle(IConsumeContext<TKey, TMessage> consumeContext)
+        public override async Task<TransformResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
         {
             var response = await _handle(consumeContext);
             if (response != null && response.GetType() != typeof(None)) await _writer.WriteAsync(response);
@@ -30,7 +31,7 @@ namespace NetStreams.Internal
         }
     }
 
-    internal class ConsumeTransformer<TKey, TMessage> : ITransform<TKey, TMessage>
+    internal class ConsumeTransformer<TKey, TMessage> : ConsumeBehavior<TKey, TMessage>
     {
         IStreamWriter _writer;
         readonly Func<IConsumeContext<TKey, TMessage>, object> _handle;
@@ -42,7 +43,7 @@ namespace NetStreams.Internal
             Stream = netStream;
         }
 
-        public async Task<TransformResult> Handle(IConsumeContext<TKey, TMessage> consumeContext)
+        public override async Task<TransformResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
         {
             var response = _handle(consumeContext);
             if (response != null) await _writer.WriteAsync(response);

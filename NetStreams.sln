@@ -17,6 +17,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediatrStream", "examples\M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicStream", "examples\BasicStream\BasicStream.csproj", "{A63DEA67-2A38-4F5B-AA96-E90D352A8236}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppInsights", "AppInsights\AppInsights.csproj", "{EC74CB52-C709-4219-9738-2AA72C65CADD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetStreams.ApplicationInsights", "NetStreams.ApplicationInsights\NetStreams.ApplicationInsights.csproj", "{193BB7EA-9877-4F39-AF63-2EDC16FD5696}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{A63DEA67-2A38-4F5B-AA96-E90D352A8236}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A63DEA67-2A38-4F5B-AA96-E90D352A8236}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A63DEA67-2A38-4F5B-AA96-E90D352A8236}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC74CB52-C709-4219-9738-2AA72C65CADD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC74CB52-C709-4219-9738-2AA72C65CADD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC74CB52-C709-4219-9738-2AA72C65CADD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC74CB52-C709-4219-9738-2AA72C65CADD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{193BB7EA-9877-4F39-AF63-2EDC16FD5696}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{193BB7EA-9877-4F39-AF63-2EDC16FD5696}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{193BB7EA-9877-4F39-AF63-2EDC16FD5696}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{193BB7EA-9877-4F39-AF63-2EDC16FD5696}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,6 +60,8 @@ Global
 		{34B979C7-26CD-4647-A5B8-9EC4C41D18C8} = {95764186-FF3E-4830-95E8-951CA9328F21}
 		{4F752823-F14A-46F7-AD4B-149FF6F381E3} = {C3A0B79F-6844-4D0C-B55B-92081C14A515}
 		{A63DEA67-2A38-4F5B-AA96-E90D352A8236} = {C3A0B79F-6844-4D0C-B55B-92081C14A515}
+		{EC74CB52-C709-4219-9738-2AA72C65CADD} = {C3A0B79F-6844-4D0C-B55B-92081C14A515}
+		{193BB7EA-9877-4F39-AF63-2EDC16FD5696} = {7C318F8C-8717-443B-802C-C0DDA357D63E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F1A5A1B3-A3A6-487D-A202-B537AFEBF966}

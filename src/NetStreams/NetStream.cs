@@ -4,6 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NetStreams.Configuration;
+using NetStreams.Internal.Behaviors;
 using NetStreams.Internal.Exceptions;
 
 namespace NetStreams
@@ -11,7 +12,7 @@ namespace NetStreams
     public class NetStream<TKey, TMessage> : INetStream<TKey, TMessage>
     {
         private Guid Id = Guid.NewGuid();
-        ITransform<TKey, TMessage> _handler;
+        ConsumeProcessor<TKey, TMessage> _handler;
         IConsumer<TKey, TMessage> _consumer;
         IConsumerFactory _consumerFactory;
         readonly ITopicCreator _topicCreator;
@@ -59,15 +60,9 @@ namespace NetStreams
 
                         if (consumeResult != null)
                         {
-                            if (_filterPredicate(consumeContext))
-                            {
-                                if (_handler != null)
-                                {
-                                    await _handler.Handle(consumeContext).ConfigureAwait(false); 
-                                }
-                            }
+                            await _handler.ProcessAsync(consumeContext, token).ConfigureAwait(false);
 
-                            if (!Configuration.DeliveryMode.EnableAutoCommit) _consumer.Commit();
+                            //if (!Configuration.DeliveryMode.EnableAutoCommit) _consumer.Commit();
                         }
                     }
                     catch (Exception ex)
@@ -77,7 +72,7 @@ namespace NetStreams
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
         }
-        
+
         public INetStream<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handle)
         {
             Func<IConsumeContext<TKey, TMessage>, object> actionWrapper = (context) =>
@@ -86,8 +81,8 @@ namespace NetStreams
                 return null; //TODO: figure out what to do with this default value
             };
 
-            var handler = new ConsumeTransformer<TKey, TMessage>(actionWrapper, this);
-            _handler = handler;
+            _handler.AddBehavior(new ConsumeTransformer<TKey, TMessage>(actionWrapper, this));
+
             return this;
         }
 
@@ -99,28 +94,26 @@ namespace NetStreams
                 return new None(); //TODO: figure out what to do with this default value
             };
 
-            var handler = new AsyncConsumeTransformer<TKey, TMessage>(actionWrapper, this);
-            _handler = handler;
+           _handler.AddBehavior(new AsyncConsumeTransformer<TKey, TMessage>(actionWrapper, this));
+
             return this;
         }
 
-        public ITransform<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
+        public ConsumeProcessor<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
         {
-            var handler = new ConsumeTransformer<TKey, TMessage>(handle, this);
-            _handler = handler;
-            return handler;
+            _handler.AddBehavior(new ConsumeTransformer<TKey, TMessage>(handle, this));
+            return _handler; //TODO: don't expose this
         }
 
-        public ITransform<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
+        public ConsumeProcessor<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
         {
-            var handler = new AsyncConsumeTransformer<TKey, TMessage>(handle, this);
-            _handler = handler;
-            return handler;
+            _handler.AddBehavior(new AsyncConsumeTransformer<TKey, TMessage>(handle, this));
+            return _handler;
         }
 
         public INetStream<TKey, TMessage> Filter(Func<IConsumeContext<TKey, TMessage>, bool> filterPredicate)
         {
-            _filterPredicate = filterPredicate;
+            _handler.AddBehavior(new FilterBehavior<TKey, TMessage>(filterPredicate));
             return this;
         }
 
@@ -149,11 +142,11 @@ namespace NetStreams
         }
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-         ~NetStream()
-         {
-             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-             Dispose(disposing: false);
-         }
+        ~NetStream()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: false);
+        }
 
         public void Dispose()
         {
