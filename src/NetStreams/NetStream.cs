@@ -10,7 +10,8 @@ namespace NetStreams
 {
     public class NetStream<TKey, TMessage> : INetStream<TKey, TMessage>
     {
-        IHandle<TKey, TMessage> _handler;
+        private Guid Id = Guid.NewGuid();
+        ITransform<TKey, TMessage> _handler;
         IConsumer<TKey, TMessage> _consumer;
         IConsumerFactory _consumerFactory;
         readonly ITopicCreator _topicCreator;
@@ -18,7 +19,7 @@ namespace NetStreams
         Func<IConsumeContext<TKey, TMessage>, bool> _filterPredicate = (consumeContext) => true;
         readonly NetStreamConfiguration _configuration;
         bool disposedValue;
-        Action<Exception> _onError = exception => throw new StreamFaultedException(exception);
+        Action<Exception> _onError = exception => { };
         Task _streamTask;
 
         public INetStreamConfigurationContext Configuration => _configuration;
@@ -62,7 +63,7 @@ namespace NetStreams
                             {
                                 if (_handler != null)
                                 {
-                                    await _handler.Handle(consumeContext);
+                                    await _handler.Handle(consumeContext).ConfigureAwait(false); ;
                                 }
                             }
 
@@ -95,7 +96,7 @@ namespace NetStreams
                 return null; //TODO: figure out what to do with this default value
             };
 
-            var handler = new ConsumeHandler<TKey, TMessage>(actionWrapper, this);
+            var handler = new ConsumeTransformer<TKey, TMessage>(actionWrapper, this);
             _handler = handler;
             return this;
         }
@@ -108,21 +109,21 @@ namespace NetStreams
                 return new None(); //TODO: figure out what to do with this default value
             };
 
-            var handler = new AsyncConsumeHandler<TKey, TMessage>(actionWrapper, this);
+            var handler = new AsyncConsumeTransformer<TKey, TMessage>(actionWrapper, this);
             _handler = handler;
             return this;
         }
 
-        public IHandle<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
+        public ITransform<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
         {
-            var handler = new ConsumeHandler<TKey, TMessage>(handle, this);
+            var handler = new ConsumeTransformer<TKey, TMessage>(handle, this);
             _handler = handler;
             return handler;
         }
 
-        public IHandle<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
+        public ITransform<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
         {
-            var handler = new AsyncConsumeHandler<TKey, TMessage>(handle, this);
+            var handler = new AsyncConsumeTransformer<TKey, TMessage>(handle, this);
             _handler = handler;
             return handler;
         }
@@ -149,7 +150,6 @@ namespace NetStreams
                     _consumer?.Close();
                     _consumer?.Dispose();
                     _topicCreator?.Dispose();
-
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer

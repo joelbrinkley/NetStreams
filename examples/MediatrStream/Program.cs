@@ -36,7 +36,7 @@ namespace MediatrStream
 
             var startTask =
                 builder.Stream<string, OrderCommand>(sourceTopic)
-                       .TransformAsync(async context => (OrderEvent)await mediator.Send(context.Message))
+                       .TransformAsync(async context => await mediator.Send(context.Message))
                        .ToTopic<string, OrderEvent>("Order.Events", message => message.Key)
                        .StartAsync(CancellationToken.None);
 

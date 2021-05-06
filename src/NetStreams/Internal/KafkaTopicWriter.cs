@@ -14,14 +14,14 @@ namespace NetStreams.Internal
         public KafkaTopicWriter(
             string topic,
             IProducerFactory producerFactory,
-            IHandle handle,
+            ITransform transform,
             Func<TResponse, TResponseKey> resolveKey)
         {
             if (resolveKey == null) resolveKey = response => default;
 
             _topic = topic;
             _resolveKey = resolveKey;
-            _stream = handle.Stream;
+            _stream = transform.Stream;
             _producer = producerFactory.Create<TResponseKey, TResponse>(_topic, _stream.Configuration);
         }
 

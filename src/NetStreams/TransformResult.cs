@@ -1,8 +1,8 @@
 ﻿namespace NetStreams
 {
-    public class HandleResult
+    public class TransformResult
     {
-        public HandleResult(object message)
+        public TransformResult(object message)
         {
             Message = message;
         }
@@ -16,11 +16,11 @@
         }
     }
 
-    public class HandleResult<TMessage> : HandleResult
+    public class TransformResult<TMessage> : TransformResult
     {
         public new TMessage Message => GetMessage<TMessage>();
 
-        public HandleResult(object message) : base(message)
+        public TransformResult(object message) : base(message)
         {
         }
     }
