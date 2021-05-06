@@ -37,8 +37,8 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 var _stream1 = builder
                     .Stream<string, TestMessage>(_sourceTopic)
-                    .Handle<string, TestMessage>(context => context.Message)
-                    .ToTopic(_destinationTopic, message => message.Id)
+                    .Transform(context => context.Message)
+                    .ToTopic<string, TestMessage>(_destinationTopic, message => message.Id)
                     .StartAsync(CancellationToken.None);
 
                 var stream2 = builder
@@ -77,8 +77,8 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 var _stream1 = builder
                     .Stream<string, TestMessage>(_sourceTopic)
-                    .Handle<string, TestMessage>(context => context.Message)
-                    .ToTopic(_destinationTopic)
+                    .Transform(context => context.Message)
+                    .ToTopic<string, TestMessage>(_destinationTopic)
                     .StartAsync(CancellationToken.None);
 
                 var stream2 = builder
@@ -118,8 +118,8 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 var _stream1 = builder
                     .Stream<int, TestMessage>(_sourceTopic)
-                    .Handle<int, TestMessage>(context => context.Message)
-                    .ToTopic(_destinationTopic)
+                    .Transform(context => context.Message)
+                    .ToTopic<int, TestMessage>(_destinationTopic)
                     .StartAsync(CancellationToken.None);
 
                 var stream2 = builder

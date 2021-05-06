@@ -10,15 +10,16 @@ namespace NetStreams
 {
     public class NetStream<TKey, TMessage> : INetStream<TKey, TMessage>
     {
-        IHandle<TKey, TMessage> _handler;
+        private Guid Id = Guid.NewGuid();
+        ITransform<TKey, TMessage> _handler;
         IConsumer<TKey, TMessage> _consumer;
         IConsumerFactory _consumerFactory;
         readonly ITopicCreator _topicCreator;
         string _topic;
         Func<IConsumeContext<TKey, TMessage>, bool> _filterPredicate = (consumeContext) => true;
-        NetStreamConfiguration _configuration;
+        readonly NetStreamConfiguration _configuration;
         bool disposedValue;
-        Action<Exception> _onError = exception => { throw new StreamFaultedException(exception); };
+        Action<Exception> _onError = exception => { };
         Task _streamTask;
 
         public INetStreamConfigurationContext Configuration => _configuration;
@@ -35,11 +36,11 @@ namespace NetStreams
             _topicCreator = topicCreator;
         }
 
-        public Task StartAsync(CancellationToken token)
+        public async Task StartAsync(CancellationToken token)
         {
             if (Configuration.TopicCreationEnabled)
             {
-                CreateTopics().Wait(token);
+                await _topicCreator.CreateAll(Configuration.TopicConfigurations);
             }
 
             _consumer = _consumerFactory.Create<TKey, TMessage>(Configuration);
@@ -62,7 +63,7 @@ namespace NetStreams
                             {
                                 if (_handler != null)
                                 {
-                                    _handler.Handle(consumeContext).Wait(token);
+                                    await _handler.Handle(consumeContext).ConfigureAwait(false); 
                                 }
                             }
 
@@ -75,42 +76,46 @@ namespace NetStreams
                     }
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
-
-            return _streamTask;
         }
-
-        async Task CreateTopics()
-        {
-            foreach (var topicConfig in Configuration.TopicConfigurations)
-            {
-                await _topicCreator.Create(topicConfig);
-            }
-        }
-
-        public IHandle<TKey, TMessage, TResponseKey, TResponse> Handle<TResponseKey, TResponse>(Func<IConsumeContext<TKey, TMessage>, TResponse> handle)
-        {
-            var handler = new HandleFunction<TKey, TMessage, TResponseKey, TResponse>(handle, this);
-            _handler = handler;
-            return handler;
-        }
-
-        public IHandle<TKey, TMessage, TResponseKey, TResponse> HandleAsync<TResponseKey, TResponse>(Func<IConsumeContext<TKey, TMessage>, Task<TResponse>> handle)
-        {
-            var handler = new HandleFunctionTask<TKey, TMessage, TResponseKey, TResponse>(handle, this);
-            _handler = handler;
-            return handler;
-        }
-
+        
         public INetStream<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handle)
         {
-            _handler = new HandleAction<TKey, TMessage>(handle, this);
+            Func<IConsumeContext<TKey, TMessage>, object> actionWrapper = (context) =>
+            {
+                handle(context);
+                return null; //TODO: figure out what to do with this default value
+            };
+
+            var handler = new ConsumeTransformer<TKey, TMessage>(actionWrapper, this);
+            _handler = handler;
             return this;
         }
 
-        public INetStream<TKey, TMessage> HandleAsync(Func<IConsumeContext<TKey, TMessage>, Task> handleTask)
+        public INetStream<TKey, TMessage> HandleAsync(Func<IConsumeContext<TKey, TMessage>, Task> handle)
         {
-            _handler = new HandleActionTask<TKey, TMessage>(handleTask, this);
+            Func<IConsumeContext<TKey, TMessage>, Task<object>> actionWrapper = async (context) =>
+            {
+                await handle(context);
+                return new None(); //TODO: figure out what to do with this default value
+            };
+
+            var handler = new AsyncConsumeTransformer<TKey, TMessage>(actionWrapper, this);
+            _handler = handler;
             return this;
+        }
+
+        public ITransform<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
+        {
+            var handler = new ConsumeTransformer<TKey, TMessage>(handle, this);
+            _handler = handler;
+            return handler;
+        }
+
+        public ITransform<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
+        {
+            var handler = new AsyncConsumeTransformer<TKey, TMessage>(handle, this);
+            _handler = handler;
+            return handler;
         }
 
         public INetStream<TKey, TMessage> Filter(Func<IConsumeContext<TKey, TMessage>, bool> filterPredicate)
@@ -135,7 +140,6 @@ namespace NetStreams
                     _consumer?.Close();
                     _consumer?.Dispose();
                     _topicCreator?.Dispose();
-
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
@@ -145,11 +149,11 @@ namespace NetStreams
         }
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~NetStream()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
+         ~NetStream()
+         {
+             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+             Dispose(disposing: false);
+         }
 
         public void Dispose()
         {

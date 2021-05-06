@@ -9,7 +9,7 @@ namespace NetStreams.Internal.Exceptions
         public NullOrEmptyTopicException()
         {
         }
-        public NullOrEmptyTopicException(string topic) : base($"{topic} cannot be a null or empty string.")
+        public NullOrEmptyTopicException(string topic) : base($"{topic} cannot be Handle null or empty string.")
         {
         }
 
