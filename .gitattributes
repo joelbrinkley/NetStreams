@@ -1,0 +1,8 @@
+KafkaCerts/*.crt binary
+KafkaCerts/*.csr binary
+KafkaCerts/*.der binary
+KafkaCerts/*.jks binary
+KafkaCerts/*.key binary
+KafkaCerts/*.p12 binary
+KafkaCerts/*.pem binary
+KafkaCerts/*.srl binary

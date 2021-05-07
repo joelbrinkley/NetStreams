@@ -19,17 +19,24 @@ namespace NetStreams.Specs.Specifications.Component
             static ExpectedObject _expectedKafkaProducerConfiguration;
             static INetStream<string, TestMessage> _stream;
 
+            private static string GetAbsoluteCertPath(string filename)
+            {
+                var assemblyFilepath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                var assemblyFolder = System.IO.Path.GetDirectoryName(assemblyFilepath);
+                return System.IO.Path.Combine(assemblyFolder, "KafkaCerts", filename);
+            }
+
             Establish context = () =>
             {
                 _configure = cfg =>
                 {
-                    cfg.BootstrapServers = "localhost:9021";
+                    cfg.BootstrapServers = "localhost:9093";
                     cfg.ConsumerGroup = "consumergroup";
                     cfg.SecurityProtocol = "SSL";
-                    cfg.SslCertificateLocation = "certloc.pem";
-                    cfg.SslCaLocation = "ca.crt";
-                    cfg.SslKeyLocation = "store.key";
-                    cfg.SslKeyPassword = "p4$$wurd";
+                    cfg.SslCertificateLocation = GetAbsoluteCertPath("client.pem");
+                    cfg.SslCaLocation = GetAbsoluteCertPath("snakeoil-ca-1.crt");
+                    cfg.SslKeyLocation = GetAbsoluteCertPath("client.key");
+                    cfg.SslKeyPassword = "confluent";
                 };
 
                 var config = new NetStreamConfiguration();
@@ -37,35 +44,35 @@ namespace NetStreams.Specs.Specifications.Component
 
                 _expectedConfiguration = new
                 {
-                    BootstrapServers = "localhost:9021",
+                    BootstrapServers = "localhost:9093",
                     ConsumerGroup = "consumergroup",
                     DeliveryMode = DeliveryMode.At_Least_Once,
                     SecurityProtocol = "SSL",
-                    SslCertificateLocation = "certloc.pem",
-                    SslCaLocation = "ca.crt",
-                    SslKeyLocation = "store.key",
-                    SslKeyPassword = "p4$$wurd"
+                    SslCertificateLocation = GetAbsoluteCertPath("client.pem"),
+                    SslCaLocation = GetAbsoluteCertPath("snakeoil-ca-1.crt"),
+                    SslKeyLocation = GetAbsoluteCertPath("client.key"),
+                    SslKeyPassword = "confluent"
                 }.ToExpectedObject();
 
                 _expectedKafkaConsumerConfiguration = new
                 {
-                    BootstrapServers = "localhost:9021",
+                    BootstrapServers = "localhost:9093",
                     GroupId = "consumergroup",
                     SecurityProtocol = SecurityProtocol.Ssl,
-                    SslCertificateLocation = "certloc.pem",
-                    SslCaLocation = "ca.crt",
-                    SslKeyLocation = "store.key",
-                    SslKeyPassword = "p4$$wurd"
+                    SslCertificateLocation = GetAbsoluteCertPath("client.pem"),
+                    SslCaLocation = GetAbsoluteCertPath("snakeoil-ca-1.crt"),
+                    SslKeyLocation = GetAbsoluteCertPath("client.key"),
+                    SslKeyPassword = "confluent"
                 }.ToExpectedObject();
 
                 _expectedKafkaProducerConfiguration = new
                 {
-                    BootstrapServers = "localhost:9021",
+                    BootstrapServers = "localhost:9093",
                     SecurityProtocol = SecurityProtocol.Ssl,
-                    SslCertificateLocation = "certloc.pem",
-                    SslCaLocation = "ca.crt",
-                    SslKeyLocation = "store.key",
-                    SslKeyPassword = "p4$$wurd"
+                    SslCertificateLocation = GetAbsoluteCertPath("client.pem"),
+                    SslCaLocation = GetAbsoluteCertPath("snakeoil-ca-1.crt"),
+                    SslKeyLocation = GetAbsoluteCertPath("client.key"),
+                    SslKeyPassword = "confluent"
                 }.ToExpectedObject();
             };
 

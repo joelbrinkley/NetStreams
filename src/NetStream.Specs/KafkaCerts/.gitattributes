@@ -1,0 +1,8 @@
+*.crt binary
+*.csr binary
+*.der binary
+*.jks binary
+*.key binary
+*.p12 binary
+*.pem binary
+*.srl binary

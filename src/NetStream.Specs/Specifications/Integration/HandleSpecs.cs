@@ -14,8 +14,9 @@ namespace NetStreams.Specs.Specifications.Integration
 		[Subject("Transform")]
 		class when_transforming_a_message
 		{
-			static string _sourceTopic = $"output.source.{Guid.NewGuid()}";
-			static string _destinationTopic = $"output.dest.{Guid.NewGuid()}";
+			static string _testRunID = $"{DateTime.Now.ToString("yyyyMMdd-hhmmss")}.{Guid.NewGuid()}";
+			static string _sourceTopic = $"output.source.{_testRunID}";
+            static string _destinationTopic = $"output.dest.{_testRunID}";
 			static TestProducerService<string, TestMessage> _producerService;
 			static TestMessage _message;
 			static List<TestEvent> _expectedMessages = new List<TestEvent>();
@@ -26,13 +27,14 @@ namespace NetStreams.Specs.Specifications.Integration
 				new TopicService().CreateDefaultTopic(_sourceTopic);
 				new TopicService().CreateDefaultTopic(_destinationTopic);
 
-				_message = new TestMessage() { Description = "Hello World" };
+				_message = new TestMessage() { Description = $"Hello World {_testRunID}" };
 
 				_producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
 
 				var builder = new NetStreamBuilder(cfg =>
 				{
 					cfg.ConsumerGroup = Guid.NewGuid().ToString();
+                    cfg.SecurityProtocol = "PlainText";
 					cfg.BootstrapServers = "localhost:9092";
 				});
 
@@ -63,8 +65,8 @@ namespace NetStreams.Specs.Specifications.Integration
 		[Subject("Transform")]
 		class when_transforming_a_message_asynchronously
 		{
-			static string _sourceTopic = $"output.source.{Guid.NewGuid()}";
-			static string _destinationTopic = $"output.dest.{Guid.NewGuid()}";
+			static string _sourceTopic = $"output.source.{DateTime.Now.ToString("yyyyMMdd-hhmmss")}.{Guid.NewGuid()}";
+			static string _destinationTopic = $"output.dest.{DateTime.Now.ToString("yyyyMMdd-hhmmss")}.{Guid.NewGuid()}";
 			static TestProducerService<string, TestMessage> _producerService;
 			static TestMessage _message;
 			static List<TestEvent> _expectedMessages = new List<TestEvent>();
@@ -82,6 +84,7 @@ namespace NetStreams.Specs.Specifications.Integration
 				var builder = new NetStreamBuilder(cfg =>
 				{
 					cfg.ConsumerGroup = Guid.NewGuid().ToString();
+                    cfg.SecurityProtocol = "PlainText";
 					cfg.BootstrapServers = "localhost:9092";
 				});
 

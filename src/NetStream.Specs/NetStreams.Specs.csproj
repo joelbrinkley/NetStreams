@@ -6,6 +6,48 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="KafkaCerts\client-ca1-signed.crt" />
+	  <None Remove="KafkaCerts\client.csr" />
+	  <None Remove="KafkaCerts\client.der" />
+	  <None Remove="KafkaCerts\client.key" />
+	  <None Remove="KafkaCerts\client.keystore.p12" />
+	  <None Remove="KafkaCerts\client.pem" />
+	  <None Remove="KafkaCerts\snakeoil-ca-1.crt" />
+	  <None Remove="KafkaCerts\snakeoil-ca-1.key" />
+	  <None Remove="KafkaCerts\snakeoil-ca-1.srl" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="KafkaCerts\client-ca1-signed.crt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="KafkaCerts\client.csr">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="KafkaCerts\client.der">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="KafkaCerts\client.key">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="KafkaCerts\client.keystore.p12">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="KafkaCerts\client.pem">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="KafkaCerts\snakeoil-ca-1.crt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="KafkaCerts\snakeoil-ca-1.key">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="KafkaCerts\snakeoil-ca-1.srl">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="ExpectedObjects" Version="3.5.2" />
 		<PackageReference Include="Machine.Specifications" Version="1.0.0" />
 		<PackageReference Include="Machine.Specifications.Runner.VisualStudio" Version="2.10.1" />
