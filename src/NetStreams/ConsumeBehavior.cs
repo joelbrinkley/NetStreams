@@ -20,10 +20,4 @@ namespace NetStreams
             }
         }
     }
-
-    //public interface IConsumeBehavior
-    //{
-    //    INetStream Stream { get; }
-    //    void SetWriter(IStreamWriter writer);
-    //}
 }

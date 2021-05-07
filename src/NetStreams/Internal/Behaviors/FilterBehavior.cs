@@ -16,7 +16,14 @@ namespace NetStreams.Internal.Behaviors
         }
         public override Task<TransformResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
         {
-            return _filter(consumeContext) ? Next.Handle(consumeContext, token) : null;
+            if (Next == null) return null;
+
+            if (_filter(consumeContext))
+            {
+                return Next.Handle(consumeContext, token);
+            }
+
+            return null;
         }
     }
 }

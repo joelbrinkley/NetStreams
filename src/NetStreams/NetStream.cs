@@ -5,20 +5,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using NetStreams.Configuration;
 using NetStreams.Internal.Behaviors;
-using NetStreams.Internal.Exceptions;
 
 namespace NetStreams
 {
     public class NetStream<TKey, TMessage> : INetStream<TKey, TMessage>
     {
-        private Guid Id = Guid.NewGuid();
-        ConsumeProcessor<TKey, TMessage> _handler;
-        IConsumer<TKey, TMessage> _consumer;
-        IConsumerFactory _consumerFactory;
+        readonly ConsumeProcessor<TKey, TMessage> _processor;
         readonly ITopicCreator _topicCreator;
-        string _topic;
-        Func<IConsumeContext<TKey, TMessage>, bool> _filterPredicate = (consumeContext) => true;
+        readonly string _topic;
         readonly NetStreamConfiguration _configuration;
+        IConsumerFactory _consumerFactory;
+        IStreamWriter _writer;
+        IConsumer<TKey, TMessage> _consumer;
         bool disposedValue;
         Action<Exception> _onError = exception => { };
         Task _streamTask;
@@ -35,6 +33,7 @@ namespace NetStreams
             _topic = topic;
             _consumerFactory = consumerFactory;
             _topicCreator = topicCreator;
+            _processor = new ConsumeProcessor<TKey, TMessage>();
         }
 
         public async Task StartAsync(CancellationToken token)
@@ -60,9 +59,12 @@ namespace NetStreams
 
                         if (consumeResult != null)
                         {
-                            await _handler.ProcessAsync(consumeContext, token).ConfigureAwait(false);
+                            var result = await _processor.ProcessAsync(consumeContext, token).ConfigureAwait(false);
 
-                            //if (!Configuration.DeliveryMode.EnableAutoCommit) _consumer.Commit();
+                            if (result != null && result.HasValue && _writer != null)
+                            {
+                                await _writer.WriteAsync(result.Message);
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -81,7 +83,7 @@ namespace NetStreams
                 return null; //TODO: figure out what to do with this default value
             };
 
-            _handler.AddBehavior(new ConsumeTransformer<TKey, TMessage>(actionWrapper, this));
+            _processor.AddBehavior(new ConsumeTransformer<TKey, TMessage>(actionWrapper, this));
 
             return this;
         }
@@ -94,26 +96,32 @@ namespace NetStreams
                 return new None(); //TODO: figure out what to do with this default value
             };
 
-           _handler.AddBehavior(new AsyncConsumeTransformer<TKey, TMessage>(actionWrapper, this));
+           _processor.AddBehavior(new AsyncConsumeTransformer<TKey, TMessage>(actionWrapper, this));
 
             return this;
         }
 
-        public ConsumeProcessor<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
+        public INetStream<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
         {
-            _handler.AddBehavior(new ConsumeTransformer<TKey, TMessage>(handle, this));
-            return _handler; //TODO: don't expose this
+            _processor.AddBehavior(new ConsumeTransformer<TKey, TMessage>(handle, this));
+            return this;
         }
 
-        public ConsumeProcessor<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
+        public INetStream<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
         {
-            _handler.AddBehavior(new AsyncConsumeTransformer<TKey, TMessage>(handle, this));
-            return _handler;
+            _processor.AddBehavior(new AsyncConsumeTransformer<TKey, TMessage>(handle, this));
+            return this;
         }
 
         public INetStream<TKey, TMessage> Filter(Func<IConsumeContext<TKey, TMessage>, bool> filterPredicate)
         {
-            _handler.AddBehavior(new FilterBehavior<TKey, TMessage>(filterPredicate));
+            _processor.AddBehavior(new FilterBehavior<TKey, TMessage>(filterPredicate));
+            return this;
+        }
+
+        public INetStream SetWriter(IStreamWriter writer)
+        {
+            _writer = writer;
             return this;
         }
 

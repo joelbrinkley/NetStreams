@@ -14,23 +14,24 @@ namespace NetStreams.Internal
 
     public class ConsumeProcessor<TKey, TMessage> : IConsumeProcessor<TKey, TMessage>
     {
-        private ConsumeBehavior<TKey, TMessage> _behavior;
+        ConsumeBehavior<TKey, TMessage> _headBehavior;
 
         public void AddBehavior(ConsumeBehavior<TKey, TMessage> behavior)
         {
-            if (_behavior == null)
+            if (_headBehavior == null)
             {
-                _behavior = behavior;
+                _headBehavior = behavior;
             }
             else
             {
-                _behavior.Next = behavior;
+                _headBehavior.Next = behavior;
+
             }
         }
 
         public async Task<TransformResult> ProcessAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token)
         {
-           return await _behavior.Handle(context, token);
+           return await _headBehavior.Handle(context, token);
         }
     }
 }

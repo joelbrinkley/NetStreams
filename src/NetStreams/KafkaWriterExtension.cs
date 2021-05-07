@@ -7,12 +7,12 @@ namespace NetStreams
     public static class KafkaWriterExtension
     {
         public static INetStream ToTopic<TResponseKey, TResponse>(
-            this IConsumeBehavior consumeBehavior, 
+            this INetStream netStream,
             string topic,
             Func<TResponse, TResponseKey> resolveKey = null)
         {
-            consumeBehavior.SetWriter(new KafkaTopicWriter<TResponseKey, TResponse>(topic, new ProducerFactory(), consumeBehavior, resolveKey));
-            return consumeBehavior.Stream;
+            netStream.SetWriter(new KafkaTopicWriter<TResponseKey, TResponse>(topic, new ProducerFactory(), netStream, resolveKey));
+            return netStream;
         }
     }
 }
