@@ -8,7 +8,7 @@ namespace NetStreams
     {
         public ConsumeBehavior<TKey, TMessage> Next { get; set; }
         
-        public virtual Task<TransformResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
+        public virtual Task Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
         {
             if (this.Next != null)
             {

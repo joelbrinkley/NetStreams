@@ -37,7 +37,7 @@ namespace NetStreams.Specs.Specifications.Component
                 var netStream = new NetStream<string, TestMessage>(
                     Guid.NewGuid().ToString(),
                     new NetStreamConfiguration(),
-                    new TestConsumerFactory(mockConsumer),
+                    mockConsumer.Object,
                     new NullTopicCreator());
 
                 _startTask = netStream.StartAsync(_tokenSource.Token);
@@ -80,9 +80,7 @@ namespace NetStreams.Specs.Specifications.Component
                         return null;
                     })
                     .Callback(() => _cancellationTokenSource.Cancel());
-
-                var mockProducer = new Mock<IProducer<string, TestMessage>>();
-                var consumerFactoryMock = new TestConsumerFactory(_mockConsumer);
+                
                 var configuration = new NetStreamConfiguration
                 {
                     DeliveryMode = DeliveryMode.At_Least_Once
@@ -91,7 +89,7 @@ namespace NetStreams.Specs.Specifications.Component
                 _stream = new NetStream<string, TestMessage>(
                     Guid.NewGuid().ToString(),
                     configuration,
-                    consumerFactoryMock,
+                    _mockConsumer.Object,
                     new NullTopicCreator());
 
                 _testMessages.Add(_messageAdded);
@@ -125,15 +123,17 @@ namespace NetStreams.Specs.Specifications.Component
                 _mockConsumer
                     .Setup(x => x.Consume(Parameter.IsAny<int>()))
                     .Throws(exceptionToThrow);
-
-                var consumerFactoryMock = new TestConsumerFactory(_mockConsumer);
+                
                 var configuration = new NetStreamConfiguration
                 {
                     DeliveryMode = DeliveryMode.At_Least_Once
                 };
 
-                _stream = new NetStream<string, TestMessage>(Guid.NewGuid().ToString(), configuration,
-                    consumerFactoryMock, new NullTopicCreator());
+                _stream = new NetStream<string, TestMessage>(
+                    Guid.NewGuid().ToString(),
+                    configuration,
+                    _mockConsumer.Object,
+                    new NullTopicCreator());
 
                 _stream
                     .Handle(x => Console.WriteLine(x))

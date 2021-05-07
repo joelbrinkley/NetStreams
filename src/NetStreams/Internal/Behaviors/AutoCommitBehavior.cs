@@ -7,7 +7,7 @@ using Confluent.Kafka;
 
 namespace NetStreams.Internal.Behaviors
 {
-    public class AutoCommitBehavior<TKey, TMessage> : ConsumeBehavior<TKey, TMessage>
+    internal class AutoCommitBehavior <TKey, TMessage> : ConsumeBehavior<TKey, TMessage>
     {
         readonly IConsumer<TKey, TMessage> _consumer;
 
@@ -16,11 +16,11 @@ namespace NetStreams.Internal.Behaviors
             _consumer = consumer;
         }
 
-        public override async Task<TransformResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
+        public override async Task Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
         {
-            _consumer.Commit();
+            if (Next != null) await Next.Handle(consumeContext, token);
 
-            return await Next.Handle(consumeContext, token);
+           _consumer.Commit();
         }
     }
 }

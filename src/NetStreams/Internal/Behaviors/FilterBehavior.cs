@@ -14,16 +14,14 @@ namespace NetStreams.Internal.Behaviors
         {
             _filter = filter;
         }
-        public override Task<TransformResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
+        public override async Task Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
         {
-            if (Next == null) return null;
+            if (Next == null) return;
 
             if (_filter(consumeContext))
             {
-                return Next.Handle(consumeContext, token);
+                await Next.Handle(consumeContext, token);
             }
-
-            return null;
         }
     }
 }

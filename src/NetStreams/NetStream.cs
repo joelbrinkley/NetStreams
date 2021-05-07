@@ -10,13 +10,12 @@ namespace NetStreams
 {
     public class NetStream<TKey, TMessage> : INetStream<TKey, TMessage>
     {
-        readonly ConsumeProcessor<TKey, TMessage> _processor;
+        readonly IConsumeProcessor<TKey, TMessage> _processor;
         readonly ITopicCreator _topicCreator;
         readonly string _topic;
         readonly NetStreamConfiguration _configuration;
-        IConsumerFactory _consumerFactory;
+        readonly IConsumer<TKey, TMessage> _consumer;
         IStreamWriter _writer;
-        IConsumer<TKey, TMessage> _consumer;
         bool disposedValue;
         Action<Exception> _onError = exception => { };
         Task _streamTask;
@@ -26,14 +25,15 @@ namespace NetStreams
         public NetStream(
             string topic,
             NetStreamConfiguration configuration,
-            IConsumerFactory consumerFactory,
-            ITopicCreator topicCreator)
+            IConsumer<TKey, TMessage> consumer,
+            ITopicCreator topicCreator,
+            IConsumeProcessor<TKey, TMessage> processor = null)
         {
             _configuration = configuration;
             _topic = topic;
-            _consumerFactory = consumerFactory;
+            _consumer = consumer;
             _topicCreator = topicCreator;
-            _processor = new ConsumeProcessor<TKey, TMessage>();
+            _processor = processor ?? new ConsumeProcessor<TKey, TMessage>();
         }
 
         public async Task StartAsync(CancellationToken token)
@@ -42,9 +42,6 @@ namespace NetStreams
             {
                 await _topicCreator.CreateAll(Configuration.TopicConfigurations);
             }
-
-            _consumer = _consumerFactory.Create<TKey, TMessage>(Configuration);
-
             _consumer.Subscribe(_topic);
 
             _streamTask = Task.Factory.StartNew(async () =>
@@ -59,12 +56,7 @@ namespace NetStreams
 
                         if (consumeResult != null)
                         {
-                            var result = await _processor.ProcessAsync(consumeContext, token).ConfigureAwait(false);
-
-                            if (result != null && result.HasValue && _writer != null)
-                            {
-                                await _writer.WriteAsync(result.Message);
-                            }
+                           await _processor.ProcessAsync(consumeContext, token).ConfigureAwait(false);
                         }
                     }
                     catch (Exception ex)
@@ -83,7 +75,7 @@ namespace NetStreams
                 return null; //TODO: figure out what to do with this default value
             };
 
-            _processor.AddBehavior(new ConsumeTransformer<TKey, TMessage>(actionWrapper, this));
+            _processor.AddBehavior(new ConsumeTransformer<TKey, TMessage>(actionWrapper, this, _writer));
 
             return this;
         }
@@ -96,20 +88,20 @@ namespace NetStreams
                 return new None(); //TODO: figure out what to do with this default value
             };
 
-           _processor.AddBehavior(new AsyncConsumeTransformer<TKey, TMessage>(actionWrapper, this));
+            _processor.AddBehavior(new AsyncConsumeTransformer<TKey, TMessage>(actionWrapper, this, _writer));
 
             return this;
         }
 
         public INetStream<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
         {
-            _processor.AddBehavior(new ConsumeTransformer<TKey, TMessage>(handle, this));
+            _processor.AddBehavior(new ConsumeTransformer<TKey, TMessage>(handle, this, _writer));
             return this;
         }
 
         public INetStream<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
         {
-            _processor.AddBehavior(new AsyncConsumeTransformer<TKey, TMessage>(handle, this));
+            _processor.AddBehavior(new AsyncConsumeTransformer<TKey, TMessage>(handle, this, _writer));
             return this;
         }
 

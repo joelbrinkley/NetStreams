@@ -9,7 +9,7 @@ namespace NetStreams.Internal
     public interface IConsumeProcessor<TKey, TMessage>
     {
         void AddBehavior(ConsumeBehavior<TKey, TMessage> behavior);
-        Task<TransformResult> ProcessAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token);
+        Task ProcessAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token);
     }
 
     public class ConsumeProcessor<TKey, TMessage> : IConsumeProcessor<TKey, TMessage>
@@ -25,13 +25,12 @@ namespace NetStreams.Internal
             else
             {
                 _headBehavior.Next = behavior;
-
             }
         }
 
-        public async Task<TransformResult> ProcessAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token)
+        public async Task ProcessAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token)
         {
-           return await _headBehavior.Handle(context, token);
+           await _headBehavior.Handle(context, token);
         }
     }
 }
