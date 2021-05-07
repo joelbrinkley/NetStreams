@@ -7,16 +7,12 @@ namespace NetStreams
     public abstract class ConsumeBehavior<TKey, TMessage>
     {
         public ConsumeBehavior<TKey, TMessage> Next { get; set; }
-        
-        public virtual Task Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
+
+        public virtual async Task Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
         {
             if (this.Next != null)
             {
-                return this.Next.Handle(consumeContext, token);
-            }
-            else
-            {
-                return null;
+                 await this.Next.Handle(consumeContext, token);
             }
         }
     }

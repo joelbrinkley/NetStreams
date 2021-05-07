@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Models;
 using NetStreams.Specs.Infrastructure.Services;
@@ -14,7 +15,6 @@ namespace NetStreams.Specs.Specifications.Integration
         class when_filtering_a_stream
         {
             static string _sourceTopic = $"filter.{Guid.NewGuid()}";
-            static INetStream<string, TestMessage> _stream;
             static List<TestMessage> _expectedHandledMessages = new List<TestMessage>();
             static List<TestMessage> _actualHandledMessages = new List<TestMessage>();
             static TestProducerService<string, TestMessage> _producerService;
@@ -25,17 +25,12 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
 
-                var builder = new NetStreamBuilder(cfg =>
-                {
-                    cfg.BootstrapServers = "localhost:9092";
-                    cfg.ConsumerGroup = $"filter.{Guid.NewGuid()}";
-                });
-
-                _stream = builder.Stream<string, TestMessage>(_sourceTopic)
+                DefaultBuilder.New<string, TestMessage>()
+                    .Stream(_sourceTopic)
                     .Filter(f => f.Message.Description == "hello")
-                    .Handle(context => _actualHandledMessages.Add(context.Message));
-                
-                _stream.StartAsync(CancellationToken.None);
+                    .Handle(context => _actualHandledMessages.Add(context.Message))
+                    .Build()
+                    .StartAsync(CancellationToken.None);
 
                 _producerService.Produce(Guid.NewGuid().ToString(), new TestMessage { Description = "hello" });
                 _producerService.Produce(Guid.NewGuid().ToString(), new TestMessage { Description = "world" });

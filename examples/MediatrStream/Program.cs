@@ -17,7 +17,7 @@ namespace MediatrStream
             var sourceTopic = "Order.Commands";
             var mediator = BuildMediator();
 
-            var builder = new NetStreamBuilder(
+            var builder = new NetStreamBuilder<string, OrderCommand>(
                 cfg =>
                 {
                     cfg.BootstrapServers = "localhost:9092";
@@ -36,9 +36,10 @@ namespace MediatrStream
 
             var startTask =
                 builder
-                    .Stream<string, OrderCommand>(sourceTopic)
+                       .Stream(sourceTopic)
                        .TransformAsync(async context => await mediator.Send(context.Message))
                        .ToTopic<string, OrderEvent>("Order.Events", message => message.Key)
+                       .Build()
                        .StartAsync(CancellationToken.None);
 
             var producer = new ProducerBuilder<string, OrderCommand>(

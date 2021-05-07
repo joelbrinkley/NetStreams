@@ -13,7 +13,7 @@ namespace AppInsights
         {
             var sourceTopic = "BasicStream.Source";
 
-            var builder = new NetStreamBuilder(
+            var builder = new NetStreamBuilder<Null, MyMessage>(
                 cfg =>
                 {
                     cfg.BootstrapServers = "localhost:9092";
@@ -26,9 +26,10 @@ namespace AppInsights
                     //cfg.AddBehavior(new ApplicationInsightsTelemetryBehavior());
 ;                });
 
-            var startTask = builder.Stream<Null, MyMessage>(sourceTopic)
+            var startTask = builder.Stream(sourceTopic)
                 .Filter(context => context.Message.Value % 3 == 0)
                 .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
+                .Build()
                 .StartAsync(new CancellationToken());
 
             IProducer<Null, MyMessage> producer = new ProducerBuilder<Null, MyMessage>(new ProducerConfig() { BootstrapServers = "localhost:9092" })

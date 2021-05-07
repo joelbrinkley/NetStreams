@@ -14,5 +14,7 @@ namespace NetStreams
         public TMessage Message => _consumeResult.Message.Value;
 
         public TKey Key => _consumeResult.Message.Key;
+
+        public object Result { get; set; }
     }
 }

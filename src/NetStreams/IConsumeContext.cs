@@ -4,5 +4,6 @@
     {
         TKey Key { get; }
         TMessage Message { get; }
+        object Result { get; set; }
     }
 }

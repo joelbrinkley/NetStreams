@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NetStreams.Internal.Behaviors;
 
 namespace NetStreams.Internal
 {
@@ -10,6 +11,7 @@ namespace NetStreams.Internal
     {
         void AddBehavior(ConsumeBehavior<TKey, TMessage> behavior);
         Task ProcessAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token);
+        void AddFirstBehavior(ConsumeBehavior<TKey, TMessage> behavior);
     }
 
     public class ConsumeProcessor<TKey, TMessage> : IConsumeProcessor<TKey, TMessage>
@@ -31,6 +33,13 @@ namespace NetStreams.Internal
         public async Task ProcessAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token)
         {
            await _headBehavior.Handle(context, token);
+        }
+
+        public void AddFirstBehavior(ConsumeBehavior<TKey, TMessage> behavior)
+        {
+            var currentHead = _headBehavior;
+            _headBehavior = behavior;
+            _headBehavior.Next = currentHead;
         }
     }
 }
