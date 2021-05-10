@@ -10,13 +10,10 @@ namespace NetStreams.Internal
 {
     internal class TopicCreator : ITopicCreator
     {
-        readonly INetStreamConfigurationContext _configuration;
         readonly Lazy<IAdminClient> _adminClient;
 
         public TopicCreator(INetStreamConfigurationContext configuration)
         {
-            _configuration = configuration;
-
             var adminConfig = new AdminClientConfig
             {
                 BootstrapServers = configuration.BootstrapServers,

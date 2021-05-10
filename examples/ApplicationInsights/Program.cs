@@ -31,7 +31,7 @@ namespace ApplicationInsights
 
             var telemetryClient = new TelemetryClient(configuration);
 
-            var startTask = new NetStreamBuilder<Null, MyMessage>(
+            var stream = new NetStreamBuilder<Null, MyMessage>(
                 cfg =>
                 {
                     cfg.BootstrapServers = "localhost:9092";
