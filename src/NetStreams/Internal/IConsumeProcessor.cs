@@ -28,7 +28,7 @@ namespace NetStreams.Internal
 
         public async Task ProcessAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token)
         {
-           await _headBehavior.Handle(context, new NetStreamResult(null), token);
+           await _headBehavior.Handle(context, token, new NetStreamResult(null));
         }
 
         public void PrependStep(PipelineStep<TKey, TMessage> behavior)

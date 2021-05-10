@@ -12,11 +12,11 @@ namespace NetStreams.Specs.Infrastructure.Models
         {
             List = list;
         }
-        public override async Task<NetStreamResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, NetStreamResult result, CancellationToken token)
+        public override async Task<NetStreamResult> Handle(IConsumeContext<TKey, TMessage> consumeContext,  CancellationToken token, NetStreamResult result)
         {
             List.Add(consumeContext.Message);
 
-            return await Next.Handle(consumeContext, result, token);
+            return await Next.Handle(consumeContext, token, result);
         }
     }
 }

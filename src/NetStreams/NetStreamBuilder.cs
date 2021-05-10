@@ -71,13 +71,13 @@ namespace NetStreams
 
         public INetStreamBuilder<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
         {
-            _processor.AppendStep(new ConsumeTransformer<TKey, TMessage>(handle));
+            _processor.AppendStep(new TransformStep<TKey, TMessage>(handle));
             return this;
         }
 
         public INetStreamBuilder<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
         {
-            _processor.AppendStep(new AsyncConsumeTransformer<TKey, TMessage>(handle));
+            _processor.AppendStep(new AsyncTransformStep<TKey, TMessage>(handle));
             return this;
         }
 

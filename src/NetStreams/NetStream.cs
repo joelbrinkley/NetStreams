@@ -16,7 +16,6 @@ namespace NetStreams
         readonly IConsumer<TKey, TMessage> _consumer;
         bool disposedValue;
         public Action<Exception> OnError { get; set; } = exception => { };
-        Task _streamTask;
 
         public INetStreamConfigurationContext Configuration => _configuration;
 

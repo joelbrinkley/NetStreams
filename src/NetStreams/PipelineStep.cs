@@ -11,7 +11,7 @@ namespace NetStreams
         {
             if (this.Next != null)
             {
-                 return await this.Next.Handle(consumeContext, result, token);
+                 return await this.Next.Handle(consumeContext, token, result);
             }
 
             return new NetStreamResult(null);

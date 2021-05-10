@@ -12,7 +12,7 @@ namespace NetStreams.Internal.Pipeline
             _writer = writer;
         }
 
-        public override async Task<NetStreamResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, NetStreamResult result, CancellationToken token)
+        public override async Task<NetStreamResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result )
         {
             if (result != null && result.HasValue && _writer != null)
             {
