@@ -101,7 +101,7 @@ namespace NetStreams.Specs.Specifications.Integration
             It should_write_output_to_topic = () => _expectedMessages.Count.ShouldEqual(_actualMessages.Count);
         }
 
-        [Subject("Handle")]
+        [Subject("Execute")]
         class when_handling_a_message_asynchronously
         {
             static string _sourceTopic = $"output.source.{Guid.NewGuid()}";
@@ -136,7 +136,7 @@ namespace NetStreams.Specs.Specifications.Integration
             It should_handle_the_message = () => _wasHandled.ShouldBeTrue();
         }
 
-        [Subject("Handle")]
+        [Subject("Execute")]
         class when_handling_a_message
         {
             static string _sourceTopic = $"output.source.{Guid.NewGuid()}";

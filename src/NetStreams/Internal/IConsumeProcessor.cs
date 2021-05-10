@@ -6,7 +6,7 @@ namespace NetStreams.Internal
     public interface IConsumeProcessor<TKey, TMessage>
     {
         void AppendStep(PipelineStep<TKey, TMessage> step);
-        Task ProcessAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token);
+        Task ExecuteAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token);
         void PrependStep(PipelineStep<TKey, TMessage> step);
     }
 
@@ -26,9 +26,9 @@ namespace NetStreams.Internal
             }
         }
 
-        public async Task ProcessAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token)
+        public async Task ExecuteAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token)
         {
-           await _headBehavior.Handle(context, token, new NetStreamResult(null));
+           await _headBehavior.Execute(context, token, new NetStreamResult(null));
         }
 
         public void PrependStep(PipelineStep<TKey, TMessage> behavior)

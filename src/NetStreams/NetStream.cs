@@ -56,7 +56,7 @@ namespace NetStreams
 
                         if (consumeResult != null)
                         {
-                            await _processor.ProcessAsync(consumeContext, token).ConfigureAwait(false);
+                            await _processor.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
                         }
                     }
                     catch (Exception ex)
