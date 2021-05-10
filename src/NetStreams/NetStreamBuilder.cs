@@ -11,7 +11,7 @@ namespace NetStreams
         readonly NetStreamConfiguration<TKey, TMessage> _configurationContext = new NetStreamConfiguration<TKey, TMessage>();
         public INetStreamConfigurationContext Configuration => _configurationContext;
 
-        readonly IConsumeProcessor<TKey, TMessage> _processor = new ConsumeProcessor<TKey, TMessage>();
+        readonly IConsumePipeline<TKey, TMessage> _pipeline = new ConsumePipeline<TKey, TMessage>();
         string _consumerTopic;
         Action<Exception> _onError;
 
@@ -32,29 +32,29 @@ namespace NetStreams
 
             foreach (var step in _configurationContext.PipelineSteps)
             {
-                _processor.PrependStep(step);
+                _pipeline.PrependStep(step);
             }
 
             if (!_configurationContext.DeliveryMode.EnableAutoCommit)
-                _processor.PrependStep(new ConsumerCommitBehavior<TKey, TMessage>(consumer));
+                _pipeline.PrependStep(new ConsumerCommitBehavior<TKey, TMessage>(consumer));
 
             return new NetStream<TKey, TMessage>(_consumerTopic,
                 _configurationContext,
                 consumer,
                 new TopicCreator(_configurationContext),
-                _processor, 
+                _pipeline, 
                 _onError);
         }
 
         public INetStreamBuilder<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handle)
         {
-            _processor.AppendStep(new HandleStep<TKey, TMessage>(handle));
+            _pipeline.AppendStep(new HandleStep<TKey, TMessage>(handle));
             return this;
         }
 
         public INetStreamBuilder<TKey, TMessage> HandleAsync(Func<IConsumeContext<TKey, TMessage>, Task> handle)
         {
-            _processor.AppendStep(new AsyncHandleStep<TKey, TMessage>(handle));
+            _pipeline.AppendStep(new AsyncHandleStep<TKey, TMessage>(handle));
             return this;
         }
 
@@ -64,26 +64,26 @@ namespace NetStreams
 
             var writer = new KafkaTopicWriter<TResponseKey, TResponseMessage>(producer, resolveKey);
 
-            _processor.AppendStep(new WriteOutputToKafkaBehavior<TKey, TMessage>(writer));
+            _pipeline.AppendStep(new WriteOutputToKafkaBehavior<TKey, TMessage>(writer));
 
             return this;
         }
 
         public INetStreamBuilder<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
         {
-            _processor.AppendStep(new TransformStep<TKey, TMessage>(handle));
+            _pipeline.AppendStep(new TransformStep<TKey, TMessage>(handle));
             return this;
         }
 
         public INetStreamBuilder<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
         {
-            _processor.AppendStep(new AsyncTransformStep<TKey, TMessage>(handle));
+            _pipeline.AppendStep(new AsyncTransformStep<TKey, TMessage>(handle));
             return this;
         }
 
         public INetStreamBuilder<TKey, TMessage> Filter(Func<IConsumeContext<TKey, TMessage>, bool> filterPredicate)
         {
-            _processor.AppendStep(new Filter<TKey, TMessage>(filterPredicate));
+            _pipeline.AppendStep(new Filter<TKey, TMessage>(filterPredicate));
             return this;
         }
         public INetStreamBuilder<TKey, TMessage> OnError(Action<Exception> onError)
@@ -94,7 +94,7 @@ namespace NetStreams
 
         public INetStreamBuilder<TKey, TMessage> AddPipelineStep(PipelineStep<TKey, TMessage> behavior)
         {
-            _processor.AppendStep(behavior);
+            _pipeline.AppendStep(behavior);
             return this;
         }
     }

@@ -9,7 +9,7 @@ namespace NetStreams
 {
     public class NetStream<TKey, TMessage> : INetStream
     {
-        readonly IConsumeProcessor<TKey, TMessage> _processor;
+        readonly IConsumePipeline<TKey, TMessage> _pipeline;
         readonly ITopicCreator _topicCreator;
         readonly string _topic;
         readonly NetStreamConfiguration<TKey, TMessage> _configuration;
@@ -24,14 +24,14 @@ namespace NetStreams
             NetStreamConfiguration<TKey, TMessage> configuration,
             IConsumer<TKey, TMessage> consumer,
             ITopicCreator topicCreator,
-            IConsumeProcessor<TKey, TMessage> processor = null, 
+            IConsumePipeline<TKey, TMessage> pipeline = null, 
             Action<Exception> onError = null)
         {
             _configuration = configuration;
             _topic = topic;
             _consumer = consumer;
             _topicCreator = topicCreator;
-            _processor = processor ?? new ConsumeProcessor<TKey, TMessage>();
+            _pipeline = pipeline ?? new ConsumePipeline<TKey, TMessage>();
             if (onError != null) _onError = onError;
         }
 
@@ -56,7 +56,7 @@ namespace NetStreams
 
                         if (consumeResult != null)
                         {
-                            await _processor.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
+                            await _pipeline.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
                         }
                     }
                     catch (Exception ex)
