@@ -12,13 +12,13 @@ namespace NetStreams.Internal.Pipeline
         {
             _filter = filter;
         }
-        public override async Task<NetStreamResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result)
+        public override async Task<NetStreamResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result = null)
         {
             if (Next == null) return new NetStreamResult(null);
-
+            
             if (_filter(consumeContext))
             {
-                return await Next.Handle(consumeContext, token, result);
+                return await Next.Handle(consumeContext, token, new NetStreamResult(consumeContext.Message));
             }
 
             return new NetStreamResult(null);

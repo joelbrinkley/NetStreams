@@ -15,19 +15,26 @@ namespace NetStreams.Specs.Specifications.Integration
         class when_filtering_a_stream
         {
             static string _sourceTopic = $"filter.{Guid.NewGuid()}";
+            static string _destinationTopic = $"filter.{Guid.NewGuid()}";
             static List<TestMessage> _expectedHandledMessages = new List<TestMessage>();
             static List<TestMessage> _actualHandledMessages = new List<TestMessage>();
             static TestProducerService<string, TestMessage> _producerService;
 
             Establish context = () =>
             {
-                new TopicService().CreateDefaultTopic(_sourceTopic);
+                new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
                 _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
 
                 DefaultBuilder.New<string, TestMessage>()
                     .Stream(_sourceTopic)
                     .Filter(f => f.Message.Description == "hello")
+                    .ToTopic<string, TestMessage>(_destinationTopic, message => message.Id)
+                    .Build()
+                    .StartAsync(CancellationToken.None);
+
+                DefaultBuilder.New<string, TestMessage>()
+                    .Stream(_destinationTopic)
                     .Handle(context => _actualHandledMessages.Add(context.Message))
                     .Build()
                     .StartAsync(CancellationToken.None);

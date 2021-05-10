@@ -8,6 +8,14 @@ namespace NetStreams.Specs.Infrastructure.Services
 {
     public class TopicService
     {
+        public void CreateAll(params string[] topics)
+        {
+            foreach (var topic in topics)
+            {
+                CreateDefaultTopic(topic);
+            }
+        }
+
         public void CreateDefaultTopic(string topicName)
         {
             var adminClient = new AdminClientBuilder(new AdminClientConfig { BootstrapServers = "localhost:9092" }).Build();
