@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace NetStreams.Internal
 {
-    internal class ConsumePipeline<TKey, TMessage> : IConsumePipeline<TKey, TMessage>
+    public class ConsumePipeline<TKey, TMessage> : IConsumePipeline<TKey, TMessage>
     {
         PipelineStep<TKey, TMessage> _head;
 
