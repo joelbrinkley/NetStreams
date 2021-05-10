@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-rc.0 (2021-05-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add application insights pipeline steps (#29)
+
+### Features
+
+* Add application insights pipeline steps ([#29](https://github.com/joelbrinkley/NetStreams/issues/29)) ([d0ff565](https://github.com/joelbrinkley/NetStreams/commit/d0ff5659c9a4338c6ce35a449d085ec98bf250ec))
+
 ## 1.3.0-rc.4 (2021-05-06)
 
 ## 1.3.0-rc.3 (2021-04-26)
