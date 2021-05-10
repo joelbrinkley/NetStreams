@@ -34,7 +34,7 @@ namespace NetStreams.Specs.Specifications.Integration
                     .Build()
                     .StartAsync(CancellationToken.None);
 
-               DefaultBuilder.New<string, TestEvent>()
+               DefaultBuilder.New<string, TestMessage>()
                     .Stream(_destinationTopic)
                     .Handle(context => _actualKey = context.Key)
                     .Build()

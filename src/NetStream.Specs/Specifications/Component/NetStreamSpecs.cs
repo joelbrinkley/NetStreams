@@ -78,13 +78,13 @@ namespace NetStreams.Specs.Specifications.Component
                     Guid.NewGuid().ToString(),
                     configuration,
                     _mockConsumer.Object,
-                    new NullTopicCreator());
-
-                _stream.OnError = ex =>
-                {
-                    _actualException = ex;
-                    _cancellationTokenSource.Cancel();
-                };
+                    new NullTopicCreator(),
+                    null,
+                    ex =>
+                    {
+                        _actualException = ex;
+                        _cancellationTokenSource.Cancel();
+                    });
 
                 _streamTask = _stream.StartAsync(_cancellationTokenSource.Token);
             };

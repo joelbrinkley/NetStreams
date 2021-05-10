@@ -13,7 +13,6 @@ namespace NetStreams
 
         readonly IConsumeProcessor<TKey, TMessage> _processor = new ConsumeProcessor<TKey, TMessage>();
         string _consumerTopic;
-        IStreamWriter _writer;
         Action<Exception> _onError;
 
         public NetStreamBuilder(Action<INetStreamConfigurationBuilderContext<TKey, TMessage>> setup)
@@ -30,7 +29,7 @@ namespace NetStreams
         public INetStream Build()
         {
             var consumer = new ConsumerFactory().Create<TKey, TMessage>(_configurationContext);
-            
+
             foreach (var step in _configurationContext.PipelineSteps)
             {
                 _processor.PrependStep(step);
@@ -43,7 +42,8 @@ namespace NetStreams
                 _configurationContext,
                 consumer,
                 new TopicCreator(_configurationContext),
-                _processor);
+                _processor, 
+                _onError);
         }
 
         public INetStreamBuilder<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handle)
@@ -64,9 +64,9 @@ namespace NetStreams
 
             var writer = new KafkaTopicWriter<TResponseKey, TResponseMessage>(producer, resolveKey);
 
-           _processor.AppendStep(new WriteOutputToKafkaBehavior<TKey, TMessage>(writer));
+            _processor.AppendStep(new WriteOutputToKafkaBehavior<TKey, TMessage>(writer));
 
-           return this;
+            return this;
         }
 
         public INetStreamBuilder<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
@@ -96,11 +96,6 @@ namespace NetStreams
         {
             _processor.AppendStep(behavior);
             return this;
-        }
-
-        public void SetWriter(IStreamWriter writer)
-        {
-            _writer = writer;
         }
     }
 }

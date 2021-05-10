@@ -15,7 +15,7 @@ namespace NetStreams
         readonly NetStreamConfiguration<TKey, TMessage> _configuration;
         readonly IConsumer<TKey, TMessage> _consumer;
         bool disposedValue;
-        public Action<Exception> OnError { get; set; } = exception => { };
+        Action<Exception> _onError { get; } = exception => { };
 
         public INetStreamConfigurationContext Configuration => _configuration;
 
@@ -24,13 +24,15 @@ namespace NetStreams
             NetStreamConfiguration<TKey, TMessage> configuration,
             IConsumer<TKey, TMessage> consumer,
             ITopicCreator topicCreator,
-            IConsumeProcessor<TKey, TMessage> processor = null)
+            IConsumeProcessor<TKey, TMessage> processor = null, 
+            Action<Exception> onError = null)
         {
             _configuration = configuration;
             _topic = topic;
             _consumer = consumer;
             _topicCreator = topicCreator;
             _processor = processor ?? new ConsumeProcessor<TKey, TMessage>();
+            if (onError != null) _onError = onError;
         }
 
         public Task StartAsync(CancellationToken token)
@@ -59,7 +61,7 @@ namespace NetStreams
                     }
                     catch (Exception ex)
                     {
-                        OnError(ex);
+                        _onError(ex);
                     }
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
