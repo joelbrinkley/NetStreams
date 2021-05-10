@@ -112,6 +112,25 @@ var builder = new NetStreamBuilder(
 
 The pipeline for handling messages is extensible by adding custom pipeline steps.
 
+```
+  // extended
+  public class CustomPipelineStep<TKey, TMessage> : PipelineStep<TKey,TMessage>
+    {
+        ...
+    }
+
+    // Implement Execute. Send your result on 
+    public override async Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result = null)
+    {
+        // do logic pre next step
+        
+        var response = await Next.Execute(consumeContext, token, result);
+
+        // do logic post next step 
+    }
+     ...
+```
+
 This example logs application insights telemetry.
 
 ```
