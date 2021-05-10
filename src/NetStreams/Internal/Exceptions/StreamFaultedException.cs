@@ -2,9 +2,9 @@
 
 namespace NetStreams.Internal.Exceptions
 {
-    public class StreamFaultedException : Exception
+    internal class StreamFaultedException : Exception
     {
-        public StreamFaultedException(Exception inner)
+        internal StreamFaultedException(Exception inner)
             : base("An unhandled Exception has halted the Build", inner)
         {
 

@@ -64,7 +64,7 @@ namespace NetStreams
 
             var writer = new KafkaTopicWriter<TResponseKey, TResponseMessage>(producer, resolveKey);
 
-            _pipeline.AppendStep(new WriteOutputToKafkaBehavior<TKey, TMessage>(writer));
+            _pipeline.AppendStep(new WriteStreamStep<TKey, TMessage>(writer));
 
             return this;
         }

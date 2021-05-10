@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetStreams.Internal.Pipeline
 {
-    public class AsyncHandleStep<TKey, TMessage> : PipelineStep<TKey, TMessage>
+    internal class AsyncHandleStep<TKey, TMessage> : PipelineStep<TKey, TMessage>
     {
         readonly Func<IConsumeContext<TKey, TMessage>, Task> _handle;
 

@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 
 namespace NetStreams.Internal.Pipeline
 {
-    internal class WriteOutputToKafkaBehavior<TKey, TMessage> : PipelineStep<TKey, TMessage>
+    internal class WriteStreamStep<TKey, TMessage> : PipelineStep<TKey, TMessage>
     {
         readonly IStreamWriter _writer;
 
-        public WriteOutputToKafkaBehavior(IStreamWriter writer)
+        public WriteStreamStep(IStreamWriter writer)
         {
             _writer = writer;
         }
