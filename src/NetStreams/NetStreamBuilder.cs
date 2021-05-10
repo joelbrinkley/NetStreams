@@ -91,12 +91,6 @@ namespace NetStreams
             _onError = onError;
             return this;
         }
-
-        public INetStreamBuilder<TKey, TMessage> AddPipelineStep(PipelineStep<TKey, TMessage> behavior)
-        {
-            _pipeline.AppendStep(behavior);
-            return this;
-        }
     }
 }
 
