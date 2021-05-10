@@ -48,27 +48,13 @@ namespace NetStreams
 
         public INetStreamBuilder<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handle)
         {
-            Func<IConsumeContext<TKey, TMessage>, object> actionWrapper = (context) =>
-            {
-                handle(context);
-                return null; //TODO: figure out what to do with this default value
-            };
-
-            _processor.AppendStep(new ConsumeTransformer<TKey, TMessage>(actionWrapper));
-
+            _processor.AppendStep(new HandleStep<TKey, TMessage>(handle));
             return this;
         }
 
         public INetStreamBuilder<TKey, TMessage> HandleAsync(Func<IConsumeContext<TKey, TMessage>, Task> handle)
         {
-            Func<IConsumeContext<TKey, TMessage>, Task<object>> actionWrapper = async (context) =>
-            {
-                await handle(context);
-                return null; //TODO: figure out what to do with this default value
-            };
-
-            _processor.AppendStep(new AsyncConsumeTransformer<TKey, TMessage>(actionWrapper, _writer));
-
+            _processor.AppendStep(new AsyncHandleStep<TKey, TMessage>(handle));
             return this;
         }
 
@@ -91,7 +77,7 @@ namespace NetStreams
 
         public INetStreamBuilder<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
         {
-            _processor.AppendStep(new AsyncConsumeTransformer<TKey, TMessage>(handle, _writer));
+            _processor.AppendStep(new AsyncConsumeTransformer<TKey, TMessage>(handle));
             return this;
         }
 

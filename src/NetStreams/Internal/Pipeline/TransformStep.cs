@@ -7,14 +7,10 @@ namespace NetStreams.Internal.Pipeline
     internal class AsyncConsumeTransformer<TKey, TMessage> : PipelineStep<TKey, TMessage>
     {
         readonly Func<IConsumeContext<TKey, TMessage>, Task<object>> _handle;
-        readonly IStreamWriter _writer;
-        
-        public AsyncConsumeTransformer(
-            Func<IConsumeContext<TKey, TMessage>, Task<object>> handle,
-            IStreamWriter streamWriter)
+
+        public AsyncConsumeTransformer(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
         {
             _handle = handle;
-            _writer = streamWriter;
         }
 
         public override async Task<NetStreamResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, NetStreamResult result, CancellationToken token)

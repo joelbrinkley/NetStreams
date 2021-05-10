@@ -7,7 +7,7 @@ namespace NetStreams
     {
         public PipelineStep<TKey, TMessage> Next { get; set; }
 
-        public virtual async Task<NetStreamResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, NetStreamResult result, CancellationToken token)
+        public virtual async Task<NetStreamResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result = null)
         {
             if (this.Next != null)
             {

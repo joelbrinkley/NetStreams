@@ -5,9 +5,9 @@ namespace NetStreams.Internal
 {
     public interface IConsumeProcessor<TKey, TMessage>
     {
-        void AppendStep(PipelineStep<TKey, TMessage> behavior);
+        void AppendStep(PipelineStep<TKey, TMessage> step);
         Task ProcessAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token);
-        void PrependStep(PipelineStep<TKey, TMessage> behavior);
+        void PrependStep(PipelineStep<TKey, TMessage> step);
     }
 
     public class ConsumeProcessor<TKey, TMessage> : IConsumeProcessor<TKey, TMessage>
