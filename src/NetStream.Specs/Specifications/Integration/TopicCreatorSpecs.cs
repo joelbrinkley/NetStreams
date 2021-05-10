@@ -17,14 +17,13 @@ namespace NetStreams.Specs.Specifications.Integration
             static string _sourceTopic;
             static ExpectedObject _expectedSourceTopic;
             static ExpectedObject _expectedDestinationTopic;
-            static INetStream _stream;
 
-            private Establish context = () =>
+            Establish context = () =>
             {
                 _sourceTopic = $"auto.{Guid.NewGuid()}";
                 _destinationTopic = $"auto.{Guid.NewGuid()}";
 
-                var builder = new NetStreamBuilder(cfg =>
+                var builder = new NetStreamBuilder<string, TestMessage>(cfg =>
                 {
                     cfg.ConsumerGroup = Guid.NewGuid().ToString();
                     cfg.BootstrapServers = "localhost:9092";
@@ -61,18 +60,19 @@ namespace NetStreams.Specs.Specifications.Integration
                     }.ToExpectedObject();
                 });
 
-                _stream = builder
-                    .Stream<string, TestMessage>(_sourceTopic)
+                builder
+                    .Stream(_sourceTopic)
                     .Transform(context => new TestEvent())
-                    .ToTopic<string, TestEvent>(_destinationTopic, message => message.Key);
-                _stream.StartAsync(CancellationToken.None);
+                    .ToTopic<string, TestEvent>(_destinationTopic, message => message.Key)
+                    .Build()
+                    .StartAsync(CancellationToken.None);
             };
 
             Because of = () => Task.Delay(TimeSpan.FromSeconds(1)).Await();
 
-            It should_create_the_destination_topic_with_configuration = () => 
+            It should_create_the_destination_topic_with_configuration = () =>
                 _expectedDestinationTopic.ShouldMatch(new TopicService().GetTopic(_destinationTopic));
-            
+
             It should_create_the_source_topic_with_configuration = () =>
                 _expectedSourceTopic.ShouldMatch(new TopicService().GetTopic(_sourceTopic));
         }

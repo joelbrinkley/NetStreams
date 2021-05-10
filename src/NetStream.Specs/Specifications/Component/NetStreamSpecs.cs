@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
@@ -8,7 +6,6 @@ using ExpectedObjects;
 using Machine.Specifications;
 using Moq;
 using NetStreams.Configuration;
-using NetStreams.Internal.Exceptions;
 using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Mocks;
@@ -36,8 +33,8 @@ namespace NetStreams.Specs.Specifications.Component
 
                 var netStream = new NetStream<string, TestMessage>(
                     Guid.NewGuid().ToString(),
-                    new NetStreamConfiguration(),
-                    new TestConsumerFactory(mockConsumer),
+                    new NetStreamConfiguration<string, TestMessage>(),
+                    mockConsumer.Object,
                     new NullTopicCreator());
 
                 _startTask = netStream.StartAsync(_tokenSource.Token);
@@ -50,65 +47,11 @@ namespace NetStreams.Specs.Specifications.Component
             It should_run_to_completion = () => _startTask.Status.ShouldEqual(TaskStatus.RanToCompletion);
         }
 
-        [Subject("Committing")]
-        class after_an_at_least_once_stream_handles_a_message
-        {
-            static CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-            static TestMessage _messageAdded = new TestMessage();
-            static List<TestMessage> _testMessages = new List<TestMessage>();
-            static Mock<IConsumer<string, TestMessage>> _mockConsumer;
-            static NetStream<string, TestMessage> _stream;
-
-            Establish context = () =>
-            {
-                _mockConsumer = new Mock<IConsumer<string, TestMessage>>();
-
-                _mockConsumer
-                    .Setup(x => x.Consume(Parameter.IsAny<int>()))
-                    .Returns(() =>
-                    {
-                        if (_testMessages.Any())
-                            return new ConsumeResult<string, TestMessage>
-                            {
-                                Message = new Message<string, TestMessage>
-                                {
-                                    Key = _messageAdded.Id,
-                                    Value = _messageAdded
-                                }
-                            };
-
-                        return null;
-                    })
-                    .Callback(() => _cancellationTokenSource.Cancel());
-
-                var mockProducer = new Mock<IProducer<string, TestMessage>>();
-                var consumerFactoryMock = new TestConsumerFactory(_mockConsumer);
-                var configuration = new NetStreamConfiguration
-                {
-                    DeliveryMode = DeliveryMode.At_Least_Once
-                };
-
-                _stream = new NetStream<string, TestMessage>(
-                    Guid.NewGuid().ToString(),
-                    configuration,
-                    consumerFactoryMock,
-                    new NullTopicCreator());
-
-                _testMessages.Add(_messageAdded);
-            };
-
-            Because of = () =>
-                _stream.Handle(x => _testMessages.Clear()).StartAsync(_cancellationTokenSource.Token)
-                    .BlockUntil(() => _testMessages.Count == 0).Await();
-
-            It should_commit = () => _mockConsumer.Verify(x => x.Commit(), Times.Exactly(1));
-        }
-
         [Subject("ErrorHandling")]
         class when_an_error_occurs_while_streaming_with_an_onerror
         {
             static NetStream<string, TestMessage> _stream;
-            static CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+            static CancellationTokenSource _cancellationTokenSource = new();
             static Mock<IConsumer<string, TestMessage>> _mockConsumer;
             static ExpectedObject _expectedException;
             static Exception _actualException;
@@ -126,18 +69,18 @@ namespace NetStreams.Specs.Specifications.Component
                     .Setup(x => x.Consume(Parameter.IsAny<int>()))
                     .Throws(exceptionToThrow);
 
-                var consumerFactoryMock = new TestConsumerFactory(_mockConsumer);
-                var configuration = new NetStreamConfiguration
+                var configuration = new NetStreamConfiguration<string, TestMessage>
                 {
                     DeliveryMode = DeliveryMode.At_Least_Once
                 };
 
-                _stream = new NetStream<string, TestMessage>(Guid.NewGuid().ToString(), configuration,
-                    consumerFactoryMock, new NullTopicCreator());
-
-                _stream
-                    .Handle(x => Console.WriteLine(x))
-                    .OnError(ex =>
+                _stream = new NetStream<string, TestMessage>(
+                    Guid.NewGuid().ToString(),
+                    configuration,
+                    _mockConsumer.Object,
+                    new NullTopicCreator(),
+                    null,
+                    ex =>
                     {
                         _actualException = ex;
                         _cancellationTokenSource.Cancel();

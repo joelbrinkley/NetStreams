@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
-using Confluent.Kafka;
 using Machine.Specifications;
+using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Models;
 using NetStreams.Specs.Infrastructure.Services;
@@ -22,28 +21,23 @@ namespace NetStreams.Specs.Specifications.Integration
 
             Establish context = () =>
             {
-                new TopicService().CreateDefaultTopic(_sourceTopic);
-                new TopicService().CreateDefaultTopic(_destinationTopic);
+                new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
                 _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
 
                 _message = new TestMessage { Description = "Hello World" };
 
-                var builder = new NetStreamBuilder(cfg =>
-                {
-                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
-                    cfg.BootstrapServers = "localhost:9092";
-                });
-
-                var _stream1 = builder
-                    .Stream<string, TestMessage>(_sourceTopic)
+               DefaultBuilder.New<string, TestMessage>()
+                    .Stream(_sourceTopic)
                     .Transform(context => context.Message)
                     .ToTopic<string, TestMessage>(_destinationTopic, message => message.Id)
+                    .Build()
                     .StartAsync(CancellationToken.None);
 
-                var stream2 = builder
-                    .Stream<string, TestMessage>(_destinationTopic)
+               DefaultBuilder.New<string, TestMessage>()
+                    .Stream(_destinationTopic)
                     .Handle(context => _actualKey = context.Key)
+                    .Build()
                     .StartAsync(CancellationToken.None);
             };
             Because of = () => _producerService.ProduceAsync(_message.Id, _message).BlockUntil(() => _actualKey != null).Await();
@@ -62,28 +56,23 @@ namespace NetStreams.Specs.Specifications.Integration
 
             Establish context = () =>
             {
-                new TopicService().CreateDefaultTopic(_sourceTopic);
-                new TopicService().CreateDefaultTopic(_destinationTopic);
+                new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
                 _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
 
                 _message = new TestMessage { Description = "Hello World" };
 
-                var builder = new NetStreamBuilder(cfg =>
-                {
-                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
-                    cfg.BootstrapServers = "localhost:9092";
-                });
-
-                var _stream1 = builder
-                    .Stream<string, TestMessage>(_sourceTopic)
+                DefaultBuilder.New<string, TestMessage>()
+                     .Stream(_sourceTopic)
                     .Transform(context => context.Message)
                     .ToTopic<string, TestMessage>(_destinationTopic)
+                    .Build()
                     .StartAsync(CancellationToken.None);
 
-                var stream2 = builder
-                    .Stream<string, TestMessage>(_destinationTopic)
+                DefaultBuilder.New<string, TestMessage>()
+                    .Stream(_destinationTopic)
                     .Handle(context => _actualKey = context.Key)
+                    .Build()
                     .StartAsync(CancellationToken.None);
             };
 
@@ -110,21 +99,29 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _message = new TestMessage { Description = "Hello World" };
 
-                var builder = new NetStreamBuilder(cfg =>
+                var builder = new NetStreamBuilder<int, TestMessage>(cfg =>
+                {
+                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
+                    cfg.BootstrapServers = "localhost:9092";
+                });
+
+                var builder2 = new NetStreamBuilder<int, TestMessage>(cfg =>
                 {
                     cfg.ConsumerGroup = Guid.NewGuid().ToString();
                     cfg.BootstrapServers = "localhost:9092";
                 });
 
                 var _stream1 = builder
-                    .Stream<int, TestMessage>(_sourceTopic)
+                    .Stream(_sourceTopic)
                     .Transform(context => context.Message)
                     .ToTopic<int, TestMessage>(_destinationTopic)
+                    .Build()
                     .StartAsync(CancellationToken.None);
 
-                var stream2 = builder
-                    .Stream<int, TestMessage>(_destinationTopic)
+                var stream2 = builder2
+                    .Stream(_destinationTopic)
                     .Handle(context => _actualKey = context.Key)
+                    .Build()
                     .StartAsync(CancellationToken.None);
             };
 

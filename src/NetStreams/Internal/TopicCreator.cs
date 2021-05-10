@@ -5,19 +5,15 @@ using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using NetStreams.Configuration;
 using NetStreams.Internal.Extensions;
-using NetStreams.Configuration.Internal;
 
 namespace NetStreams.Internal
 {
     internal class TopicCreator : ITopicCreator
     {
-        readonly NetStreamConfiguration _configuration;
         readonly Lazy<IAdminClient> _adminClient;
 
-        public TopicCreator(NetStreamConfiguration configuration)
+        public TopicCreator(INetStreamConfigurationContext configuration)
         {
-            _configuration = configuration;
-
             var adminConfig = new AdminClientConfig
             {
                 BootstrapServers = configuration.BootstrapServers,

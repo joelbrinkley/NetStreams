@@ -4,50 +4,47 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NetStreams.Configuration;
-using NetStreams.Internal.Exceptions;
 
 namespace NetStreams
 {
-    public class NetStream<TKey, TMessage> : INetStream<TKey, TMessage>
+    public class NetStream<TKey, TMessage> : INetStream
     {
-        private Guid Id = Guid.NewGuid();
-        ITransform<TKey, TMessage> _handler;
-        IConsumer<TKey, TMessage> _consumer;
-        IConsumerFactory _consumerFactory;
+        readonly IConsumePipeline<TKey, TMessage> _pipeline;
         readonly ITopicCreator _topicCreator;
-        string _topic;
-        Func<IConsumeContext<TKey, TMessage>, bool> _filterPredicate = (consumeContext) => true;
-        readonly NetStreamConfiguration _configuration;
+        readonly string _topic;
+        readonly NetStreamConfiguration<TKey, TMessage> _configuration;
+        readonly IConsumer<TKey, TMessage> _consumer;
         bool disposedValue;
-        Action<Exception> _onError = exception => { };
-        Task _streamTask;
+        Action<Exception> _onError { get; } = exception => { };
 
         public INetStreamConfigurationContext Configuration => _configuration;
 
         public NetStream(
             string topic,
-            NetStreamConfiguration configuration,
-            IConsumerFactory consumerFactory,
-            ITopicCreator topicCreator)
+            NetStreamConfiguration<TKey, TMessage> configuration,
+            IConsumer<TKey, TMessage> consumer,
+            ITopicCreator topicCreator,
+            IConsumePipeline<TKey, TMessage> pipeline = null, 
+            Action<Exception> onError = null)
         {
             _configuration = configuration;
             _topic = topic;
-            _consumerFactory = consumerFactory;
+            _consumer = consumer;
             _topicCreator = topicCreator;
+            _pipeline = pipeline ?? new ConsumePipeline<TKey, TMessage>();
+            if (onError != null) _onError = onError;
         }
 
-        public async Task StartAsync(CancellationToken token)
+        public Task StartAsync(CancellationToken token)
         {
             if (Configuration.TopicCreationEnabled)
             {
-                await _topicCreator.CreateAll(Configuration.TopicConfigurations);
+                _topicCreator.CreateAll(Configuration.TopicConfigurations).Wait(token);
             }
-
-            _consumer = _consumerFactory.Create<TKey, TMessage>(Configuration);
-
+            
             _consumer.Subscribe(_topic);
 
-            _streamTask = Task.Factory.StartNew(async () =>
+            return Task.Factory.StartNew(async () =>
             {
                 while (!token.IsCancellationRequested)
                 {
@@ -55,19 +52,11 @@ namespace NetStreams
                     {
                         var consumeResult = _consumer.Consume(100);
 
-                        var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult);
+                        var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
 
                         if (consumeResult != null)
                         {
-                            if (_filterPredicate(consumeContext))
-                            {
-                                if (_handler != null)
-                                {
-                                    await _handler.Handle(consumeContext).ConfigureAwait(false); 
-                                }
-                            }
-
-                            if (!Configuration.DeliveryMode.EnableAutoCommit) _consumer.Commit();
+                            await _pipeline.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
                         }
                     }
                     catch (Exception ex)
@@ -78,58 +67,6 @@ namespace NetStreams
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
         }
         
-        public INetStream<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handle)
-        {
-            Func<IConsumeContext<TKey, TMessage>, object> actionWrapper = (context) =>
-            {
-                handle(context);
-                return null; //TODO: figure out what to do with this default value
-            };
-
-            var handler = new ConsumeTransformer<TKey, TMessage>(actionWrapper, this);
-            _handler = handler;
-            return this;
-        }
-
-        public INetStream<TKey, TMessage> HandleAsync(Func<IConsumeContext<TKey, TMessage>, Task> handle)
-        {
-            Func<IConsumeContext<TKey, TMessage>, Task<object>> actionWrapper = async (context) =>
-            {
-                await handle(context);
-                return new None(); //TODO: figure out what to do with this default value
-            };
-
-            var handler = new AsyncConsumeTransformer<TKey, TMessage>(actionWrapper, this);
-            _handler = handler;
-            return this;
-        }
-
-        public ITransform<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
-        {
-            var handler = new ConsumeTransformer<TKey, TMessage>(handle, this);
-            _handler = handler;
-            return handler;
-        }
-
-        public ITransform<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
-        {
-            var handler = new AsyncConsumeTransformer<TKey, TMessage>(handle, this);
-            _handler = handler;
-            return handler;
-        }
-
-        public INetStream<TKey, TMessage> Filter(Func<IConsumeContext<TKey, TMessage>, bool> filterPredicate)
-        {
-            _filterPredicate = filterPredicate;
-            return this;
-        }
-
-        public INetStream<TKey, TMessage> OnError(Action<Exception> onError)
-        {
-            _onError = onError;
-            return this;
-        }
-
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -149,11 +86,11 @@ namespace NetStreams
         }
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-         ~NetStream()
-         {
-             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-             Dispose(disposing: false);
-         }
+        ~NetStream()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: false);
+        }
 
         public void Dispose()
         {

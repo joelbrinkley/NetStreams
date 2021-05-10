@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NetStreams.Internal
+﻿namespace NetStreams.Internal
 {
     public static class NetStreamConstants
     {

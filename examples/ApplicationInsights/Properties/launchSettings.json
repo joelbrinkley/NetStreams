@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "ApplicationInsights": {
+      "commandName": "Project"
+    }
+  }
+}

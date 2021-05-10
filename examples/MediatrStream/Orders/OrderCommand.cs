@@ -1,6 +1,4 @@
-﻿using NetStreams;
-
-namespace MediatrStream.Orders
+﻿namespace MediatrStream.Orders
 {
     public abstract class OrderCommand
     {

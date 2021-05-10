@@ -13,33 +13,33 @@ docker-compose up -d
 ## Create a stream and handle messages
 
 ``` .net
-  var builder = new NetStreamBuilder(
+  var stream = new NetStreamBuilder<Null, MyMessage>(
         cfg =>
         {
             cfg.BootstrapServers = "localhost:9092";
             cfg.ConsumerGroup = "MyConsumer";
-        });
-
-   builder.Stream<Null, MyMessage>(sourceTopic)
-         .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
-         .StartAsync(new CancellationToken());
+        })
+        .Stream(sourceTopic)
+        .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
+        .Build()
+        .StartAsync(new CancellationToken());
 ```
 
 ## Filter Messages to be handled
 
 
 ``` .net
-  var builder = new NetStreamBuilder(
+  var stream = new NetStreamBuilder<Null, MyMessage>(
         cfg =>
         {
             cfg.BootstrapServers = "localhost:9092";
             cfg.ConsumerGroup = "MyConsumer";
-        });
-
-  builder.Stream<Null, MyMessage>(sourceTopic)
-         .Filter(context => context.Message.Value % 3 == 0)
-         .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
-         .StartAsync(new CancellationToken());
+        })
+        .Stream(sourceTopic)
+        .Filter(context => context.Message.Value % 3 == 0)
+        .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
+        .Build()
+        .StartAsync(new CancellationToken());
 ```
 
 
@@ -48,17 +48,17 @@ docker-compose up -d
 This example leverages mediator to dispatch a command and then writes the output to the destination topic
 
 ```
-var builder = new NetStreamBuilder(
+var stream = new NetStreamBuilder<string, OrderCommand>(
     cfg =>
     {
         cfg.BootstrapServers = "localhost:9092";
         cfg.ConsumerGroup = "Orders.Consumer";
-    });
-
-builder.Stream<string, OrderCommand>(sourceTopic)
-       .TransformAsync(async context => await mediator.Send(context.Message))
-       .ToTopic<string, OrderEvent>("Order.Events", message => message.Key)
-       .StartAsync(CancellationToken.None);
+    })
+    .Stream(sourceTopic)
+    .TransformAsync(async context => await mediator.Send(context.Message))
+    .ToTopic<string, OrderEvent>("Order.Events", message => message.Key)
+    .Build()
+    .StartAsync(CancellationToken.None);
 ```
 
 
@@ -87,8 +87,6 @@ This example leverages mediator to dispatch a command and then writes the output
 
 ## Delivery Mode
 
-```  
-
 A delivery mode can be configured to control committing the offset.
 
 For more information regarding delivery modes, check out this [article](https://dzone.com/articles/kafka-clients-at-most-once-at-least-once-exactly-o)
@@ -98,6 +96,7 @@ Options:
 - At Least Once
 - Custom Delivery Mode
 
+```  
 var builder = new NetStreamBuilder(
         cfg =>
         {
@@ -107,4 +106,45 @@ var builder = new NetStreamBuilder(
             //cfg.DeliveryMode = DeliveryMode.At_Most_Once
             //cfg.DeliveryMode = new DeliveryMode(true, 10000);
         });
+```
+
+## Custom Pipeline Steps
+
+The pipeline for handling messages is extensible by adding custom pipeline steps.
+
+```
+  // extended
+  public class CustomPipelineStep<TKey, TMessage> : PipelineStep<TKey,TMessage>
+    {
+        ...
+    }
+
+    // Implement Execute. Send your result on 
+    public override async Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result = null)
+    {
+        // do logic pre next step
+        
+        var response = await Next.Execute(consumeContext, token, result);
+
+        // do logic post next step 
+    }
+     ...
+```
+
+This example logs application insights telemetry.
+
+```
+var stream = new NetStreamBuilder<Null, MyMessage>(
+                cfg =>
+                {
+                    cfg.BootstrapServers = "localhost:9092";
+                    cfg.ConsumerGroup = "AppInsightsExample.Consumer";
+                    cfg.PipelineSteps
+                        .Add(new ApplicationInsightsPipelineStep<TKey, TMessage>(GetTelemetryClient()));
+                })
+                .Stream(sourceTopic)
+                .Filter(context => context.Message.Value % 3 == 0)
+                .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
+                .Build()
+                .StartAsync(new CancellationToken());
 ```
