@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Confluent.Kafka;
 
-namespace NetStreams.Internal.Behaviors
+namespace NetStreams.Internal.Pipeline
 {
-    internal class AsyncConsumeTransformer<TKey, TMessage> : ConsumeBehavior<TKey, TMessage>
+    internal class AsyncConsumeTransformer<TKey, TMessage> : PipelineStep<TKey, TMessage>
     {
         readonly Func<IConsumeContext<TKey, TMessage>, Task<object>> _handle;
         readonly IStreamWriter _writer;
@@ -18,17 +17,17 @@ namespace NetStreams.Internal.Behaviors
             _writer = streamWriter;
         }
 
-        public override async Task Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
+        public override async Task<NetStreamResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, NetStreamResult result, CancellationToken token)
         {
             var response = await _handle(consumeContext);
 
-            consumeContext.Result = response;
+            result = new NetStreamResult(response);
 
-            await this.Next.Handle(consumeContext, token);
+            return await this.Next.Handle(consumeContext, result, token);
         }
     }
 
-    internal class ConsumeTransformer<TKey, TMessage> : ConsumeBehavior<TKey, TMessage>
+    internal class ConsumeTransformer<TKey, TMessage> : PipelineStep<TKey, TMessage>
     {
         readonly Func<IConsumeContext<TKey, TMessage>, object> _handle;
 
@@ -36,13 +35,13 @@ namespace NetStreams.Internal.Behaviors
         {
             _handle = handle;
         }
-        public override async Task Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
+        public override async Task<NetStreamResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, NetStreamResult result, CancellationToken token)
         {
             var response = _handle(consumeContext);
 
-            consumeContext.Result = response;
+           if(Next != null) return await Next.Handle(consumeContext, new NetStreamResult(response), token);
 
-           if(Next != null) await Next.Handle(consumeContext, token);
+           return new NetStreamResult(response);
         }
     }
 }

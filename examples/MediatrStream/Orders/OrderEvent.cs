@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using NetStreams;
 
 namespace MediatrStream.Orders
 {

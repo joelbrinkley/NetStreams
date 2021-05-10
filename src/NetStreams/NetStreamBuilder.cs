@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Confluent.Kafka;
 using NetStreams.Configuration;
 using NetStreams.Internal;
-using NetStreams.Internal.Behaviors;
+using NetStreams.Internal.Pipeline;
 
 namespace NetStreams
 {
     public class NetStreamBuilder<TKey, TMessage> : INetStreamBuilder<TKey, TMessage>
     {
-        readonly NetStreamConfiguration _configurationContext = new NetStreamConfiguration();
+        readonly NetStreamConfiguration<TKey, TMessage> _configurationContext = new NetStreamConfiguration<TKey, TMessage>();
         public INetStreamConfigurationContext Configuration => _configurationContext;
 
         readonly IConsumeProcessor<TKey, TMessage> _processor = new ConsumeProcessor<TKey, TMessage>();
@@ -17,7 +16,7 @@ namespace NetStreams
         IStreamWriter _writer;
         Action<Exception> _onError;
 
-        public NetStreamBuilder(Action<INetStreamConfigurationBuilderContext> setup)
+        public NetStreamBuilder(Action<INetStreamConfigurationBuilderContext<TKey, TMessage>> setup)
         {
             setup(_configurationContext);
         }
@@ -31,9 +30,14 @@ namespace NetStreams
         public INetStream Build()
         {
             var consumer = new ConsumerFactory().Create<TKey, TMessage>(_configurationContext);
+            
+            foreach (var step in _configurationContext.PipelineSteps)
+            {
+                _processor.PrependStep(step);
+            }
 
-            if (!_configurationContext.DeliveryMode.EnableAutoCommit) 
-                _processor.AddFirstBehavior(new ConsumerCommitBehavior<TKey, TMessage>(consumer));
+            if (!_configurationContext.DeliveryMode.EnableAutoCommit)
+                _processor.PrependStep(new ConsumerCommitBehavior<TKey, TMessage>(consumer));
 
             return new NetStream<TKey, TMessage>(_consumerTopic,
                 _configurationContext,
@@ -50,7 +54,7 @@ namespace NetStreams
                 return null; //TODO: figure out what to do with this default value
             };
 
-            _processor.AddBehavior(new ConsumeTransformer<TKey, TMessage>(actionWrapper));
+            _processor.AppendStep(new ConsumeTransformer<TKey, TMessage>(actionWrapper));
 
             return this;
         }
@@ -63,7 +67,7 @@ namespace NetStreams
                 return null; //TODO: figure out what to do with this default value
             };
 
-            _processor.AddBehavior(new AsyncConsumeTransformer<TKey, TMessage>(actionWrapper, _writer));
+            _processor.AppendStep(new AsyncConsumeTransformer<TKey, TMessage>(actionWrapper, _writer));
 
             return this;
         }
@@ -74,26 +78,26 @@ namespace NetStreams
 
             var writer = new KafkaTopicWriter<TResponseKey, TResponseMessage>(producer, resolveKey);
 
-           _processor.AddBehavior(new WriteOutputToKafkaBehavior<TKey, TMessage>(writer));
+           _processor.AppendStep(new WriteOutputToKafkaBehavior<TKey, TMessage>(writer));
 
            return this;
         }
 
         public INetStreamBuilder<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handle)
         {
-            _processor.AddBehavior(new ConsumeTransformer<TKey, TMessage>(handle));
+            _processor.AppendStep(new ConsumeTransformer<TKey, TMessage>(handle));
             return this;
         }
 
         public INetStreamBuilder<TKey, TMessage> TransformAsync(Func<IConsumeContext<TKey, TMessage>, Task<object>> handle)
         {
-            _processor.AddBehavior(new AsyncConsumeTransformer<TKey, TMessage>(handle, _writer));
+            _processor.AppendStep(new AsyncConsumeTransformer<TKey, TMessage>(handle, _writer));
             return this;
         }
 
         public INetStreamBuilder<TKey, TMessage> Filter(Func<IConsumeContext<TKey, TMessage>, bool> filterPredicate)
         {
-            _processor.AddBehavior(new FilterBehavior<TKey, TMessage>(filterPredicate));
+            _processor.AppendStep(new Filter<TKey, TMessage>(filterPredicate));
             return this;
         }
         public INetStreamBuilder<TKey, TMessage> OnError(Action<Exception> onError)
@@ -102,9 +106,9 @@ namespace NetStreams
             return this;
         }
 
-        public INetStreamBuilder<TKey, TMessage> AddBehavior(ConsumeBehavior<TKey, TMessage> behavior)
+        public INetStreamBuilder<TKey, TMessage> AddPipelineStep(PipelineStep<TKey, TMessage> behavior)
         {
-            _processor.AddBehavior(behavior);
+            _processor.AppendStep(behavior);
             return this;
         }
 

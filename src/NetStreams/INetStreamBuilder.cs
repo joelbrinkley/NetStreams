@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using NetStreams.Configuration;
-using NetStreams.Internal.Behaviors;
 
 namespace NetStreams
 {
@@ -16,7 +15,7 @@ namespace NetStreams
         INetStreamBuilder<TKey, TMessage> HandleAsync(Func<IConsumeContext<TKey, TMessage>, Task> handleTask);
         INetStreamBuilder<TKey, TMessage> ToTopic<TResponseKey, TResponseMessage>(string topic, Func<TResponseMessage, TResponseKey> resolveKey = null);
         INetStreamBuilder<TKey, TMessage> OnError(Action<Exception> onError);
-        INetStreamBuilder<TKey, TMessage> AddBehavior(ConsumeBehavior<TKey, TMessage> behavior);
+        INetStreamBuilder<TKey, TMessage> AddPipelineStep(PipelineStep<TKey, TMessage> behavior);
     }
 
     public interface INetStreamBuilder

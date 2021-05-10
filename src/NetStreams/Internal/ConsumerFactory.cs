@@ -1,6 +1,5 @@
 ﻿using Confluent.Kafka;
 using NetStreams.Configuration;
-using NetStreams.Configuration.Internal;
 using NetStreams.Serialization;
 
 namespace NetStreams.Internal

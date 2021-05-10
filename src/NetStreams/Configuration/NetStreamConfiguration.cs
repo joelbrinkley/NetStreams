@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace NetStreams.Configuration
 {
-    public class NetStreamConfiguration : INetStreamConfigurationContext, INetStreamConfigurationBuilderContext
+    public class NetStreamConfiguration<TKey, TMessage> : INetStreamConfigurationContext, INetStreamConfigurationBuilderContext<TKey, TMessage>
     {
         public DeliveryMode DeliveryMode { get; set; } = DeliveryMode.At_Least_Once;
         public string BootstrapServers { get; set; }
@@ -16,6 +16,9 @@ namespace NetStreams.Configuration
         public string SslKeyLocation { get; set; }
         public string SslKeyPassword { get; set; }
 
+        public List<PipelineStep<TKey, TMessage>> PipelineSteps { get; set; } =
+            new List<PipelineStep<TKey, TMessage>>();
+
         public INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg)
         {
             TopicCreationEnabled = true;
@@ -25,7 +28,6 @@ namespace NetStreams.Configuration
             return this;
         }
     }
-
     public class TopicConfiguration : ITopicConfiguration
     {
         public string Name { get; set; }
@@ -42,7 +44,7 @@ namespace NetStreams.Configuration
         short ReplicationFactor { get; set; }
     }
 
-    public interface INetStreamConfigurationBuilderContext
+    public interface INetStreamConfigurationBuilderContext<TKey, TMessage>
     {
         string ConsumerGroup { get; set; }
         string BootstrapServers { get; set; }
@@ -52,6 +54,7 @@ namespace NetStreams.Configuration
         string SslCaLocation { get; set; }
         string SslKeyLocation { get; set; }
         string SslKeyPassword { get; set; }
+        List<PipelineStep<TKey, TMessage>> PipelineSteps { get; }
 
         INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg);
     }

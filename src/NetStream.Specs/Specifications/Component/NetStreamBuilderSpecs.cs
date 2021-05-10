@@ -1,9 +1,6 @@
 ﻿using System;
-using Confluent.Kafka;
-using ExpectedObjects;
 using Machine.Specifications;
 using NetStreams.Configuration;
-using NetStreams.Configuration.Internal;
 using NetStreams.Specs.Infrastructure.Models;
 
 namespace NetStreams.Specs.Specifications.Component
@@ -83,7 +80,7 @@ namespace NetStreams.Specs.Specifications.Component
         class when_configuring_an_at_most_once_stream
         {
             static INetStream _stream;
-            static Action<INetStreamConfigurationBuilderContext> _configure;
+            static Action<INetStreamConfigurationBuilderContext<string, TestMessage>> _configure;
 
             Establish context = () =>
             {
@@ -94,7 +91,7 @@ namespace NetStreams.Specs.Specifications.Component
                     cfg.DeliveryMode = DeliveryMode.At_Most_Once;
                 };
 
-                var config = new NetStreamConfiguration();
+                var config = new NetStreamConfiguration<string, TestMessage>();
 
                 _configure(config);
             };
@@ -112,7 +109,7 @@ namespace NetStreams.Specs.Specifications.Component
         class when_configuring_an_at_least_once_stream
         {
             static INetStream _stream;
-            static Action<INetStreamConfigurationBuilderContext> _configure;
+            static Action<INetStreamConfigurationBuilderContext<string, TestMessage>> _configure;
 
             Establish context = () =>
             {
@@ -123,7 +120,7 @@ namespace NetStreams.Specs.Specifications.Component
                     cfg.DeliveryMode = DeliveryMode.At_Least_Once;
                 };
 
-                var config = new NetStreamConfiguration();
+                var config = new NetStreamConfiguration<string, TestMessage>();
 
                 _configure(config);
             };
@@ -138,7 +135,7 @@ namespace NetStreams.Specs.Specifications.Component
         class when_configuring_a_custom_delivery_mode
         {
             static INetStream _stream;
-            static Action<INetStreamConfigurationBuilderContext> _configure;
+            static Action<INetStreamConfigurationBuilderContext<string, TestMessage>> _configure;
 
             Establish context = () =>
             {
@@ -149,7 +146,7 @@ namespace NetStreams.Specs.Specifications.Component
                     cfg.DeliveryMode = new DeliveryMode {EnableAutoCommit = false, AutoCommitIntervalMs = 10000};
                 };
 
-                var config = new NetStreamConfiguration();
+                var config = new NetStreamConfiguration<string, TestMessage>();
 
                 _configure(config);
             };

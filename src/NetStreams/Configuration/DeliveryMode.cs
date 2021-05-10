@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NetStreams.Configuration
+﻿namespace NetStreams.Configuration
 {
     public class DeliveryMode
     {

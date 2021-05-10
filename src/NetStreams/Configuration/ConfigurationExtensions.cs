@@ -1,7 +1,7 @@
-﻿using Confluent.Kafka;
-using System;
+﻿using System;
+using Confluent.Kafka;
 
-namespace NetStreams.Configuration.Internal
+namespace NetStreams.Configuration
 {
     public static class ConfigurationExtensions
     {

@@ -1,5 +1,4 @@
 ﻿using Confluent.Kafka;
-using NetStreams.Internal.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Linq;

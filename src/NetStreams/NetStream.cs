@@ -4,7 +4,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NetStreams.Configuration;
-using NetStreams.Internal.Behaviors;
 
 namespace NetStreams
 {
@@ -13,7 +12,7 @@ namespace NetStreams
         readonly IConsumeProcessor<TKey, TMessage> _processor;
         readonly ITopicCreator _topicCreator;
         readonly string _topic;
-        readonly NetStreamConfiguration _configuration;
+        readonly NetStreamConfiguration<TKey, TMessage> _configuration;
         readonly IConsumer<TKey, TMessage> _consumer;
         bool disposedValue;
         public Action<Exception> OnError { get; set; } = exception => { };
@@ -23,7 +22,7 @@ namespace NetStreams
 
         public NetStream(
             string topic,
-            NetStreamConfiguration configuration,
+            NetStreamConfiguration<TKey, TMessage> configuration,
             IConsumer<TKey, TMessage> consumer,
             ITopicCreator topicCreator,
             IConsumeProcessor<TKey, TMessage> processor = null)
@@ -35,16 +34,16 @@ namespace NetStreams
             _processor = processor ?? new ConsumeProcessor<TKey, TMessage>();
         }
 
-        public async Task StartAsync(CancellationToken token)
+        public Task StartAsync(CancellationToken token)
         {
             if (Configuration.TopicCreationEnabled)
             {
-                await _topicCreator.CreateAll(Configuration.TopicConfigurations);
+                _topicCreator.CreateAll(Configuration.TopicConfigurations).Wait(token);
             }
             
             _consumer.Subscribe(_topic);
 
-            _streamTask = Task.Factory.StartNew(async () =>
+            return Task.Factory.StartNew(async () =>
             {
                 while (!token.IsCancellationRequested)
                 {
@@ -52,7 +51,7 @@ namespace NetStreams
                     {
                         var consumeResult = _consumer.Consume(100);
 
-                        var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult);
+                        var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
 
                         if (consumeResult != null)
                         {

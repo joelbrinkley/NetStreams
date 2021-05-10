@@ -4,6 +4,10 @@
     {
         TKey Key { get; }
         TMessage Message { get; }
-        object Result { get; set; }
+        string TopicName { get; }
+        int Partition { get; }
+        long Offset { get; }
+        long Lag { get; }
+        string ConsumeGroup { get;  }
     }
 }

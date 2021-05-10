@@ -2,31 +2,49 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Extensions.Configuration;
 using NetStreams;
 using NetStreams.Serialization;
+using NetStreams.ApplicationInsights;
 
-namespace AppInsights
+namespace ApplicationInsights
 {
     class Program
     {
+        public class MyMessage
+        {
+            public int Value { get; set; }
+
+        }
         static void Main(string[] args)
         {
-            var sourceTopic = "BasicStream.Source";
+            var sourceTopic = "AppInsightsExample.Source";
 
-            var builder = new NetStreamBuilder<Null, MyMessage>(
+            var appsettings = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .AddUserSecrets<Program>()
+                .Build();
+
+            TelemetryConfiguration configuration = TelemetryConfiguration.CreateDefault();
+            configuration.InstrumentationKey = appsettings["ApplicationInsights:InstrumentationKey"].ToString();
+
+            var telemetryClient = new TelemetryClient(configuration);
+
+            var startTask = new NetStreamBuilder<Null, MyMessage>(
                 cfg =>
                 {
                     cfg.BootstrapServers = "localhost:9092";
-                    cfg.ConsumerGroup = "BasicStream.Consumer";
+                    cfg.ConsumerGroup = "AppInsightsExample.Consumer";
                     cfg.AddTopicConfiguration(cfg =>
                     {
                         cfg.Name = sourceTopic;
                     });
 
-                    //cfg.AddBehavior(new ApplicationInsightsTelemetryBehavior());
-;                });
-
-            var startTask = builder.Stream(sourceTopic)
+                    cfg.UseApplicationInsights(telemetryClient);
+                })
+                .Stream(sourceTopic)
                 .Filter(context => context.Message.Value % 3 == 0)
                 .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
                 .Build()
@@ -44,11 +62,5 @@ namespace AppInsights
 
             Task.WaitAll(startTask);
         }
-    }
-
-    public class MyMessage
-    {
-        public int Value { get; set; }
-
     }
 }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
@@ -8,7 +6,6 @@ using ExpectedObjects;
 using Machine.Specifications;
 using Moq;
 using NetStreams.Configuration;
-using NetStreams.Internal;
 using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Mocks;
@@ -36,7 +33,7 @@ namespace NetStreams.Specs.Specifications.Component
 
                 var netStream = new NetStream<string, TestMessage>(
                     Guid.NewGuid().ToString(),
-                    new NetStreamConfiguration(),
+                    new NetStreamConfiguration<string, TestMessage>(),
                     mockConsumer.Object,
                     new NullTopicCreator());
 
@@ -72,7 +69,7 @@ namespace NetStreams.Specs.Specifications.Component
                     .Setup(x => x.Consume(Parameter.IsAny<int>()))
                     .Throws(exceptionToThrow);
 
-                var configuration = new NetStreamConfiguration
+                var configuration = new NetStreamConfiguration<string, TestMessage>
                 {
                     DeliveryMode = DeliveryMode.At_Least_Once
                 };

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace NetStreams.Specs.Infrastructure.Models
 {
-    public class ConsumeMockBehavior<TKey, TMessage> : ConsumeBehavior<TKey, TMessage>
+    public class ConsumeMockBehavior<TKey, TMessage> : PipelineStep<TKey, TMessage>
     {
         public readonly List<TMessage> List;
 
@@ -12,11 +12,11 @@ namespace NetStreams.Specs.Infrastructure.Models
         {
             List = list;
         }
-        public override async Task Handle(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token)
+        public override async Task<NetStreamResult> Handle(IConsumeContext<TKey, TMessage> consumeContext, NetStreamResult result, CancellationToken token)
         {
             List.Add(consumeContext.Message);
 
-            await Next.Handle(consumeContext, token);
+            return await Next.Handle(consumeContext, result, token);
         }
     }
 }

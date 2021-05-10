@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Confluent.Kafka;
 
 namespace NetStreams.Configuration
 {

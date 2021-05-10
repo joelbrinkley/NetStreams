@@ -1,5 +1,4 @@
 ﻿using System;
-using NetStreams.Internal.Exceptions;
 using System.Threading.Tasks;
 
 namespace NetStreams.Internal
