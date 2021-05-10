@@ -15,7 +15,7 @@ namespace NetStreams.Internal
             }
             else
             {
-                _head.Next = step;
+                GetLast().Next = step;
             }
         }
 
@@ -29,6 +29,18 @@ namespace NetStreams.Internal
             var currentHead = _head;
             _head = step;
             _head.Next = currentHead;
+        }
+
+        private PipelineStep<TKey, TMessage> GetLast()
+        {
+            var current = _head;
+
+            while (current.Next != null)
+            {
+                current = current.Next;
+            }
+
+            return current;
         }
     }
 }

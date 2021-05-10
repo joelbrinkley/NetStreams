@@ -15,7 +15,6 @@ namespace NetStreams
         INetStreamBuilder<TKey, TMessage> HandleAsync(Func<IConsumeContext<TKey, TMessage>, Task> handleTask);
         INetStreamBuilder<TKey, TMessage> ToTopic<TResponseKey, TResponseMessage>(string topic, Func<TResponseMessage, TResponseKey> resolveKey = null);
         INetStreamBuilder<TKey, TMessage> OnError(Action<Exception> onError);
-        INetStreamBuilder<TKey, TMessage> AddPipelineStep(PipelineStep<TKey, TMessage> behavior);
     }
 
     public interface INetStreamBuilder
