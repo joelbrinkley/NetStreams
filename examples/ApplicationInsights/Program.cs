@@ -59,7 +59,7 @@ namespace ApplicationInsights
                 producer.ProduceAsync(sourceTopic, new Message<Null, MyMessage> { Value = message });
             }
 
-            Task.WaitAll(startTask);
+            Task.WaitAll(stream);
         }
     }
 }
