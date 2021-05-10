@@ -24,8 +24,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
             Establish context = () =>
             {
-                new TopicService().CreateDefaultTopic(_sourceTopic);
-                new TopicService().CreateDefaultTopic(_destinationTopic);
+                new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
                 _message = new TestMessage() { Description = "Hello World" };
 
@@ -69,24 +68,12 @@ namespace NetStreams.Specs.Specifications.Integration
 
             Establish context = () =>
             {
-                new TopicService().CreateDefaultTopic(_sourceTopic);
-                new TopicService().CreateDefaultTopic(_destinationTopic);
+                new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
                 _message = new TestMessage() { Description = "Hello World" };
 
                 _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
 
-                var builder = new NetStreamBuilder<string, TestMessage>(cfg =>
-                {
-                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
-                    cfg.BootstrapServers = "localhost:9092";
-                });
-
-                var builder2 = new NetStreamBuilder<string, TestEvent>(cfg =>
-                {
-                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
-                    cfg.BootstrapServers = "localhost:9092";
-                });
 
                 var testEvent = new TestEvent()
                 {
@@ -95,14 +82,14 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _expectedMessages.Add(testEvent);
 
-                builder
+                DefaultBuilder.New<string, TestMessage>()
                     .Stream(_sourceTopic)
                     .TransformAsync(async context => await Task.Run(() => new TestEvent()))
                     .ToTopic<string, TestEvent>(_destinationTopic, message => message.Key)
                     .Build()
                     .StartAsync(CancellationToken.None);
 
-                builder2
+                DefaultBuilder.New<string, TestEvent>()
                     .Stream(_destinationTopic)
                     .Handle(context => _actualMessages.Add(context.Message))
                     .Build()
@@ -125,8 +112,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
             private Establish context = () =>
             {
-                new TopicService().CreateDefaultTopic(_sourceTopic);
-                new TopicService().CreateDefaultTopic(_destinationTopic);
+                new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
                 _message = new TestMessage() { Description = "Hello World" };
 
@@ -137,12 +123,7 @@ namespace NetStreams.Specs.Specifications.Integration
                     cfg.ConsumerGroup = Guid.NewGuid().ToString();
                     cfg.BootstrapServers = "localhost:9092";
                 });
-
-                var testEvent = new TestEvent()
-                {
-                    Description = $"Handled Message with id {_message.Id}"
-                };
-
+                
                 builder
                     .Stream(_sourceTopic)
                     .HandleAsync(async context => await Task.Run(() => _wasHandled = true))
@@ -166,8 +147,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
             Establish context = () =>
             {
-                new TopicService().CreateDefaultTopic(_sourceTopic);
-                new TopicService().CreateDefaultTopic(_destinationTopic);
+                new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
                 _message = new TestMessage() { Description = "Hello World" };
 

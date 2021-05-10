@@ -22,13 +22,12 @@ namespace ApplicationInsights
         {
             var sourceTopic = "AppInsightsExample.Source";
 
-            var appsettings = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
+            var secrets = new ConfigurationBuilder()
                 .AddUserSecrets<Program>()
                 .Build();
 
             TelemetryConfiguration configuration = TelemetryConfiguration.CreateDefault();
-            configuration.InstrumentationKey = appsettings["ApplicationInsights:InstrumentationKey"].ToString();
+            configuration.InstrumentationKey = secrets["ApplicationInsights:InstrumentationKey"].ToString();
 
             var telemetryClient = new TelemetryClient(configuration);
 

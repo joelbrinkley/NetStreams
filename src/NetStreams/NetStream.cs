@@ -65,7 +65,6 @@ namespace NetStreams
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
         }
         
-
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)

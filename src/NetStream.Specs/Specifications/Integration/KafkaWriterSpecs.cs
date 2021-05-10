@@ -21,33 +21,20 @@ namespace NetStreams.Specs.Specifications.Integration
 
             Establish context = () =>
             {
-                new TopicService().CreateDefaultTopic(_sourceTopic);
-                new TopicService().CreateDefaultTopic(_destinationTopic);
+                new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
                 _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
 
                 _message = new TestMessage { Description = "Hello World" };
 
-                var builder = new NetStreamBuilder<string, TestMessage>(cfg =>
-                {
-                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
-                    cfg.BootstrapServers = "localhost:9092";
-                });
-
-                var builder2 = new NetStreamBuilder<string, TestMessage>(cfg =>
-                {
-                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
-                    cfg.BootstrapServers = "localhost:9092";
-                });
-
-                var _stream1 = builder
+               DefaultBuilder.New<string, TestMessage>()
                     .Stream(_sourceTopic)
                     .Transform(context => context.Message)
                     .ToTopic<string, TestMessage>(_destinationTopic, message => message.Id)
                     .Build()
                     .StartAsync(CancellationToken.None);
 
-                var stream2 = builder2
+               DefaultBuilder.New<string, TestEvent>()
                     .Stream(_destinationTopic)
                     .Handle(context => _actualKey = context.Key)
                     .Build()
@@ -69,8 +56,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
             Establish context = () =>
             {
-                new TopicService().CreateDefaultTopic(_sourceTopic);
-                new TopicService().CreateDefaultTopic(_destinationTopic);
+                new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
                 _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
 
