@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetStreams.Internal
+namespace NetStreams
 {
     public class ConsumePipeline<TKey, TMessage> : IConsumePipeline<TKey, TMessage>
     {
