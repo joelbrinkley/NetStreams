@@ -21,6 +21,7 @@ namespace SerilogExample
             var sourceTopic = "Logging.Source";
 
             var logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
                 .WriteTo.Console()
                 .CreateLogger();
 

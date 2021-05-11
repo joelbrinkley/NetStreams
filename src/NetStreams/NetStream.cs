@@ -62,7 +62,9 @@ namespace NetStreams
 
                         if (consumeResult != null)
                         {
+                            _log.Debug($"Begin consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
                             await _pipeline.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
+                            _log.Debug($"Finished consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
                         }
                     }
                     catch (Exception ex)
