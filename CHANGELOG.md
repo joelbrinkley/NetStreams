@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-rc.4 (2021-05-11)
+
+
+### Features
+
+* Add the ability to add custom logging ([#34](https://github.com/joelbrinkley/NetStreams/issues/34)) ([2e33eec](https://github.com/joelbrinkley/NetStreams/commit/2e33eec34a62c9d103b4c4ce6c99695bc63e75ef))
+
 ## 2.0.0-rc.3 (2021-05-11)
 
 ## 2.0.0-rc.2 (2021-05-11)
