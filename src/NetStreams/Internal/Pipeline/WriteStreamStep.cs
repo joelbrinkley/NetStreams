@@ -19,7 +19,7 @@ namespace NetStreams.Internal.Pipeline
                 await _writer.WriteAsync(result.Message);
             }
 
-            return result;
+            return await base.Next.Execute(consumeContext, token, result);
         }
     }
 }

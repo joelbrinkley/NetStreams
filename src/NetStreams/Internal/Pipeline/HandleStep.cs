@@ -17,7 +17,7 @@ namespace NetStreams.Internal.Pipeline
         {
             await _handle(consumeContext);
 
-            return await this.Next.Execute(consumeContext, token, new NetStreamResult(null));
+            return await this.Next.Execute(consumeContext, token, result);
         }
     }
 
@@ -29,13 +29,11 @@ namespace NetStreams.Internal.Pipeline
         {
             _handle = handle;
         }
-        public override async Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result)
+        public override async Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result = null)
         {
             _handle(consumeContext);
 
-            if (Next != null) return await Next.Execute(consumeContext, token, new NetStreamResult(null));
-
-            return new NetStreamResult(null);
+            return await base.Next.Execute(consumeContext, token, result);
         }
     }
 }
