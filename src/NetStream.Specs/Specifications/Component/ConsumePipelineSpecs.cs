@@ -22,7 +22,7 @@ namespace NetStreams.Specs.Specifications.Component
             static TestHandleStep<string, string> _handle2;
             static TestHandleStep<string, string> _handle3;
 
-            private Establish context = () =>
+            Establish context = () =>
             {
                 _pipeline = new ConsumePipeline<string, string>();
                 _handle1 = new TestHandleStep<string, string>("Handle1", context => _log += "Handle1 Succeeded; ");
@@ -34,10 +34,10 @@ namespace NetStreams.Specs.Specifications.Component
 
             Because of = () => _pipeline.AppendStep(_handle3);
 
-            private It should_have_two_after_one = () =>
+            It should_have_two_after_one = () =>
                 ((TestHandleStep<string, string>)_handle1.Next).Name.ShouldEqual("Handle2");
 
-            private It should_have_three_after_two = () =>
+            It should_have_three_after_two = () =>
                 ((TestHandleStep<string, string>)_handle2.Next).Name.ShouldEqual("Handle3");
         }
 
@@ -50,7 +50,7 @@ namespace NetStreams.Specs.Specifications.Component
             static TestHandleStep<string, string> _handle2;
             static TestHandleStep<string, string> _handle3;
 
-            private Establish context = () =>
+            Establish context = () =>
             {
                 _pipeline = new ConsumePipeline<string, string>();
                 _handle1 = new TestHandleStep<string, string>("Handle1", context => _log += "Handle1 Succeeded; ");
@@ -62,10 +62,10 @@ namespace NetStreams.Specs.Specifications.Component
 
             Because of = () => _pipeline.PrependStep(_handle3);
 
-            private It should_have_one_after_two = () =>
+            It should_have_one_after_two = () =>
                 ((TestHandleStep<string, string>)_handle2.Next).Name.ShouldEqual("Handle1");
 
-            private It should_have_two_after_three = () =>
+            It should_have_two_after_three = () =>
                 ((TestHandleStep<string, string>)_handle3.Next).Name.ShouldEqual("Handle2");
         }
 
@@ -78,7 +78,7 @@ namespace NetStreams.Specs.Specifications.Component
             static TestHandleStep<string, string> _handle2;
             static TestHandleStep<string, string> _handle3;
 
-            private Establish context = () =>
+            Establish context = () =>
             {
                 _pipeline = new ConsumePipeline<string, string>();
                 _handle1 = new TestHandleStep<string, string>("Handle1", context => _log += "Handle1 Succeeded; ");
@@ -89,9 +89,9 @@ namespace NetStreams.Specs.Specifications.Component
                 _pipeline.AppendStep(_handle3);
             };
 
-            private Because of = () => _pipeline.ExecuteAsync(new ConsumeContext<string, string>(null, null, null), CancellationToken.None).Wait();
+            Because of = () => _pipeline.ExecuteAsync(new ConsumeContext<string, string>(null, null, null), CancellationToken.None).Wait();
 
-            private It should_have_Handle2_in_the_run_log = () => _log.IndexOf("Handle2").ShouldBeGreaterThan(-1);
+            It should_have_Handle2_in_the_run_log = () => _log.IndexOf("Handle2").ShouldBeGreaterThan(-1);
         }
     }
 }
