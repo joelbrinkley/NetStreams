@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using NetStreams;
 using NetStreams.Serialization;
 using NetStreams.ApplicationInsights;
+using NetStreams.Logging;
 
 namespace ApplicationInsights
 {
@@ -39,6 +40,10 @@ namespace ApplicationInsights
                     cfg.AddTopicConfiguration(cfg =>
                     {
                         cfg.Name = sourceTopic;
+                    });
+                    cfg.ConfigureLogging(log =>
+                    {
+                        log.AddConsole();
                     });
 
                     cfg.UseApplicationInsights(telemetryClient);

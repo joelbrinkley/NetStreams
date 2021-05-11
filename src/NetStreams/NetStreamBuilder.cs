@@ -5,6 +5,7 @@ using Confluent.Kafka;
 using NetStreams.Configuration;
 using NetStreams.Internal;
 using NetStreams.Internal.Pipeline;
+using NetStreams.Logging;
 
 namespace NetStreams
 {
@@ -12,7 +13,7 @@ namespace NetStreams
     {
         readonly NetStreamConfiguration<TKey, TMessage> _configurationContext = new NetStreamConfiguration<TKey, TMessage>();
         public INetStreamConfigurationContext Configuration => _configurationContext;
-
+        public ILogger Logger => _configurationContext.Logger;
         readonly IConsumePipeline<TKey, TMessage> _pipeline = new ConsumePipeline<TKey, TMessage>();
         string _consumerTopic;
         Action<Exception> _onError;
