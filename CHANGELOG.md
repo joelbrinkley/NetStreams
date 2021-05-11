@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-rc.2 (2021-05-11)
+
+
+### Bug Fixes
+
+* push item onto stack ([5bbb9a6](https://github.com/joelbrinkley/NetStreams/commit/5bbb9a66d40c21b67f13614229d3841bb24045d0))
+
 ## 2.0.0-rc.1 (2021-05-11)
 
 
