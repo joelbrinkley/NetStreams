@@ -1,4 +1,4 @@
-﻿namespace NetStreams.Internal
+﻿namespace NetStreams
 {
     public static class NetStreamConstants
     {

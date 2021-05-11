@@ -5,6 +5,7 @@ using Confluent.Kafka;
 using NetStreams.Configuration;
 using NetStreams.Internal;
 using NetStreams.Internal.Pipeline;
+using NetStreams.Logging;
 
 namespace NetStreams
 {
@@ -12,7 +13,7 @@ namespace NetStreams
     {
         readonly NetStreamConfiguration<TKey, TMessage> _configurationContext = new NetStreamConfiguration<TKey, TMessage>();
         public INetStreamConfigurationContext Configuration => _configurationContext;
-
+        public ILog Log => _configurationContext.Log;
         readonly IConsumePipeline<TKey, TMessage> _pipeline = new ConsumePipeline<TKey, TMessage>();
         string _consumerTopic;
         Action<Exception> _onError;
@@ -37,7 +38,8 @@ namespace NetStreams
             return new NetStream<TKey, TMessage>(_consumerTopic,
                 _configurationContext,
                 consumer,
-                new TopicCreator(_configurationContext),
+                new TopicCreator(_configurationContext, _configurationContext.Log),
+                _configurationContext.Log,
                 _pipeline,
                 _onError);
         }
@@ -52,6 +54,8 @@ namespace NetStreams
 
             if (!_configurationContext.DeliveryMode.EnableAutoCommit)
                 _pipeline.PrependStep(new ConsumerCommitBehavior<TKey, TMessage>(consumer));
+
+            _pipeline.AppendStep(new NoOpStep<TKey, TMessage>());
         }
 
         public INetStreamBuilder<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handle)

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using NetStreams.Logging;
 
 namespace NetStreams.Configuration
 {
     public class NetStreamConfiguration<TKey, TMessage> : INetStreamConfigurationContext, INetStreamConfigurationBuilderContext<TKey, TMessage>
     {
+        public ILog Log { get; set; } = new LogContext();
         public DeliveryMode DeliveryMode { get; set; } = DeliveryMode.At_Least_Once;
         public string BootstrapServers { get; set; }
         public string ConsumerGroup { get; set; }
@@ -19,7 +21,15 @@ namespace NetStreams.Configuration
         public Stack<PipelineStep<TKey, TMessage>> PipelineSteps { get; set; } =
             new Stack<PipelineStep<TKey, TMessage>>();
 
-        public INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg)
+        public INetStreamConfigurationBuilderContext<TKey, TMessage> ConfigureLogging(Action<LogContext> cfg)
+        {
+            var loggingContext = new LogContext();
+            cfg(loggingContext);
+            Log = loggingContext;
+            return this;
+        }
+
+        public INetStreamConfigurationBuilderContext<TKey, TMessage> AddTopicConfiguration(Action<ITopicConfiguration> cfg)
         {
             TopicCreationEnabled = true;
             var topicConfig = new TopicConfiguration();
@@ -46,6 +56,7 @@ namespace NetStreams.Configuration
 
     public interface INetStreamConfigurationBuilderContext<TKey, TMessage>
     {
+        ILog Log { get; set; }
         string ConsumerGroup { get; set; }
         string BootstrapServers { get; set; }
         DeliveryMode DeliveryMode { get; set; }
@@ -56,6 +67,8 @@ namespace NetStreams.Configuration
         string SslKeyPassword { get; set; }
         Stack<PipelineStep<TKey, TMessage>> PipelineSteps { get; }
 
-        INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg);
+        INetStreamConfigurationBuilderContext<TKey, TMessage> AddTopicConfiguration(Action<ITopicConfiguration> cfg);
+
+        INetStreamConfigurationBuilderContext<TKey, TMessage> ConfigureLogging(Action<LogContext> cfg);
     }
 }

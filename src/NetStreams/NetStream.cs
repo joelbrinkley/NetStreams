@@ -4,6 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NetStreams.Configuration;
+using NetStreams.Logging;
 
 namespace NetStreams
 {
@@ -11,6 +12,7 @@ namespace NetStreams
     {
         readonly IConsumePipeline<TKey, TMessage> _pipeline;
         readonly ITopicCreator _topicCreator;
+        readonly ILog _log;
         readonly string _topic;
         readonly NetStreamConfiguration<TKey, TMessage> _configuration;
         readonly IConsumer<TKey, TMessage> _consumer;
@@ -24,6 +26,7 @@ namespace NetStreams
             NetStreamConfiguration<TKey, TMessage> configuration,
             IConsumer<TKey, TMessage> consumer,
             ITopicCreator topicCreator,
+            ILog log,
             IConsumePipeline<TKey, TMessage> pipeline = null, 
             Action<Exception> onError = null)
         {
@@ -31,12 +34,15 @@ namespace NetStreams
             _topic = topic;
             _consumer = consumer;
             _topicCreator = topicCreator;
+            _log = log;
             _pipeline = pipeline ?? new ConsumePipeline<TKey, TMessage>();
             if (onError != null) _onError = onError;
         }
 
         public Task StartAsync(CancellationToken token)
         {
+            _log.Information($"Starting stream for topic {_topic}");
+
             if (Configuration.TopicCreationEnabled)
             {
                 _topicCreator.CreateAll(Configuration.TopicConfigurations).Wait(token);
@@ -56,11 +62,14 @@ namespace NetStreams
 
                         if (consumeResult != null)
                         {
+                            _log.Debug($"Begin consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
                             await _pipeline.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
+                            _log.Debug($"Finished consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
                         }
                     }
                     catch (Exception ex)
                     {
+                        _log.Error(ex, $"An error occurred processing messages from topic {_topic}");
                         _onError(ex);
                     }
                 }

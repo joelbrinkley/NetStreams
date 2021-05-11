@@ -5,15 +5,18 @@ using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using NetStreams.Configuration;
 using NetStreams.Internal.Extensions;
+using NetStreams.Logging;
 
 namespace NetStreams.Internal
 {
     internal class TopicCreator : ITopicCreator
     {
+        readonly ILog _log;
         readonly Lazy<IAdminClient> _adminClient;
 
-        public TopicCreator(INetStreamConfigurationContext configuration)
+        public TopicCreator(INetStreamConfigurationContext configuration, ILog log)
         {
+            _log = log;
             var adminConfig = new AdminClientConfig
             {
                 BootstrapServers = configuration.BootstrapServers,
@@ -46,10 +49,11 @@ namespace NetStreams.Internal
                 try
                 {
                     await _adminClient.Value.CreateTopicsAsync(new[] { topicSpecification });
+                    _log.Information($"{topicConfig.Name} created.");
                 }
                 catch (CreateTopicsException ex)
                 {
-                    Console.WriteLine(ex);
+                    _log.Error(ex, "An unexpected exception occurred when creating topics.");
                 }
 
                 _adminClient.Value.EnsureTopicCreation(topicConfig.Name);

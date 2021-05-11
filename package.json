@@ -29,6 +29,7 @@
     "package": "npm-run-all package:*",
     "package:netstreams": "cross-env-shell globstar -- dotnet pack \"./src/**/NetStreams.csproj\" -c release -o dist --include-symbols /p:VersionPrefix=${npm_config_version_prefix:-${npm_package_version}} --version-suffix=${npm_config_version_suffix}",
     "package:appinsights": "cross-env-shell globstar -- dotnet pack \"./src/**/NetStreams.ApplicationInsights.csproj\" -c release -o dist --include-symbols /p:VersionPrefix=${npm_config_version_prefix:-${npm_package_version}} --version-suffix=${npm_config_version_suffix}",
+    "package:serilog": "cross-env-shell globstar -- dotnet pack \"./src/**/NetStreams.Serilog.csproj\" -c release -o dist --include-symbols /p:VersionPrefix=${npm_config_version_prefix:-${npm_package_version}} --version-suffix=${npm_config_version_suffix}",
     "publish:nuget": "globstar -- dotnet nuget push dist/*.nupkg --source ${npm_package_defaultPublishSource} --api-key ${npm_config_api_key}  --skip-duplicate",
     "publish:private": "cross-env-shell copyfiles --flat --error dist/*.nupkg ${APPDATA}/Packages/"
   },
