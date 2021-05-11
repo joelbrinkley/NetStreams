@@ -46,9 +46,7 @@ namespace SerilogExample
                 .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
                 .Build()
                 .StartAsync(new CancellationToken());
-
-
-
+            
             IProducer<Null, MyMessage> producer = new ProducerBuilder<Null, MyMessage>(new ProducerConfig() { BootstrapServers = "localhost:9092" })
                 .SetValueSerializer(new HeaderSerializationStrategy<MyMessage>())
                 .Build();

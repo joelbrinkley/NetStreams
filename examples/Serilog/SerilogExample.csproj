@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NetStreams.Microsoft.Logging\NetStreams.Serilog.csproj" />
+    <ProjectReference Include="..\..\src\NetStreams.Serilog\NetStreams.Serilog.csproj" />
     <ProjectReference Include="..\..\src\NetStreams\NetStreams.csproj" />
   </ItemGroup>
 
