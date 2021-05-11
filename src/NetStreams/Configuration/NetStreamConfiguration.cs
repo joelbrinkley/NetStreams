@@ -16,8 +16,8 @@ namespace NetStreams.Configuration
         public string SslKeyLocation { get; set; }
         public string SslKeyPassword { get; set; }
 
-        public List<PipelineStep<TKey, TMessage>> PipelineSteps { get; set; } =
-            new List<PipelineStep<TKey, TMessage>>();
+        public Stack<PipelineStep<TKey, TMessage>> PipelineSteps { get; set; } =
+            new Stack<PipelineStep<TKey, TMessage>>();
 
         public INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg)
         {
@@ -54,7 +54,7 @@ namespace NetStreams.Configuration
         string SslCaLocation { get; set; }
         string SslKeyLocation { get; set; }
         string SslKeyPassword { get; set; }
-        List<PipelineStep<TKey, TMessage>> PipelineSteps { get; }
+        Stack<PipelineStep<TKey, TMessage>> PipelineSteps { get; }
 
         INetStreamConfigurationContext AddTopicConfiguration(Action<ITopicConfiguration> cfg);
     }

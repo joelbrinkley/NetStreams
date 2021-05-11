@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Confluent.Kafka;
 using NetStreams.Configuration;
 using NetStreams.Internal;
 using NetStreams.Internal.Pipeline;
@@ -30,20 +32,26 @@ namespace NetStreams
         {
             var consumer = new ConsumerFactory().Create<TKey, TMessage>(_configurationContext);
 
-            foreach (var step in _configurationContext.PipelineSteps)
-            {
-                _pipeline.PrependStep(step);
-            }
-
-            if (!_configurationContext.DeliveryMode.EnableAutoCommit)
-                _pipeline.PrependStep(new ConsumerCommitBehavior<TKey, TMessage>(consumer));
+            BuildPipeline(consumer);
 
             return new NetStream<TKey, TMessage>(_consumerTopic,
                 _configurationContext,
                 consumer,
                 new TopicCreator(_configurationContext),
-                _pipeline, 
+                _pipeline,
                 _onError);
+        }
+
+        void BuildPipeline(IConsumer<TKey, TMessage> consumer)
+        {
+            while (_configurationContext.PipelineSteps.Any())
+            {
+                var step = _configurationContext.PipelineSteps.Pop();
+                _pipeline.PrependStep(step);
+            }
+
+            if (!_configurationContext.DeliveryMode.EnableAutoCommit)
+                _pipeline.PrependStep(new ConsumerCommitBehavior<TKey, TMessage>(consumer));
         }
 
         public INetStreamBuilder<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handle)
