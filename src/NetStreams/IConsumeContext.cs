@@ -1,13 +1,13 @@
-﻿namespace NetStreams
+﻿using System;
+
+namespace NetStreams
 {
-    public interface IConsumeContext<TKey, TMessage>
+    public interface IConsumeContext
     {
-        TKey Key { get; }
-        TMessage Message { get; }
-        string TopicName { get; }
+        string SourceTopic { get; }
         int Partition { get; }
         long Offset { get; }
-        long Lag { get; }
-        string ConsumeGroup { get;  }
+        Func<long> GetLag { get; }
+        string ConsumerGroup { get;  }
     }
 }

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using NetStreams.Logging;
 
 namespace NetStreams.Configuration
 {
     public interface INetStreamConfigurationContext
     {
+        ILog Log { get; }
         string BootstrapServers { get; }
         string ConsumerGroup { get; }
         List<ITopicConfiguration> TopicConfigurations { get; }

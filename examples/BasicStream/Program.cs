@@ -4,6 +4,7 @@ using NetStreams.Serialization;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NetStreams.Internal.Extensions;
 
 namespace BasicStream
 {
@@ -18,7 +19,7 @@ namespace BasicStream
         {
             var sourceTopic = "BasicStream.Source";
 
-            var builder = new NetStreamBuilder<Null, MyMessage>(
+            var builder = new NetStreamBuilder2<Null, MyMessage>(
                 cfg =>
                 {
                     cfg.BootstrapServers = "localhost:9092";
@@ -29,13 +30,11 @@ namespace BasicStream
                     });
                 });
 
-            var startTask = builder.Stream(sourceTopic)
-                                   .Filter(context => context.Message.Value % 3 == 0)
-                                   .Handle(context => Console.WriteLine($"Handling message value={context.Message.Value}"))
+            var startTask = builder.Stream()
+                                   .Filter((context, message) => message.Value % 3 == 0)
+                                   .Handle(async (context, message) => Console.WriteLine($"Handling message value={message.Value}"))
                                    .Build()
                                    .StartAsync(new CancellationToken());
-
-
 
             IProducer<Null, MyMessage> producer = new ProducerBuilder<Null, MyMessage>(new ProducerConfig() { BootstrapServers = "localhost:9092" })
                                                     .SetValueSerializer(new HeaderSerializationStrategy<MyMessage>())

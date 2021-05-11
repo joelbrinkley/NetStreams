@@ -14,9 +14,9 @@ namespace NetStreams.Internal
         readonly ILog _log;
         readonly Lazy<IAdminClient> _adminClient;
 
-        public TopicCreator(INetStreamConfigurationContext configuration, ILog log)
+        public TopicCreator(INetStreamConfigurationContext configuration)
         {
-            _log = log;
+            _log = configuration.Log;
             var adminConfig = new AdminClientConfig
             {
                 BootstrapServers = configuration.BootstrapServers,

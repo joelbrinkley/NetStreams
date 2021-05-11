@@ -1,26 +1,27 @@
-﻿using Confluent.Kafka;
+﻿using System;
+using System.Threading;
+using Confluent.Kafka;
 
 namespace NetStreams
 {
-    internal class ConsumeContext<TKey, TMessage> : IConsumeContext<TKey, TMessage>
+    public class ConsumeContext : IConsumeContext, ICancellationTokenCarrier
     {
-        readonly ConsumeResult<TKey, TMessage> _consumeResult;
-        readonly IConsumer<TKey, TMessage> _consumer;
+        public CancellationToken CancellationToken { get; }
+        public string ConsumerGroup { get; }
+        public string SourceTopic { get; }
+        public int Partition { get; }
+        public long Offset { get; }
+        public Func<long> GetLag { get; }
 
-        public ConsumeContext(ConsumeResult<TKey, TMessage> consumeResult, IConsumer<TKey, TMessage> consumer, string consumerGroup)
+        public ConsumeContext(CancellationToken cancellationToken, string consumerGroup, string sourceTopic, int partition, long offset, Func<long> getLag)
         {
-            _consumeResult = consumeResult;
-            _consumer = consumer;
-            ConsumeGroup = consumerGroup;
+            CancellationToken = cancellationToken;
+            ConsumerGroup = consumerGroup;
+            SourceTopic = sourceTopic;
+            Partition = partition;
+            Offset = offset;
+            GetLag = getLag;
         }
-
-        public string ConsumeGroup { get; }
-        public TMessage Message => _consumeResult.Message.Value;
-        public string TopicName => _consumeResult.Topic;
-        public int Partition => _consumeResult.TopicPartition.Partition.Value;
-        public long Offset => _consumeResult.Offset.Value;
-        public long Lag => _consumer.GetWatermarkOffsets(_consumeResult.TopicPartition).High.Value - _consumeResult.TopicPartitionOffset.Offset.Value - 1;
-        public TKey Key => _consumeResult.Message.Key;
 
     }
 }
