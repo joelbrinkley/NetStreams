@@ -110,7 +110,7 @@ namespace NetStreams.Specs.Specifications.Integration
             static TestMessage _message;
             static bool _wasHandled = false;
 
-            private Establish context = () =>
+            Establish context = () =>
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
