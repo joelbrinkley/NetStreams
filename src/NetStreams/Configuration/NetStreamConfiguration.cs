@@ -6,7 +6,7 @@ namespace NetStreams.Configuration
 {
     public class NetStreamConfiguration<TKey, TMessage> : INetStreamConfigurationContext, INetStreamConfigurationBuilderContext<TKey, TMessage>
     {
-        public ILogger Logger { get; set; } = new LogContext();
+        public ILog Log { get; set; } = new LogContext();
         public DeliveryMode DeliveryMode { get; set; } = DeliveryMode.At_Least_Once;
         public string BootstrapServers { get; set; }
         public string ConsumerGroup { get; set; }
@@ -25,7 +25,7 @@ namespace NetStreams.Configuration
         {
             var loggingContext = new LogContext();
             cfg(loggingContext);
-            Logger = loggingContext;
+            Log = loggingContext;
             return this;
         }
 
@@ -56,7 +56,7 @@ namespace NetStreams.Configuration
 
     public interface INetStreamConfigurationBuilderContext<TKey, TMessage>
     {
-        ILogger Logger { get; set; }
+        ILog Log { get; set; }
         string ConsumerGroup { get; set; }
         string BootstrapServers { get; set; }
         DeliveryMode DeliveryMode { get; set; }

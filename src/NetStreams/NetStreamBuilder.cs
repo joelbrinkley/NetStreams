@@ -13,7 +13,7 @@ namespace NetStreams
     {
         readonly NetStreamConfiguration<TKey, TMessage> _configurationContext = new NetStreamConfiguration<TKey, TMessage>();
         public INetStreamConfigurationContext Configuration => _configurationContext;
-        public ILogger Logger => _configurationContext.Logger;
+        public ILog Log => _configurationContext.Log;
         readonly IConsumePipeline<TKey, TMessage> _pipeline = new ConsumePipeline<TKey, TMessage>();
         string _consumerTopic;
         Action<Exception> _onError;
@@ -38,7 +38,8 @@ namespace NetStreams
             return new NetStream<TKey, TMessage>(_consumerTopic,
                 _configurationContext,
                 consumer,
-                new TopicCreator(_configurationContext),
+                new TopicCreator(_configurationContext, _configurationContext.Log),
+                _configurationContext.Log,
                 _pipeline,
                 _onError);
         }

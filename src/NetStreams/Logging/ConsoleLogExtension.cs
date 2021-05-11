@@ -8,7 +8,7 @@ namespace NetStreams.Logging
     {
         public static void AddConsole(this LogContext logContext)
         {
-            logContext.AddLogger(new ConsoleLogger());
+            logContext.AddLogger(new ConsoleLog());
         }
     }
 }

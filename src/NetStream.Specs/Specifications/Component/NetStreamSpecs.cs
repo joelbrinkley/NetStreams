@@ -35,7 +35,8 @@ namespace NetStreams.Specs.Specifications.Component
                     Guid.NewGuid().ToString(),
                     new NetStreamConfiguration<string, TestMessage>(),
                     mockConsumer.Object,
-                    new NullTopicCreator());
+                    new NullTopicCreator(),
+                    new MockLog());
 
                 _startTask = netStream.StartAsync(_tokenSource.Token);
             };
@@ -79,6 +80,7 @@ namespace NetStreams.Specs.Specifications.Component
                     configuration,
                     _mockConsumer.Object,
                     new NullTopicCreator(),
+                    new MockLog(),
                     null,
                     ex =>
                     {

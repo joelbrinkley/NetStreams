@@ -12,16 +12,15 @@ namespace NetStreams.Specs.Specifications.Component
         [Subject("Logging")]
         class when_configuring_a_logger
         {
-            static INetStream _stream;
             static Action<INetStreamConfigurationBuilderContext<string, TestMessage>> _configure;
 
-            static MockLogger _mockLogger;
+            static MockLog _mockLog;
             static string _expectedMessage;
             static NetStreamConfiguration<string, TestMessage> _config;
 
             Establish context = () =>
             {
-                _mockLogger = new MockLogger();
+                _mockLog = new MockLog();
 
                 _configure = cfg =>
                 {
@@ -29,7 +28,7 @@ namespace NetStreams.Specs.Specifications.Component
                     cfg.ConsumerGroup = "consumergroup";
                     cfg.ConfigureLogging(logging =>
                     {
-                        logging.AddLogger(_mockLogger);
+                        logging.AddLogger(_mockLog);
                         logging.AddConsole();
                     });
                 };
@@ -41,9 +40,9 @@ namespace NetStreams.Specs.Specifications.Component
                 _expectedMessage = "TestLogMessage";
             };
 
-            Because of = () => _config.Logger.Write(_expectedMessage);
+            Because of = () => _config.Log.Information(_expectedMessage);
 
-            It should_write = () => _mockLogger.Messages.ShouldContain(_expectedMessage);
+            It should_write = () => _mockLog.Messages.ShouldContain(_expectedMessage);
         }
     }
 }
