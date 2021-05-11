@@ -13,7 +13,7 @@ namespace NetStreams.Internal.Pipeline
             _consumer = consumer;
         }
 
-        public override async Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result)
+        public override async Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result = null)
         {
             if (Next != null) return await Next.Execute(consumeContext, token, result);
 

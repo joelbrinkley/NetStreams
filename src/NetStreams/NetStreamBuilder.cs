@@ -54,6 +54,8 @@ namespace NetStreams
 
             if (!_configurationContext.DeliveryMode.EnableAutoCommit)
                 _pipeline.PrependStep(new ConsumerCommitBehavior<TKey, TMessage>(consumer));
+
+            _pipeline.AppendStep(new NoOpStep<TKey, TMessage>());
         }
 
         public INetStreamBuilder<TKey, TMessage> Handle(Action<IConsumeContext<TKey, TMessage>> handle)

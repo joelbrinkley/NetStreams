@@ -29,7 +29,7 @@ namespace NetStreams.Specs.Specifications.Component
                     cfg.ConfigureLogging(logging =>
                     {
                         logging.AddLogger(_mockLog);
-                        logging.AddConsole();
+                        logging.UseConsole();
                     });
                 };
 

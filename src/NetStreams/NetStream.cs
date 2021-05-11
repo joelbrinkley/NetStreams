@@ -41,7 +41,7 @@ namespace NetStreams
 
         public Task StartAsync(CancellationToken token)
         {
-            _log.Information($"Starting stream for topic ${_topic}");
+            _log.Information($"Starting stream for topic {_topic}");
 
             if (Configuration.TopicCreationEnabled)
             {
