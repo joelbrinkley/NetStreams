@@ -7,7 +7,7 @@ namespace NetStreams.Logging
 {
     public class LogContext : ILog
     {
-        public List<ILog> _loggers = new List<ILog>();
+        List<ILog> _loggers = new List<ILog>();
 
         public void AddLogger(ILog log)
         {

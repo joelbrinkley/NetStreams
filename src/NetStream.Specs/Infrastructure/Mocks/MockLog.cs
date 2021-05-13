@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Machine.Specifications;
 using NetStreams.Logging;
 
 namespace NetStreams.Specs.Infrastructure.Mocks
@@ -10,6 +11,11 @@ namespace NetStreams.Specs.Infrastructure.Mocks
     public class MockLog : ILog
     {
         public List<string> Messages { get; set; } = new List<string>();
+
+        public void ShouldContain(string message)
+        {
+            Messages.ShouldContain(message);
+        }
 
         public void Information(string message)
         {
