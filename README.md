@@ -148,3 +148,18 @@ var stream = new NetStreamBuilder<Null, MyMessage>(
                 .Build()
                 .StartAsync(new CancellationToken());
 ```
+
+
+# Malformed Messages
+
+By default, NetStreams will skil a malformed message and log the offset and partition that was skipped.  To turn this feature off, set the skip malformed messages property to false
+
+```
+new NetStreamBuilder<Null, MyMessage>(
+    cfg =>
+    {
+        cfg.BootstrapServers = "localhost:9092";
+        cfg.ConsumerGroup = "my-consumer";
+        cfg.ShouldSkipMalformedMessages = false;
+    })
+```
