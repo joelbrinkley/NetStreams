@@ -1,14 +1,14 @@
-﻿using Confluent.Kafka;
-using NetStreams.Internal;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Confluent.Kafka;
 using NetStreams.Configuration;
 using NetStreams.Logging;
 
-namespace NetStreams
-{
-    public class NetStream<TKey, TMessage> : INetStream
+namespace NetStreams.Internal
+{        
+
+    internal class NetStream<TKey, TMessage> : INetStream
     {
         readonly IConsumePipeline<TKey, TMessage> _pipeline;
         readonly ITopicCreator _topicCreator;

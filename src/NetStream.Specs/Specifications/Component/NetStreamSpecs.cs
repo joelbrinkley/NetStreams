@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
@@ -6,6 +7,7 @@ using ExpectedObjects;
 using Machine.Specifications;
 using Moq;
 using NetStreams.Configuration;
+using NetStreams.Internal;
 using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Mocks;

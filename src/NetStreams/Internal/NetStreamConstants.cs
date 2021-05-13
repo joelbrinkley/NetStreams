@@ -1,6 +1,6 @@
-﻿namespace NetStreams
+﻿namespace NetStreams.Internal
 {
-    public static class NetStreamConstants
+    internal static class NetStreamConstants
     {
         public static string HEADER_TYPE = "X-NETSTREAM-TYPE";
     }
