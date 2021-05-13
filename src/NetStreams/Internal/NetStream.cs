@@ -69,7 +69,7 @@ namespace NetStreams.Internal
                     }
                     catch (ConsumeException ce) when (ce.InnerException is MalformedMessageException && _configuration.ShouldSkipMalformedMessages)
                     {
-                        _log.Error(ce, $"A malformed message was encountered on topic { _topic}. Skipping message. Skipping offset {ce.ConsumerRecord.Offset} on partition {ce.ConsumerRecord.Partition}");
+                        _log.Error(ce, $"A malformed message was encountered on topic { _topic}. Skipping message. Skipping offset {ce.ConsumerRecord.Offset} on partition {ce.ConsumerRecord.Partition.Value}");
                         _consumer.Commit();
                     }
                     catch (Exception ex)

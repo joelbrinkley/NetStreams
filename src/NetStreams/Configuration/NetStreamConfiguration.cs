@@ -58,7 +58,6 @@ namespace NetStreams.Configuration
     public interface INetStreamConfigurationBuilderContext<TKey, TMessage>
     {
         bool ShouldSkipMalformedMessages { get; set; }
-        ILog Log { get; set; }
         string ConsumerGroup { get; set; }
         string BootstrapServers { get; set; }
         DeliveryMode DeliveryMode { get; set; }

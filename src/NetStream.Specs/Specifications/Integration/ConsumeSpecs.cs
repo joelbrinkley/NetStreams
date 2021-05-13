@@ -5,6 +5,7 @@ using ExpectedObjects;
 using Machine.Specifications;
 using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
+using NetStreams.Specs.Infrastructure.Mocks;
 using NetStreams.Specs.Infrastructure.Models;
 using NetStreams.Specs.Infrastructure.Services;
 
@@ -21,6 +22,9 @@ namespace NetStreams.Specs.Specifications.Integration
             static readonly List<TestMessage> _actualMessages = new();
             static TestMessage _expectedMessage;
             static TestProducerService<string, TestMessage> _testMessageProducer;
+            static MockLog _mockLogger;
+
+            static string _expectedLogMessage;
 
             Establish context = () =>
             {
@@ -31,13 +35,22 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 stringProducer.Produce(Guid.NewGuid().ToString(), "{ malformed }");
 
-                DefaultBuilder.New<string, TestMessage>()
+                _mockLogger = new MockLog();
+                new NetStreamBuilder<string, TestMessage>(cfg =>
+                    {
+                        cfg.BootstrapServers = "localhost:9092";
+                        cfg.ConsumerGroup = Guid.NewGuid().ToString();
+                        cfg.ConfigureLogging(logging => logging.AddLogger(_mockLogger));
+                    })
                     .Stream(_sourceTopic)
                     .ToTopic<string, TestMessage>(_destinationTopic)
                     .Build()
-                    .StartAsync(CancellationToken.None); ;
+                    .StartAsync(CancellationToken.None);
 
-                _expectedMessage = new TestMessage { Description = "hello" };
+                _expectedLogMessage =
+                    $"A malformed message was encountered on topic { _sourceTopic}. Skipping message. Skipping offset 0 on partition 0";
+
+                _expectedMessage = new TestMessage {Description = "hello"};
 
                 DefaultBuilder.New<string, TestMessage>()
                     .Stream(_destinationTopic)
@@ -46,9 +59,13 @@ namespace NetStreams.Specs.Specifications.Integration
                     .StartAsync(CancellationToken.None);
             };
 
-            Because of = () => _testMessageProducer.ProduceAsync(_expectedMessage.Id, _expectedMessage).BlockUntil(() => _actualMessages.Count == 1).Await();
+            Because of = () =>
+                _testMessageProducer.ProduceAsync(_expectedMessage.Id, _expectedMessage).BlockUntil(() => _actualMessages.Count == 1).Await();
 
-            It should_skip_malformed_message = () => _expectedMessage.ToExpectedObject().ShouldMatch(_actualMessages[0]);
+            It should_log_skip_message_information = () => _mockLogger.ShouldContain(_expectedLogMessage);
+
+            It should_skip_malformed_message =
+                () => _expectedMessage.ToExpectedObject().ShouldMatch(_actualMessages[0]);
         }
     }
 }
