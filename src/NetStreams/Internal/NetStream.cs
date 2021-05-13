@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using NetStreams.Configuration;
+using NetStreams.Internal.Exceptions;
 using NetStreams.Logging;
 
 namespace NetStreams.Internal
@@ -57,15 +58,19 @@ namespace NetStreams.Internal
                     try
                     {
                         var consumeResult = _consumer.Consume(100);
-
-                        var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
-
                         if (consumeResult != null)
                         {
+                            var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
+                            
                             _log.Debug($"Begin consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
                             await _pipeline.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
                             _log.Debug($"Finished consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
                         }
+                    }
+                    catch (ConsumeException ce) when (ce.InnerException is MalformedMessageException && _configuration.ShouldSkipMalformedMessages)
+                    {
+                        _log.Error(ce, $"A malformed message was encountered on topic { _topic}. Skipping message. Skipping offset {ce.ConsumerRecord.Offset} on partition {ce.ConsumerRecord.Partition}");
+                        _consumer.Commit();
                     }
                     catch (Exception ex)
                     {

@@ -17,6 +17,7 @@ namespace NetStreams.Configuration
         public string SslCaLocation { get; set; }
         public string SslKeyLocation { get; set; }
         public string SslKeyPassword { get; set; }
+        public bool ShouldSkipMalformedMessages { get; set; } = true;
 
         public Stack<PipelineStep<TKey, TMessage>> PipelineSteps { get; set; } =
             new Stack<PipelineStep<TKey, TMessage>>();
@@ -56,6 +57,7 @@ namespace NetStreams.Configuration
 
     public interface INetStreamConfigurationBuilderContext<TKey, TMessage>
     {
+        bool ShouldSkipMalformedMessages { get; set; }
         ILog Log { get; set; }
         string ConsumerGroup { get; set; }
         string BootstrapServers { get; set; }

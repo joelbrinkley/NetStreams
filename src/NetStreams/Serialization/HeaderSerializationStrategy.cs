@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Text;
 using NetStreams.Internal;
+using NetStreams.Internal.Exceptions;
 
 namespace NetStreams.Serialization
 {
@@ -11,19 +12,26 @@ namespace NetStreams.Serialization
     {
         public TType Deserialize(ReadOnlySpan<byte> data, bool isNull, SerializationContext context)
         {
-            var typeHeader = context.Headers.FirstOrDefault(c => c.Key == NetStreamConstants.HEADER_TYPE);
+            try
+            {
+                var typeHeader = context.Headers.FirstOrDefault(c => c.Key == NetStreamConstants.HEADER_TYPE);
 
-            var str = Encoding.UTF8.GetString(data.ToArray());
+                var str = Encoding.UTF8.GetString(data.ToArray());
 
-            if (isNull) return default(TType);
+                if (isNull) return default(TType);
 
-            if (typeHeader == null) return JsonConvert.DeserializeObject<TType>(str);
+                if (typeHeader == null) return JsonConvert.DeserializeObject<TType>(str);
 
-            var typeString = Encoding.UTF8.GetString(typeHeader.GetValueBytes());
+                var typeString = Encoding.UTF8.GetString(typeHeader.GetValueBytes());
 
-            var type = Type.GetType(typeString);
-            
-            return (TType)JsonConvert.DeserializeObject(str, type);
+                var type = Type.GetType(typeString);
+
+                return (TType) JsonConvert.DeserializeObject(str, type);
+            }
+            catch (InvalidCastException ice)
+            {
+                throw new MalformedMessageException("Encountered a malformed message.", ice);
+            }
         }
 
         public byte[] Serialize(TType data, SerializationContext context)
@@ -32,4 +40,5 @@ namespace NetStreams.Serialization
             return Encoding.UTF8.GetBytes(json);
         }
     }
+
 }

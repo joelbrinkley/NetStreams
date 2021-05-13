@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using Confluent.Kafka;
 using Machine.Specifications;
-using Machine.Specifications.Model;
+using Moq;
 using NetStreams.Internal;
+using NetStreams.Specs.Infrastructure.Mocks;
 using NetStreams.Specs.Infrastructure.Models;
+using It = Machine.Specifications.It;
 
 namespace NetStreams.Specs.Specifications.Component
 {
-    class ConsumePipelineSpecs
+    internal class ConsumePipelineSpecs
     {
         [Subject("AppendStep")]
         class when_appending_multiple_steps
@@ -34,11 +33,11 @@ namespace NetStreams.Specs.Specifications.Component
 
             Because of = () => _pipeline.AppendStep(_handle3);
 
-            It should_have_two_after_one = () =>
-                ((TestHandleStep<string, string>)_handle1.Next).Name.ShouldEqual("Handle2");
-
             It should_have_three_after_two = () =>
-                ((TestHandleStep<string, string>)_handle2.Next).Name.ShouldEqual("Handle3");
+                ((TestHandleStep<string, string>) _handle2.Next).Name.ShouldEqual("Handle3");
+
+            It should_have_two_after_one = () =>
+                ((TestHandleStep<string, string>) _handle1.Next).Name.ShouldEqual("Handle2");
         }
 
         [Subject("PrependStep")]
@@ -63,10 +62,10 @@ namespace NetStreams.Specs.Specifications.Component
             Because of = () => _pipeline.PrependStep(_handle3);
 
             It should_have_one_after_two = () =>
-                ((TestHandleStep<string, string>)_handle2.Next).Name.ShouldEqual("Handle1");
+                ((TestHandleStep<string, string>) _handle2.Next).Name.ShouldEqual("Handle1");
 
             It should_have_two_after_three = () =>
-                ((TestHandleStep<string, string>)_handle3.Next).Name.ShouldEqual("Handle2");
+                ((TestHandleStep<string, string>) _handle3.Next).Name.ShouldEqual("Handle2");
         }
 
         [Subject("ExecuteAsync")]
@@ -77,6 +76,7 @@ namespace NetStreams.Specs.Specifications.Component
             static TestHandleStep<string, string> _handle1;
             static TestHandleStep<string, string> _handle2;
             static TestHandleStep<string, string> _handle3;
+            static IConsumeContext<string, string> _testResult;
 
             Establish context = () =>
             {
@@ -87,9 +87,24 @@ namespace NetStreams.Specs.Specifications.Component
                 _pipeline.AppendStep(_handle1);
                 _pipeline.AppendStep(_handle2);
                 _pipeline.AppendStep(_handle3);
+
+                var consumeResult = new ConsumeResult<string, string>
+                {
+                    Message = new Message<string, string>
+                    {
+                        Key = Guid.NewGuid().ToString(),
+                        Value = Guid.NewGuid().ToString()
+                    }
+                };
+
+                _testResult = new ConsumeContext<string, string>(
+                    consumeResult,
+                    new Mock<IConsumer<string, string>>().Object,
+                    Guid.NewGuid().ToString());
+
             };
 
-            Because of = () => _pipeline.ExecuteAsync(new ConsumeContext<string, string>(null, null, null), CancellationToken.None).Wait();
+            Because of = () => _pipeline.ExecuteAsync(_testResult, CancellationToken.None).Wait();
 
             It should_have_Handle2_in_the_run_log = () => _log.IndexOf("Handle2").ShouldBeGreaterThan(-1);
         }
