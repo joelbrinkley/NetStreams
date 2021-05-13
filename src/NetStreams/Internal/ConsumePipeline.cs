@@ -1,9 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetStreams
+namespace NetStreams.Internal
 {
-    public class ConsumePipeline<TKey, TMessage> : IConsumePipeline<TKey, TMessage>
+    internal class ConsumePipeline<TKey, TMessage> : IConsumePipeline<TKey, TMessage>
     {
         PipelineStep<TKey, TMessage> _head;
 
@@ -31,7 +31,7 @@ namespace NetStreams
             _head.Next = currentHead;
         }
 
-        private PipelineStep<TKey, TMessage> GetLast()
+        PipelineStep<TKey, TMessage> GetLast()
         {
             var current = _head;
 

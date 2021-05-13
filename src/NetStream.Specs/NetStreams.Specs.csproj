@@ -18,5 +18,4 @@
 	<ItemGroup>
 		<ProjectReference Include="..\NetStreams\NetStreams.csproj" />
 	</ItemGroup>
-
 </Project>

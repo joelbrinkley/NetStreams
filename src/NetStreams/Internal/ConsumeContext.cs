@@ -2,7 +2,7 @@
 
 namespace NetStreams
 {
-    public class ConsumeContext<TKey, TMessage> : IConsumeContext<TKey, TMessage>
+    internal class ConsumeContext<TKey, TMessage> : IConsumeContext<TKey, TMessage>
     {
         readonly ConsumeResult<TKey, TMessage> _consumeResult;
         readonly IConsumer<TKey, TMessage> _consumer;
