@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-rc.7 (2021-05-13)
+
+
+### Features
+
+* skip malformed messages ([#38](https://github.com/joelbrinkley/NetStreams/issues/38)) ([e722506](https://github.com/joelbrinkley/NetStreams/commit/e722506be9ebb69a9a97c9d6e8aa59eb2db162e0))
+
 ## 2.0.0-rc.6 (2021-05-13)
 
 ## 2.0.0-rc.5 (2021-05-11)
