@@ -150,7 +150,7 @@ var stream = new NetStreamBuilder<Null, MyMessage>(
 ```
 
 
-# Malformed Messages
+# Skipping Malformed Messages
 
 By default, NetStreams will skil a malformed message and log the offset and partition that was skipped.  To turn this feature off, set the skip malformed messages property to false
 
