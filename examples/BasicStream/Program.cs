@@ -4,6 +4,7 @@ using NetStreams.Serialization;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NetStreams.Extensions;
 using NetStreams.Internal.Extensions;
 
 namespace BasicStream

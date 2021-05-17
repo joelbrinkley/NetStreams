@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NetStreams.Internal;
 
-namespace NetStreams.Internal.Extensions
+namespace NetStreams.Extensions
 {
     public static class KafkaPipelineExtensions
     {

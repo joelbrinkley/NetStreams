@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using NetStreams.Internal.Pipeline;
 
-namespace NetStreams.Internal.Extensions
+namespace NetStreams.Extensions
 {
 	public static class PipelineStepExtensions
 	{
@@ -66,5 +63,23 @@ namespace NetStreams.Internal.Extensions
 				}
 			});
 		}
+
+        public static PipelineStep<TContext, TInType, TOutType> OnError<TContext, TInType, TOutType>(
+            this PipelineStep<TContext, TInType, TOutType> pipeline,
+            Action<Exception> onError
+        ) where TContext : ICancellationTokenCarrier
+        {
+            return pipeline.AfterProcessing(async (context, result) =>
+            {
+                return result.Match(
+                    _value => result,
+                    exc =>
+                    {
+                        onError(exc);
+                        return result;
+                    },
+                    cancellation => result);
+            });
+        }
     }
 }

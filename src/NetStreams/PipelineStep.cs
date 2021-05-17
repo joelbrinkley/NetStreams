@@ -16,7 +16,7 @@ namespace NetStreams
             Functor = functor;
         }
 
-        public PipelineStep<TContext, TInType, TNextType> Then<TNextType>(Func<TContext, TOutType, Task<NetStreamResult<TNextType>>> nextFunctor)
+        public virtual PipelineStep<TContext, TInType, TNextType> Then<TNextType>(Func<TContext, TOutType, Task<NetStreamResult<TNextType>>> nextFunctor)
         {
             Func<TContext, TInType, Task<NetStreamResult<TNextType>>> combined = async (context, inbound) =>
             {
@@ -58,6 +58,34 @@ namespace NetStreams
                     exc => new NetStreamResult<TNextType>(exc),
                     cancellation => new NetStreamResult<TNextType>(cancellation)
                 );
+            };
+            return new PipelineStep<TContext, TInType, TNextType>(Configuration, combined);
+        }
+
+        public PipelineStep<TContext, TInType, TNextType> AfterProcessing<TNextType>(Func<TContext, NetStreamResult<TOutType>, Task<NetStreamResult<TNextType>>> preFunctor)
+        {
+            Func<TContext, TInType, Task<NetStreamResult<TNextType>>> combined = async (context, inbound) =>
+            {
+                NetStreamResult<TOutType> intermediateResult;
+
+                context.CancellationToken.ThrowIfCancellationRequested();
+
+                try
+                {
+                    intermediateResult = await Functor(context, inbound);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception exc)
+                {
+                    intermediateResult = new NetStreamResult<TOutType>(exc);
+                }
+
+                context.CancellationToken.ThrowIfCancellationRequested();
+
+                return await preFunctor(context, intermediateResult);
             };
             return new PipelineStep<TContext, TInType, TNextType>(Configuration, combined);
         }
