@@ -64,22 +64,13 @@ namespace NetStreams.Extensions
 			});
 		}
 
-        public static PipelineStep<TContext, TInType, TOutType> OnError<TContext, TInType, TOutType>(
+        public static WrappedPipelineStep<TContext, TInType, TOutType> OnError<TContext, TInType, TOutType>(
             this PipelineStep<TContext, TInType, TOutType> pipeline,
             Action<Exception> onError
         ) where TContext : ICancellationTokenCarrier
         {
-            return pipeline.AfterProcessing(async (context, result) =>
-            {
-                return result.Match(
-                    _value => result,
-                    exc =>
-                    {
-                        onError(exc);
-                        return result;
-                    },
-                    cancellation => result);
-            });
+			var wrappedStep = new WrappedPipelineStep<TContext, TInType, TOutType>(pipeline);
+            return wrappedStep.OnError(onError);
         }
     }
 }

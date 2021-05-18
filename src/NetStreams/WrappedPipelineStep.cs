@@ -10,7 +10,7 @@ namespace NetStreams
     public class WrappedPipelineStep<TContext, TInType, TOutType> : PipelineStep<TContext, TInType, TOutType> where TContext : ICancellationTokenCarrier
     {
         public Func<TContext, TInType, Task<NetStreamResult<TInType>>> PreProcessor { get; }
-        public Func<TContext, TInType, Task<NetStreamResult<TOutType>>> WrappedFunctor { get; }
+        public Func<TContext, TInType, Task<NetStreamResult<TOutType>>> UnwrappedFunctor { get; }
         public Func<TContext, NetStreamResult<TOutType>, Task<NetStreamResult<TOutType>>> PostProcessor { get; }
 
         public WrappedPipelineStep(
@@ -20,81 +20,42 @@ namespace NetStreams
             Func<TContext, NetStreamResult<TOutType>, Task<NetStreamResult<TOutType>>> postProcessor) : base(config, functor)
         {
             PreProcessor = preProcessor;
-            WrappedFunctor = functor;
+            UnwrappedFunctor = functor;
             PostProcessor = postProcessor;
         }
 
-        private async Task<NetStreamResult<TOutType>> WrapFunctor(TContext context, TInType inbound)
+        public override WrappedPipelineStep<TContext, TInType, TNextType> Then<TNextType>(Func<TContext, TOutType, Task<NetStreamResult<TNextType>>> nextFunctor)
+        {
+            Func<TContext, TInType, Task<NetStreamResult<TNextType>>> combined = async (context, inbound) =>
+            {
+                var intermediateResult = await RunFunctor(context, inbound, Functor);
+
+                return intermediateResult.Match<NetStreamResult<TNextType>>(
+                    result => RunFunctor(context, result, nextFunctor).Result,
+                    exc => new NetStreamResult<TNextType>(exc),
+                    cancellation => new NetStreamResult<TNextType>(cancellation)
+                );
+            };
+            return new WrappedPipelineStep<TContext, TInType, TNextType>(Configuration, combined);
+        }
+
+        public override async Task ExecuteAsync(TContext context, TInType inbound)
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
-            NetStreamResult<TInType> preResult;
-            try
-            {
-                preResult = await PreProcessor(context, inbound);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception exc)
-            {
-                preResult = new NetStreamResult<TInType>(exc);
-            }
+            NetStreamResult<TInType> preResult = await RunFunctor(context, inbound, PreProcessor);
 
             context.CancellationToken.ThrowIfCancellationRequested();
 
-            return preResult.Match(
+            preResult.Match(
                 preValue =>
                 {
-                    NetStreamResult<TOutType> functorResult;
-                    try
-                    {
-                        functorResult = WrappedFunctor(context, preValue).Result;
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        throw;
-                    }
-                    catch (Exception exc)
-                    {
-                        functorResult = new NetStreamResult<TOutType>(exc);
-                    }
-
+                    NetStreamResult<TOutType> functorResult = RunFunctor(context, preValue, UnwrappedFunctor).Result;
                     context.CancellationToken.ThrowIfCancellationRequested();
-
                     return PostProcessor(context, functorResult).Result;
                 },
-                exc =>
-                {
-                    try
-                    {
-                        return PostProcessor(context, new NetStreamResult<TOutType>(exc)).Result;
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        throw;
-                    }
-                    catch (Exception exc2)
-                    {
-                        return new NetStreamResult<TOutType>(exc2);
-                    }
-                },
-                cancellation =>
-                {
-                    try
-                    {
-                        return PostProcessor(context, new NetStreamResult<TOutType>(cancellation)).Result;
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        throw;
-                    }
-                    catch (Exception exc)
-                    {
-                        return new NetStreamResult<TOutType>(exc);
-                    }
-                });
+                exc => RunFunctor(context, new NetStreamResult<TOutType>(exc), PostProcessor).Result,
+                cancellation => RunFunctor(context, new NetStreamResult<TOutType>(cancellation), PostProcessor).Result);
         }
     }
 }

@@ -16,45 +16,33 @@ namespace NetStreams
             Functor = functor;
         }
 
+        public static async Task<NetStreamResult<TOutType>> RunFunctor<TContext, TInType, TOutType>(TContext context, TInType inbound, Func<TContext, TInType, Task<NetStreamResult<TOutType>>> functor)
+            where TContext : ICancellationTokenCarrier
+        {
+            context.CancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                return await functor(context, inbound);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception exc)
+            {
+                return new NetStreamResult<TOutType>(exc);
+            }
+        }
+
         public virtual PipelineStep<TContext, TInType, TNextType> Then<TNextType>(Func<TContext, TOutType, Task<NetStreamResult<TNextType>>> nextFunctor)
         {
             Func<TContext, TInType, Task<NetStreamResult<TNextType>>> combined = async (context, inbound) =>
             {
-                NetStreamResult<TOutType> intermediateResult;
-                
-                context.CancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    intermediateResult = await Functor(context, inbound);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception exc)
-                {
-                    return new NetStreamResult<TNextType>(exc);
-                }
-
-                context.CancellationToken.ThrowIfCancellationRequested();
+                var intermediateResult = await RunFunctor(context, inbound, Functor);
 
                 return intermediateResult.Match<NetStreamResult<TNextType>>(
-                    result =>
-                    {
-                        try
-                        {
-                            return nextFunctor(context, result).Result;
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            throw;
-                        }
-                        catch (Exception exc2)
-                        {
-                            return new NetStreamResult<TNextType>(exc2);
-                        }
-                    },
+                    result => RunFunctor(context, result, nextFunctor).Result,
                     exc => new NetStreamResult<TNextType>(exc),
                     cancellation => new NetStreamResult<TNextType>(cancellation)
                 );
@@ -62,37 +50,9 @@ namespace NetStreams
             return new PipelineStep<TContext, TInType, TNextType>(Configuration, combined);
         }
 
-        public PipelineStep<TContext, TInType, TNextType> AfterProcessing<TNextType>(Func<TContext, NetStreamResult<TOutType>, Task<NetStreamResult<TNextType>>> preFunctor)
+        public virtual async Task ExecuteAsync(TContext context, TInType inbound)
         {
-            Func<TContext, TInType, Task<NetStreamResult<TNextType>>> combined = async (context, inbound) =>
-            {
-                NetStreamResult<TOutType> intermediateResult;
-
-                context.CancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    intermediateResult = await Functor(context, inbound);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception exc)
-                {
-                    intermediateResult = new NetStreamResult<TOutType>(exc);
-                }
-
-                context.CancellationToken.ThrowIfCancellationRequested();
-
-                return await preFunctor(context, intermediateResult);
-            };
-            return new PipelineStep<TContext, TInType, TNextType>(Configuration, combined);
-        }
-
-        public Func<TContext, TInType, Task> Build()
-        {
-            return async (context, inbound) => await Functor(context, inbound);
+            await Functor(context, inbound);
         }
     }
 }
