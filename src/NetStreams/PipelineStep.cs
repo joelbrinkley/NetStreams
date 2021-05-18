@@ -35,7 +35,7 @@ namespace NetStreams
             }
         }
 
-        public virtual PipelineStep<TContext, TInType, TNextType> Then<TNextType>(Func<TContext, TOutType, Task<NetStreamResult<TNextType>>> nextFunctor)
+        public PipelineStep<TContext, TInType, TNextType> Then<TNextType>(Func<TContext, TOutType, Task<NetStreamResult<TNextType>>> nextFunctor)
         {
             Func<TContext, TInType, Task<NetStreamResult<TNextType>>> combined = async (context, inbound) =>
             {
