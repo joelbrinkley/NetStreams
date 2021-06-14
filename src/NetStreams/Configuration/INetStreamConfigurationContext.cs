@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Confluent.Kafka;
 
 namespace NetStreams.Configuration
 {
@@ -15,6 +16,7 @@ namespace NetStreams.Configuration
         string SslCaLocation { get; set; }
         string SslKeyLocation { get; set; }
         string SslKeyPassword { get; set; }
+        AutoOffsetReset AutoOffsetReset { get; set; }
     }
 
 }

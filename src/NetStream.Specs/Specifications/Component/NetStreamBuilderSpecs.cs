@@ -1,4 +1,5 @@
 ﻿using System;
+using Confluent.Kafka;
 using Machine.Specifications;
 using NetStreams.Configuration;
 using NetStreams.Specs.Infrastructure.Models;
@@ -75,6 +76,33 @@ namespace NetStreams.Specs.Specifications.Component
         //        It should_map_config_values_to_kafka_producer_config = () => _expectedKafkaProducerConfiguration.ShouldMatch(_stream.Configuration.ToProducerConfig());
         //    }
         //}
+
+        [Subject("Configure:Default")]
+        class when_configuring_a_default_stream
+        {
+            static INetStream _stream;
+            static Action<INetStreamConfigurationBuilderContext<string, TestMessage>> _configure;
+
+            Establish context = () =>
+            {
+                _configure = cfg =>
+                {
+                    cfg.BootstrapServers = "localhost:9021";
+                    cfg.ConsumerGroup = "consumergroup";
+                };
+
+                var config = new NetStreamConfiguration<string, TestMessage>();
+
+                _configure(config);
+            };
+
+            Because of = () => _stream = new NetStreamBuilder<string, TestMessage>(_configure).Stream("topic").Build();
+
+            It should_disable_auto_commit = () => _stream.Configuration.ToConsumerConfig().EnableAutoCommit.ShouldEqual(false);
+
+            It should_set_auto_offset_reset_latest = () =>
+                _stream.Configuration.ToConsumerConfig().AutoOffsetReset.ShouldEqual(AutoOffsetReset.Latest);
+        }
 
         [Subject("Configure:DeliveryMode")]
         class when_configuring_an_at_most_once_stream
@@ -158,6 +186,32 @@ namespace NetStreams.Specs.Specifications.Component
 
             It should_set_auto_commit_interval_ms = () =>
                 _stream.Configuration.ToConsumerConfig().AutoCommitIntervalMs.ShouldEqual(10000);
+        }
+
+        [Subject("Configure:DeliveryMode")]
+        class when_configuring_auto_offset_reset
+        {
+            static INetStream _stream;
+            static Action<INetStreamConfigurationBuilderContext<string, TestMessage>> _configure;
+
+            Establish context = () =>
+            {
+                _configure = cfg =>
+                {
+                    cfg.BootstrapServers = "localhost:9021";
+                    cfg.ConsumerGroup = "consumergroup";
+                    cfg.AutoOffsetReset = AutoOffsetReset.Error;
+                };
+
+                var config = new NetStreamConfiguration<string, TestMessage>();
+
+                _configure(config);
+            };
+
+            Because of = () => _stream = new NetStreamBuilder<string, TestMessage>(_configure).Stream("topic").Build();
+
+            It should_set_auto_offset =
+                () => _stream.Configuration.ToConsumerConfig().AutoOffsetReset.ShouldEqual(AutoOffsetReset.Error);
         }
     }
 }
