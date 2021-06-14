@@ -99,26 +99,14 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _message = new TestMessage { Description = "Hello World" };
 
-                var builder = new NetStreamBuilder<int, TestMessage>(cfg =>
-                {
-                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
-                    cfg.BootstrapServers = "localhost:9092";
-                });
-
-                var builder2 = new NetStreamBuilder<int, TestMessage>(cfg =>
-                {
-                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
-                    cfg.BootstrapServers = "localhost:9092";
-                });
-
-                var _stream1 = builder
-                    .Stream(_sourceTopic)
+                DefaultBuilder.New<int, TestMessage>()
+                  .Stream(_sourceTopic)
                     .Transform(context => context.Message)
                     .ToTopic<int, TestMessage>(_destinationTopic)
                     .Build()
                     .StartAsync(CancellationToken.None);
 
-                var stream2 = builder2
+                DefaultBuilder.New<int, TestMessage>()
                     .Stream(_destinationTopic)
                     .Handle(context => _actualKey = context.Key)
                     .Build()

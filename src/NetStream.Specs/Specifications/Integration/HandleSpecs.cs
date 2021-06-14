@@ -118,13 +118,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
 
-                var builder = new NetStreamBuilder<string, TestMessage>(cfg =>
-                {
-                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
-                    cfg.BootstrapServers = "localhost:9092";
-                });
-                
-                builder
+                DefaultBuilder.New<string, TestMessage>()
                     .Stream(_sourceTopic)
                     .HandleAsync(async context => await Task.Run(() => _wasHandled = true))
                     .Build()
@@ -153,13 +147,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
 
-                var builder = new NetStreamBuilder<string, TestMessage>(cfg =>
-                {
-                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
-                    cfg.BootstrapServers = "localhost:9092";
-                });
-
-                builder
+                DefaultBuilder.New<string, TestMessage>()
                     .Stream(_sourceTopic)
                     .Handle(context => _wasHandled = true)
                     .Build()
