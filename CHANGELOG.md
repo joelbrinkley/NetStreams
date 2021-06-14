@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-rc.9 (2021-06-14)
+
+
+### Features
+
+* Configure auto offset reset values, default to latest ([#40](https://github.com/joelbrinkley/NetStreams/issues/40)) ([3c94f8a](https://github.com/joelbrinkley/NetStreams/commit/3c94f8a5cb9b1affbe3a0c16060ddac145576722))
+
 ## 2.0.0-rc.8 (2021-05-13)
 
 ## 2.0.0-rc.7 (2021-05-13)
