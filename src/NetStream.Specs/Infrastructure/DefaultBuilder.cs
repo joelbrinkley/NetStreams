@@ -1,4 +1,5 @@
 ﻿using System;
+using Confluent.Kafka;
 
 namespace NetStreams.Specs.Infrastructure
 {
@@ -10,6 +11,7 @@ namespace NetStreams.Specs.Infrastructure
             {
                 cfg.BootstrapServers = "localhost:9092";
                 cfg.ConsumerGroup = Guid.NewGuid().ToString();
+                cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
             });
         }
     }
