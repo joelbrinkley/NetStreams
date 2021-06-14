@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Confluent.Kafka;
 using ExpectedObjects;
 using Machine.Specifications;
 using NetStreams.Specs.Infrastructure;
@@ -40,6 +41,7 @@ namespace NetStreams.Specs.Specifications.Integration
                     {
                         cfg.BootstrapServers = "localhost:9092";
                         cfg.ConsumerGroup = Guid.NewGuid().ToString();
+                        cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
                         cfg.ConfigureLogging(logging => logging.AddLogger(_mockLogger));
                     })
                     .Stream(_sourceTopic)

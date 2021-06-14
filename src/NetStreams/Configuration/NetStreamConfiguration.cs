@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Confluent.Kafka;
 using NetStreams.Logging;
 
 namespace NetStreams.Configuration
@@ -8,6 +9,7 @@ namespace NetStreams.Configuration
     {
         public ILog Log { get; set; } = new LogContext();
         public DeliveryMode DeliveryMode { get; set; } = DeliveryMode.At_Least_Once;
+        public AutoOffsetReset AutoOffsetReset { get; set; } = AutoOffsetReset.Latest;
         public string BootstrapServers { get; set; }
         public string ConsumerGroup { get; set; }
         public List<ITopicConfiguration> TopicConfigurations { get; set; } = new List<ITopicConfiguration>();
@@ -57,6 +59,7 @@ namespace NetStreams.Configuration
 
     public interface INetStreamConfigurationBuilderContext<TKey, TMessage>
     {
+        AutoOffsetReset AutoOffsetReset { get; set; }
         bool ShouldSkipMalformedMessages { get; set; }
         string ConsumerGroup { get; set; }
         string BootstrapServers { get; set; }

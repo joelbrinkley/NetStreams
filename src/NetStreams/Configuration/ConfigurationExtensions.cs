@@ -26,7 +26,7 @@ namespace NetStreams.Configuration
                 GroupId = config.ConsumerGroup,
                 EnableAutoCommit = config.DeliveryMode.EnableAutoCommit,
                 AutoCommitIntervalMs = config.DeliveryMode.AutoCommitIntervalMs,
-                AutoOffsetReset = AutoOffsetReset.Earliest,
+                AutoOffsetReset = config.AutoOffsetReset,
                 SecurityProtocol = ParseSecurityProtocol(config),
                 SslCertificateLocation = config.SslCertificateLocation,
                 SslCaLocation = config.SslCaLocation,
