@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-rc.10 (2021-06-25)
+
+
+### Features
+
+* add offset to request operation name and move client metric lag before processing next ([#41](https://github.com/joelbrinkley/NetStreams/issues/41)) ([14f7956](https://github.com/joelbrinkley/NetStreams/commit/14f7956ab7ee9a421359517aafea435a83ab1e5d))
+
 ## 2.0.0-rc.9 (2021-06-14)
 
 
