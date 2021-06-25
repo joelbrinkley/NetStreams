@@ -16,7 +16,7 @@ namespace NetStreams.ApplicationInsights
         public override async Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext,CancellationToken token, NetStreamResult result = null)
         {
             var eventName = $"Consumed from {consumeContext.TopicName}, partition {consumeContext.Partition}";
-            var operationName = $"Consume {consumeContext.TopicName}";
+            var operationName = $"Consume from {consumeContext.TopicName}, partition {consumeContext.Partition}, offset {consumeContext.Offset}";
             var telemetryEvent = new EventTelemetry(eventName);
             telemetryEvent.Properties.Add("Topic", consumeContext.TopicName);
             telemetryEvent.Properties.Add("Offset", consumeContext.Offset.ToString());
@@ -26,13 +26,13 @@ namespace NetStreams.ApplicationInsights
 
             using (_client.StartOperation<RequestTelemetry>(operationName))
             {
-                response  = await base.Execute(consumeContext, token, result);
-
-                _client.TrackEvent(telemetryEvent);
-
                 _client.GetMetric(
                         $"Lag:{consumeContext.ConsumeGroup}:{consumeContext.TopicName}:{consumeContext.Partition}")
                     .TrackValue(consumeContext.Lag);
+
+                response  = await base.Execute(consumeContext, token, result);
+
+                _client.TrackEvent(telemetryEvent);
             }
 
             return response;
