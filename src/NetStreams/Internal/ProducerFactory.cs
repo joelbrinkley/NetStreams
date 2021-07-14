@@ -16,7 +16,7 @@ namespace NetStreams.Internal
                  .SetValueSerializer(new HeaderSerializationStrategy<TMessage>())
                  .Build();
 
-            return new NetStreamProducer<TKey, TMessage>(topic, producer);
+            return new NetStreamProducer<TKey, TMessage>(topic, producer, config.EnableMessageTypeHeader);
         }
     }
 }

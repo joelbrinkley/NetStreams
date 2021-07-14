@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using NetStreams.Internal;
@@ -10,11 +11,13 @@ namespace NetStreams
     {
         readonly string _topic;
         readonly IProducer<TKey, TMessage> _producer;
+        readonly bool _enableMessageTypeHeader;
 
-        public NetStreamProducer(string topic, IProducer<TKey, TMessage> producer)
+        public NetStreamProducer(string topic, IProducer<TKey, TMessage> producer, bool enableMessageTypeHeader = true)
         {
             _topic = topic;
             _producer = producer;
+            _enableMessageTypeHeader = enableMessageTypeHeader;
         }
 
         public void Dispose()
@@ -31,8 +34,11 @@ namespace NetStreams
                 Headers = new Headers()
             };
 
-            kafkaMessage.Headers.Add(new Header(NetStreamConstants.HEADER_TYPE,
-                Encoding.UTF8.GetBytes(message.GetType().AssemblyQualifiedName.ToString())));
+            if (_enableMessageTypeHeader)
+            {
+                kafkaMessage.Headers.Add(new Header(NetStreamConstants.HEADER_TYPE,
+                    Encoding.UTF8.GetBytes(message.GetType().AssemblyQualifiedName.ToString())));
+            }
 
             await _producer.ProduceAsync(_topic, kafkaMessage);
         }

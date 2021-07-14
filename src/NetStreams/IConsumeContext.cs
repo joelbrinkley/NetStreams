@@ -1,4 +1,6 @@
-﻿namespace NetStreams
+﻿using System.Collections.Generic;
+
+namespace NetStreams
 {
     public interface IConsumeContext<TKey, TMessage>
     {
@@ -9,5 +11,6 @@
         long Offset { get; }
         long Lag { get; }
         string ConsumeGroup { get;  }
+        IEnumerable<KeyValuePair<string, string>> Headers { get; }
     }
 }
