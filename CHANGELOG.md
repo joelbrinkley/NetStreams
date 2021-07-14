@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-rc.12 (2021-07-14)
+
+
+### Features
+
+* added toggle for adding header ([#43](https://github.com/joelbrinkley/NetStreams/issues/43)) ([6605070](https://github.com/joelbrinkley/NetStreams/commit/6605070d2047b70188d8c2d0c3e3ddf8fd34e5be))
+
 ## 2.0.0-rc.11 (2021-06-25)
 
 ## 2.0.0-rc.10 (2021-06-25)
