@@ -24,6 +24,8 @@ namespace NetStreams.Configuration
         public Stack<PipelineStep<TKey, TMessage>> PipelineSteps { get; set; } =
             new Stack<PipelineStep<TKey, TMessage>>();
 
+        public bool EnableMessageTypeHeader { get; set; } = true;
+
         public INetStreamConfigurationBuilderContext<TKey, TMessage> ConfigureLogging(Action<LogContext> cfg)
         {
             var loggingContext = new LogContext();
@@ -70,6 +72,12 @@ namespace NetStreams.Configuration
         string SslKeyLocation { get; set; }
         string SslKeyPassword { get; set; }
         Stack<PipelineStep<TKey, TMessage>> PipelineSteps { get; }
+        /// <summary>
+        /// By default the EnableMessageTypeHeader boolean is set to true.  This will instruct the
+        /// NetStreams producer to add the message type as a header to the Kafka Message.  When setting
+        /// this value to false the header will not be added to the Kafka Message.
+        /// </summary>
+        bool EnableMessageTypeHeader { get; set; }
 
         INetStreamConfigurationBuilderContext<TKey, TMessage> AddTopicConfiguration(Action<ITopicConfiguration> cfg);
 

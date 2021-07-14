@@ -6,6 +6,7 @@ namespace NetStreams.Configuration
 {
     public interface INetStreamConfigurationContext
     {
+        bool EnableMessageTypeHeader { get; set; }
         string BootstrapServers { get; }
         string ConsumerGroup { get; }
         List<ITopicConfiguration> TopicConfigurations { get; }

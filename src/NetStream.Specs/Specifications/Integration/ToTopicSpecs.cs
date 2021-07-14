@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using Confluent.Kafka;
 using Machine.Specifications;
+using NetStreams.Internal;
 using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Models;
@@ -8,10 +12,10 @@ using NetStreams.Specs.Infrastructure.Services;
 
 namespace NetStreams.Specs.Specifications.Integration
 {
-    internal class KafkaWriterSpecs
+    internal class ToTopicSpecs
     {
-        [Subject("KafkaWriter")]
-        class when_configuring_a_kafka_writer_with_a_resolve_key_function
+        [Subject("ToTopic")]
+        class when_writing_to_a_topic_with_a_resolve_key_function
         {
             static TestProducerService<string, TestMessage> _producerService;
             static string _actualKey;
@@ -45,8 +49,8 @@ namespace NetStreams.Specs.Specifications.Integration
             It should_resolve_the_key = () => _actualKey.ShouldEqual(_message.Id);
         }
 
-        [Subject("KafkaWriter")]
-        class when_configuring_a_kafka_writer_with_no_resolve_key_function_for_a_reference_type
+        [Subject("ToTopic")]
+        class when_writing_to_a_topic_with_no_resolve_key_function_for_a_reference_type
         {
             static TestProducerService<string, TestMessage> _producerService;
             static string _actualKey = "default value";
@@ -81,8 +85,8 @@ namespace NetStreams.Specs.Specifications.Integration
             It should_default_the_key_to_the_default_value_of_the_response_key_type = () => _actualKey.ShouldBeNull();
         }
 
-        [Subject("KafkaWriter")]
-        class when_configuring_a_kafka_writer_with_no_resolve_key_function_for_a_value_type
+        [Subject("ToTopic")]
+        class when_writing_to_a_topic_with_no_resolve_key_function_for_a_value_type
         {
             static TestProducerService<int, TestMessage> _producerService;
             static int _actualKey = 1;
@@ -116,6 +120,49 @@ namespace NetStreams.Specs.Specifications.Integration
             Because of = () => _producerService.ProduceAsync(1, _message).BlockUntil(() => _actualKey == 0).Await();
 
             It should_default_the_key_to_the_default_value_of_the_response_key_type = () => _actualKey.ShouldEqual(default(int));
+        }
+
+
+        [Subject("ToTopic")]
+        public class when_writing_to_a_topic_with_enable_message_type_header_set_to_false
+        {
+            static TestProducerService<int, TestMessage> _producerService;
+            static IEnumerable<KeyValuePair<string, string>> _actualHeaders;
+            static string _sourceTopic = $"kh.source.{Guid.NewGuid()}";
+            static string _destinationTopic = $"kh.dest.{Guid.NewGuid()}";
+            static TestMessage _message;
+
+            Establish context = () =>
+            {
+                new TopicService().CreateDefaultTopic(_sourceTopic);
+                new TopicService().CreateDefaultTopic(_destinationTopic);
+
+                _producerService = new TestProducerService<int, TestMessage>(_sourceTopic);
+
+                _message = new TestMessage { Description = "Hello World" };
+
+                new NetStreamBuilder<string, TestMessage>(cfg =>
+                {
+                    cfg.BootstrapServers = "localhost:9092";
+                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
+                    cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
+                    cfg.EnableMessageTypeHeader = false;
+                })
+                .Stream(_sourceTopic)
+                .ToTopic<string, TestMessage>(_destinationTopic)
+                .Build()
+                .StartAsync(CancellationToken.None);
+
+                DefaultBuilder.New<string, TestMessage>()
+                    .Stream(_destinationTopic)
+                    .Handle(context => _actualHeaders = context.Headers)
+                    .Build()
+                    .StartAsync(CancellationToken.None);
+            };
+
+            Because of = () => _producerService.ProduceAsync(1, _message).BlockUntil(() => _actualHeaders != null).Await();
+
+            It should_not_write_the_header = () => _actualHeaders.Any(h => h.Key == NetStreamConstants.HEADER_TYPE).ShouldBeFalse();
         }
     }
 }

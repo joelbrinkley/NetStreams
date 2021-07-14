@@ -1,4 +1,7 @@
-﻿using Confluent.Kafka;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Confluent.Kafka;
 
 namespace NetStreams
 {
@@ -21,6 +24,9 @@ namespace NetStreams
         public long Offset => _consumeResult.Offset.Value;
         public long Lag => _consumer.GetWatermarkOffsets(_consumeResult.TopicPartition).High.Value - _consumeResult.TopicPartitionOffset.Offset.Value - 1;
         public TKey Key => _consumeResult.Message.Key;
+
+        public IEnumerable<KeyValuePair<string, string>> Headers => _consumeResult.Message.Headers?.Select(h =>
+            new KeyValuePair<string, string>(h.Key, Encoding.UTF8.GetString(h.GetValueBytes()))).ToList();
 
     }
 }
