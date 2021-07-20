@@ -21,7 +21,8 @@ namespace NetStreams.Specs.Specifications.Integration
         {
             static readonly string _sourceTopic = $"malform.{Guid.NewGuid()}";
             static readonly string _destinationTopic = $"malform.{Guid.NewGuid()}";
-            static readonly List<TestMessage> _actualMessages = new();
+            static INetStreamBuilder<string, TestMessage> _streamBuilder;
+            static readonly List<TestMessage> _actualMessages = new List<TestMessage>();
             static TestMessage _expectedMessage;
             static TestProducerService<string, TestMessage> _testMessageProducer;
             static MockLog _mockLogger;
@@ -32,8 +33,8 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                var stringProducer = new TestProducerService<string, string>(_sourceTopic);
-                _testMessageProducer = new TestProducerService<string, TestMessage>(_sourceTopic);
+                var stringProducer = Infrastructure.Services.TestProducerFactory.Plaintext<string, string>(_sourceTopic);
+                _testMessageProducer = Infrastructure.Services.TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
 
                 stringProducer.Produce(Guid.NewGuid().ToString(), "{ malformed }");
 
@@ -55,7 +56,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _expectedMessage = new TestMessage { Description = "hello" };
 
-                DefaultBuilder.New<string, TestMessage>()
+                DefaultBuilder.Plaintext<string, TestMessage>()
                     .Stream(_destinationTopic)
                     .Handle(context => _actualMessages.Add(context.Message))
                     .Build()
