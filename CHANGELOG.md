@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-rc.13 (2021-07-21)
+
+
+### Bug Fixes
+
+* Consume Commit Behavior not calling commit ([4666e0b](https://github.com/joelbrinkley/NetStreams/commit/4666e0b72bb98d6aa5a2634c1e2abc64c9d35db8))
+
 ## 2.0.0-rc.12 (2021-07-14)
 
 
