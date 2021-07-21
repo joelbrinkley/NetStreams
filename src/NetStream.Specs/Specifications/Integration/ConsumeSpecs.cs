@@ -4,6 +4,7 @@ using System.Threading;
 using Confluent.Kafka;
 using ExpectedObjects;
 using Machine.Specifications;
+using NetStreams.Configuration;
 using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Mocks;
@@ -69,5 +70,61 @@ namespace NetStreams.Specs.Specifications.Integration
             It should_skip_malformed_message =
                 () => _expectedMessage.ToExpectedObject().ShouldMatch(_actualMessages[0]);
         }
+        [Subject("Auto Commit")]
+        class when_consuming_a_message_with_auto_commit_enabled
+        {
+            static readonly string _sourceTopic = $"ac.{Guid.NewGuid()}";
+            static readonly string _destinationTopic = $"ac.{Guid.NewGuid()}";
+            static TestProducerService<string, TestMessage> _producer;
+            static CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+            static long? _resumedOffset;
+            static long? _initialOffset;
+
+            Establish context = () =>
+            {
+                new TopicService().CreateAll(_sourceTopic, _destinationTopic);
+
+                _producer = new TestProducerService<string, TestMessage>(_sourceTopic);
+
+                var firstTestMessage = new TestMessage();
+                var consumerGroup = Guid.NewGuid().ToString();
+                new NetStreamBuilder<string, TestMessage>(cfg =>
+                {
+                    cfg.BootstrapServers = "localhost:9092";
+                    cfg.ConsumerGroup = consumerGroup;
+                    cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
+                    cfg.DeliveryMode = DeliveryMode.At_Least_Once;
+                })
+                .Stream(_sourceTopic)
+                .Handle(context => _initialOffset = context.Offset)
+                .ToTopic<string, TestMessage>(_destinationTopic)
+                .Build()
+                .StartAsync(_cancellationTokenSource.Token);
+
+                _producer.ProduceAsync(Guid.NewGuid().ToString(), firstTestMessage).BlockUntil(() => _initialOffset != null).Await();
+
+                Thread.Sleep(1000);
+                _cancellationTokenSource.Cancel();
+                Thread.Sleep(1000);
+
+                new NetStreamBuilder<string, TestMessage>(cfg =>
+                {
+                    cfg.BootstrapServers = "localhost:9092";
+                    cfg.ConsumerGroup = consumerGroup;
+                    cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
+                    cfg.DeliveryMode = DeliveryMode.At_Least_Once;
+                })
+                .Stream(_sourceTopic)
+                .Handle(context => _resumedOffset = context.Offset)
+                .ToTopic<string, TestMessage>(_destinationTopic)
+                .Build()
+                .StartAsync(CancellationToken.None);
+            };
+
+            Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _resumedOffset != null).Await();
+
+            It should_commit_the_offset = () => _resumedOffset.ShouldBeGreaterThan(_initialOffset);
+        }
+
     }
 }
