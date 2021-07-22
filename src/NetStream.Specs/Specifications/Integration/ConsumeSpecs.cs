@@ -85,7 +85,7 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producer = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producer = Infrastructure.Services.TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
 
                 var firstTestMessage = new TestMessage();
                 var consumerGroup = Guid.NewGuid().ToString();
@@ -128,7 +128,7 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producer = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producer = Infrastructure.Services.TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
 
                 new NetStreamBuilder<string, TestMessage>(cfg =>
                 {
@@ -169,7 +169,7 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producer = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producer = Infrastructure.Services.TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
                 _stream = new NetStreamBuilder<string, TestMessage>(cfg =>
                         {
                             cfg.BootstrapServers = "localhost:9092";
@@ -215,11 +215,11 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producer = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producer = Infrastructure.Services.TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
 
                 var firstTestMessage = new TestMessage();
 
-                var stream = DefaultBuilder.New<string, TestMessage>()
+                var stream = DefaultBuilder.Plaintext<string, TestMessage>()
                 .Stream(_sourceTopic)
                 .Handle(context => _consumedMessages.Add(context.Message))
                 .ToTopic<string, TestMessage>(_destinationTopic)
