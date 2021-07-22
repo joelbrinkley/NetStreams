@@ -29,5 +29,8 @@
 	  <None Update="ssl\client.pem">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
+	  <None Update="ssl\snakeoil-ca-1.crt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 </Project>
