@@ -21,7 +21,7 @@ namespace NetStreams.Specs.Infrastructure
         {
             return new NetStreamBuilder<TKey, TMessage>(cfg =>
             {
-                var sslCaCertPath = GetSslSecretPath("ca.crt");
+                var sslCaCertPath = GetSslSecretPath("snakeoil-ca-1.crt");
                 var sslClientCertPath = GetSslSecretPath("client.pem");
                 var sslClientKeyPath = GetSslSecretPath("client.key");
                 cfg.BootstrapServers = "localhost:9093";
@@ -35,7 +35,7 @@ namespace NetStreams.Specs.Infrastructure
         {
             return new NetStreamBuilder<TKey, TMessage>(cfg =>
             {
-                var sslCaCertPath = GetSslSecretPath("ca.crt");
+                var sslCaCertPath = GetSslSecretPath("snakeoil-ca-1.crt");
                 cfg.BootstrapServers = "localhost:9095";
                 cfg.AuthenticateWithSaslScram256(sslCaCertPath, "client", "client-secret");
                 cfg.ConsumerGroup = Guid.NewGuid().ToString();

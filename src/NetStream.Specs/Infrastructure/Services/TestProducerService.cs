@@ -47,7 +47,7 @@ namespace NetStreams.Specs.Infrastructure.Services
 
         public static TestProducerService<TKey, TMessage> SaslScram256<TKey, TMessage>(string topic)
         {
-            var sslCaCertPath = GetSslSecretPath("ca.crt");
+            var sslCaCertPath = GetSslSecretPath("snakeoil-ca-1.crt");
             return new TestProducerService<TKey, TMessage>(
                 topic,
                 config =>
@@ -63,7 +63,7 @@ namespace NetStreams.Specs.Infrastructure.Services
 
         public static TestProducerService<TKey, TMessage> Ssl<TKey, TMessage>(string topic)
         {
-            var sslCaCertPath = GetSslSecretPath("ca.crt");
+            var sslCaCertPath = GetSslSecretPath("snakeoil-ca-1.crt");
             var sslClientCertPath = GetSslSecretPath("client.pem");
             var sslClientKeyPath = GetSslSecretPath("client.key");
             return new TestProducerService<TKey, TMessage>(
