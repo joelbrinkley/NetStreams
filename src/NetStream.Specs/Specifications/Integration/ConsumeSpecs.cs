@@ -111,7 +111,7 @@ namespace NetStreams.Specs.Specifications.Integration
                 stream.StartAsync(CancellationToken.None);
             };
 
-            Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _offsets.Count != 2).Await();
+            Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _offsets.Count == 2).Await();
 
             It should_commit_the_offset = () => _offsets[0].ShouldBeLessThan(_offsets[1]);
         }
