@@ -105,6 +105,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _producer.ProduceAsync(Guid.NewGuid().ToString(), firstTestMessage).BlockUntil(() => _initialOffset != null).Await();
 
+                Thread.Sleep(1000);
                 stream.Stop();
 
                 streamTask.BlockUntil(() => streamTask.Status == TaskStatus.RanToCompletion).Await();
