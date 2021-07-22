@@ -78,8 +78,7 @@ namespace NetStreams.Specs.Specifications.Integration
             static readonly string _destinationTopic = $"ac.{Guid.NewGuid()}";
             static TestProducerService<string, TestMessage> _producer;
             static CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-            static long? _resumedOffset;
-            static long? _initialOffset;
+            static List<long> _offsets = new List<long>();
 
             Establish context = () =>
             {
@@ -97,36 +96,24 @@ namespace NetStreams.Specs.Specifications.Integration
                     cfg.DeliveryMode = DeliveryMode.At_Least_Once;
                 })
                 .Stream(_sourceTopic)
-                .Handle(context => _initialOffset = context.Offset)
+                .Handle(context => _offsets.Add(context.Offset))
                 .ToTopic<string, TestMessage>(_destinationTopic)
                 .Build();
 
                 var streamTask = stream.StartAsync(_cancellationTokenSource.Token);
 
-                _producer.ProduceAsync(Guid.NewGuid().ToString(), firstTestMessage).BlockUntil(() => _initialOffset != null).Await();
+                _producer.ProduceAsync(Guid.NewGuid().ToString(), firstTestMessage).BlockUntil(() => _offsets.Count == 1).Await();
 
-                Thread.Sleep(1000);
                 stream.Stop();
 
                 streamTask.BlockUntil(() => streamTask.Status == TaskStatus.RanToCompletion).Await();
 
-                new NetStreamBuilder<string, TestMessage>(cfg =>
-                {
-                    cfg.BootstrapServers = "localhost:9092";
-                    cfg.ConsumerGroup = consumerGroup;
-                    cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
-                    cfg.DeliveryMode = DeliveryMode.At_Least_Once;
-                })
-                .Stream(_sourceTopic)
-                .Handle(context => _resumedOffset = context.Offset)
-                .ToTopic<string, TestMessage>(_destinationTopic)
-                .Build()
-                .StartAsync(CancellationToken.None);
+                stream.StartAsync(CancellationToken.None);
             };
 
-            Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _resumedOffset != null).Await();
+            Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _offsets.Count != 2).Await();
 
-            It should_commit_the_offset = () => _resumedOffset.ShouldBeGreaterThan(_initialOffset);
+            It should_commit_the_offset = () => _offsets[0].ShouldBeLessThan(_offsets[1]);
         }
 
         [Subject("Consume Failure")]
