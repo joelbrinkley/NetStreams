@@ -7,10 +7,11 @@ using NetStreams.Internal.Exceptions;
 using NetStreams.Logging;
 
 namespace NetStreams.Internal
-{        
+{
 
     internal class NetStream<TKey, TMessage> : INetStream
     {
+        public NetStreamStatus Status { get; private set; } = NetStreamStatus.NotStarted;
         readonly IConsumePipeline<TKey, TMessage> _pipeline;
         readonly ITopicCreator _topicCreator;
         readonly ILog _log;
@@ -28,7 +29,7 @@ namespace NetStreams.Internal
             IConsumer<TKey, TMessage> consumer,
             ITopicCreator topicCreator,
             ILog log,
-            IConsumePipeline<TKey, TMessage> pipeline = null, 
+            IConsumePipeline<TKey, TMessage> pipeline = null,
             Action<Exception> onError = null)
         {
             _configuration = configuration;
@@ -44,16 +45,18 @@ namespace NetStreams.Internal
         {
             _log.Information($"Starting stream for topic {_topic}");
 
+            Status = NetStreamStatus.Running;
+
             if (Configuration.TopicCreationEnabled)
             {
                 _topicCreator.CreateAll(Configuration.TopicConfigurations).Wait(token);
             }
-            
+
             _consumer.Subscribe(_topic);
 
             return Task.Factory.StartNew(async () =>
             {
-                while (!token.IsCancellationRequested)
+                while (!token.IsCancellationRequested && Status != NetStreamStatus.Stopped)
                 {
                     try
                     {
@@ -61,7 +64,7 @@ namespace NetStreams.Internal
                         if (consumeResult != null)
                         {
                             var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
-                            
+
                             _log.Debug($"Begin consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
                             await _pipeline.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
                             _log.Debug($"Finished consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
@@ -76,11 +79,20 @@ namespace NetStreams.Internal
                     {
                         _log.Error(ex, $"An error occurred processing messages from topic {_topic}");
                         _onError(ex);
+                        if (!_configuration.ContinueOnError)
+                        {
+                            Stop();
+                        }
                     }
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
         }
-        
+
+        public void Stop()
+        {
+            Status = NetStreamStatus.Stopped;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)

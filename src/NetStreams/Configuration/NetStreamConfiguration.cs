@@ -25,6 +25,7 @@ namespace NetStreams.Configuration
             new Stack<PipelineStep<TKey, TMessage>>();
 
         public bool EnableMessageTypeHeader { get; set; } = true;
+        public bool ContinueOnError { get; set; } = true;
 
         public INetStreamConfigurationBuilderContext<TKey, TMessage> ConfigureLogging(Action<LogContext> cfg)
         {
@@ -78,6 +79,7 @@ namespace NetStreams.Configuration
         /// this value to false the header will not be added to the Kafka Message.
         /// </summary>
         bool EnableMessageTypeHeader { get; set; }
+        bool ContinueOnError { get; set; }
 
         INetStreamConfigurationBuilderContext<TKey, TMessage> AddTopicConfiguration(Action<ITopicConfiguration> cfg);
 

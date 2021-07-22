@@ -7,7 +7,9 @@ namespace NetStreams
 {
     public interface INetStream : IDisposable
     { 
+        NetStreamStatus Status { get; }
         INetStreamConfigurationContext Configuration { get; }
-        Task StartAsync(CancellationToken token); 
+        Task StartAsync(CancellationToken token);
+        void Stop();
     }
 }
