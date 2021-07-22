@@ -163,3 +163,16 @@ new NetStreamBuilder<Null, MyMessage>(
         cfg.ShouldSkipMalformedMessages = false;
     })
 ```
+
+# Generating New Certs for Docker Cluster and Testing
+
+In the ``/secrets`` folder you'll find a handful of bash scripts.  These can be used to generate a new round of certs if you need them.
+
+(The certs, keys, credentials, etc. that have been checked-in with this repo aren't in use anywhere.  They are included simply to make  ``git clone . && npm run build`` possible.)
+
+To generate a new batch of secrets:
+1. Open a bash prompt.  I use cygwin on Windows, but the scripts also work in Windows Subsystem for Linux.
+2. Copy the following files into the ``/src/NetStream.Specs/ssl`` folder:
+    * snakeoil-ca-1.crt
+    * client.key
+    * client.pem

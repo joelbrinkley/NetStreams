@@ -14,14 +14,3 @@
 ### Changing What's Generated
 * The list of certs created (other than the snakeoil CA cert) can be changed by changing the list of certificate names following the ``in`` keyword in the following line from **certs-create.sh**:
   * ``for i in kafka1 client``
-
-### Files Needed for the Broker
-Please see the environment variables set for the ``broker-ssl`` container in [docker-compose.yml]
-
-### Files Needed for Your Service
-Please see the ``when_consuming_a_published_message_on_ssl_cluster_with_certs_from_file_system`` acceptance test in the **eviCore.Bus.Specs** project
-
-### How to Connect from Kafka Tool
-* Truststore Location: **&lt;project root&gt;\scripts\orchestration\karka.kafka1.truststore.jks**
-* Keystore Location: **&lt;project root&gt;\scripts\orchestration\karka.kafka1.keystore.jks**
-* Bootstrap servers: **localhost:9093**
