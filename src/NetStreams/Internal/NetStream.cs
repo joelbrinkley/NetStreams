@@ -11,7 +11,7 @@ namespace NetStreams.Internal
 
     internal class NetStream<TKey, TMessage> : INetStream
     {
-        public NetStreamStatus Status { get; private set; } = NetStreamStatus.Stopped;
+        public NetStreamStatus Status { get; private set; } = NetStreamStatus.NotStarted;
         readonly IConsumePipeline<TKey, TMessage> _pipeline;
         readonly ITopicCreator _topicCreator;
         readonly ILog _log;

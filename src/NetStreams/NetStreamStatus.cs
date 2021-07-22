@@ -6,6 +6,7 @@ namespace NetStreams
 {
     public enum NetStreamStatus
     {
+        NotStarted,
         Stopped,
         Running,
     }
