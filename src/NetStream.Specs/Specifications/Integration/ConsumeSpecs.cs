@@ -155,21 +155,20 @@ namespace NetStreams.Specs.Specifications.Integration
         }
 
         [Subject("Consume Failure")]
-        class when_consuming_a_message_and_configured_to_stop_on_error
+        class when_consuming_a_message_and_configured_to_retry_on_error
         {
-            static readonly string _sourceTopic = $"f.{Guid.NewGuid()}";
-            static readonly string _destinationTopic = $"f.{Guid.NewGuid()}";
+            static readonly string _sourceTopic = $"retry.{Guid.NewGuid()}";
+            static readonly string _destinationTopic = $"retry.{Guid.NewGuid()}";
             static TestProducerService<string, TestMessage> _producer;
             static INetStream _stream;
-            static List<TestMessage> _consumedMessages = new List<TestMessage>();
-            static Task _streamTask;
+            static List<long> _consumedOffsets = new List<long>();
 
             Establish context = () =>
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
                 _producer = new TestProducerService<string, TestMessage>(_sourceTopic);
-                _stream = new NetStreamBuilder<string, TestMessage>(cfg =>
+                new NetStreamBuilder<string, TestMessage>(cfg =>
                         {
                             cfg.BootstrapServers = "localhost:9092";
                             cfg.ConsumerGroup = Guid.NewGuid().ToString();
@@ -179,65 +178,19 @@ namespace NetStreams.Specs.Specifications.Integration
                         .Stream(_sourceTopic)
                         .Handle(context =>
                         {
-                            _consumedMessages.Add(context.Message);
+                            _consumedOffsets.Add(context.Offset);
                             throw new Exception("Bang!");
                         })
                         .ToTopic<string, TestMessage>(_destinationTopic)
-                        .Build();
+                        .Build()
+                        .StartAsync(CancellationToken.None);
 
                 _producer.Produce(Guid.NewGuid().ToString(), new TestMessage());
-                _producer.Produce(Guid.NewGuid().ToString(), new TestMessage());
-
-                _streamTask = _stream.StartAsync(CancellationToken.None);
             };
 
-            Because of = () => _streamTask.Wait();
+            Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _consumedOffsets.Count > 6).Await();
 
-            It should_not_continue_processing_the_next_message = () => _consumedMessages.Count.ShouldEqual(1);
-
-            It should_stop_the_stream = () => _stream.Status.ShouldEqual(NetStreamStatus.Stopped);
-
-            It should_complete_the_stream_task = () => _streamTask.Status.ShouldEqual(TaskStatus.RanToCompletion);
-        }
-
-        [Subject("Consume")]
-        class when_starting_a_stopped_stream
-        {
-            static readonly string _sourceTopic = $"r.{Guid.NewGuid()}";
-            static readonly string _destinationTopic = $"r.{Guid.NewGuid()}";
-            static TestProducerService<string, TestMessage> _producer;
-            static INetStream _stream;
-            static List<TestMessage> _consumedMessages = new List<TestMessage>();
-            static Task _streamTask;
-
-            Establish context = () =>
-            {
-                new TopicService().CreateAll(_sourceTopic, _destinationTopic);
-
-                _producer = new TestProducerService<string, TestMessage>(_sourceTopic);
-
-                var firstTestMessage = new TestMessage();
-
-                var stream = DefaultBuilder.New<string, TestMessage>()
-                .Stream(_sourceTopic)
-                .Handle(context => _consumedMessages.Add(context.Message))
-                .ToTopic<string, TestMessage>(_destinationTopic)
-                .Build();
-
-                var streamTask = stream.StartAsync(CancellationToken.None);
-
-                _producer.ProduceAsync(Guid.NewGuid().ToString(), firstTestMessage).BlockUntil(() => _consumedMessages.Count == 1).Await();
-
-                stream.Stop();
-
-                streamTask.BlockUntil(() => streamTask.Status == TaskStatus.RanToCompletion).Await();
-
-                stream.StartAsync(CancellationToken.None);
-
-            };
-            Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _consumedMessages.Count == 2).Await();
-
-            It should_resume_consuming_messages = () => _consumedMessages.Count.ShouldEqual(2);
+            It should_retry_the_same_offset = () => _consumedOffsets.ForEach(offset => offset.ShouldEqual(0));
         }
     }
 }
