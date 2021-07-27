@@ -1,7 +1,7 @@
 {
   "name": "NetStreams",
   "projectName": "NetStreams",
-  "version": "2.0.0-rc.17",
+  "version": "2.0.0",
   "configuration": "Release",
   "description": "A Kafka library",
   "defaultPublishSource": "https://api.nuget.org/v3/index.json",
@@ -10,7 +10,7 @@
     "url": "https://github.com/joelbrinkley/NetStreams.git"
   },
   "scripts": {
-    "release": "standard-version --prerelease rc",
+    "release": "standard-version",
     "pre-release": "standard-version --prerelease br",
     "clean": "rimraf dist build",
     "prebuild": "npm run clean",
