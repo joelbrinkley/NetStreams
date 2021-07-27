@@ -25,6 +25,7 @@ namespace NetStreams.Specs.Specifications.Integration
             static TestMessage _expectedMessage;
             static TestProducerService<string, TestMessage> _testMessageProducer;
             static MockLog _mockLogger;
+            static INetStream _stream;
 
             static string _expectedLogMessage;
 
@@ -38,7 +39,7 @@ namespace NetStreams.Specs.Specifications.Integration
                 stringProducer.Produce(Guid.NewGuid().ToString(), "{ malformed }");
 
                 _mockLogger = new MockLog();
-                new NetStreamBuilder<string, TestMessage>(cfg =>
+                _stream = new NetStreamBuilder<string, TestMessage>(cfg =>
                     {
                         cfg.BootstrapServers = "localhost:9092";
                         cfg.ConsumerGroup = Guid.NewGuid().ToString();
@@ -47,8 +48,8 @@ namespace NetStreams.Specs.Specifications.Integration
                     })
                     .Stream(_sourceTopic)
                     .ToTopic<string, TestMessage>(_destinationTopic)
-                    .Build()
-                    .StartAsync(CancellationToken.None);
+                    .Build();
+                    _stream.StartAsync(CancellationToken.None);
 
                 _expectedLogMessage =
                     $"A malformed message was encountered on topic { _sourceTopic}. Skipping message. Skipping offset 0 on partition 0";
@@ -65,6 +66,8 @@ namespace NetStreams.Specs.Specifications.Integration
             Because of = () =>
                 _testMessageProducer.ProduceAsync(_expectedMessage.Id, _expectedMessage).BlockUntil(() => _actualMessages.Count == 1).Await();
 
+            Cleanup after = () => _stream.Stop();
+
             It should_log_skip_message_information = () => _mockLogger.ShouldContain(_expectedLogMessage);
 
             It should_skip_malformed_message =
@@ -79,6 +82,7 @@ namespace NetStreams.Specs.Specifications.Integration
             static TestProducerService<string, TestMessage> _producer;
             static CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
             static List<long> _offsets = new List<long>();
+            static INetStream _stream;
 
             Establish context = () =>
             {
@@ -88,7 +92,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 var firstTestMessage = new TestMessage();
                 var consumerGroup = Guid.NewGuid().ToString();
-                var stream = new NetStreamBuilder<string, TestMessage>(cfg =>
+                _stream = new NetStreamBuilder<string, TestMessage>(cfg =>
                 {
                     cfg.BootstrapServers = "localhost:9092";
                     cfg.ConsumerGroup = consumerGroup;
@@ -100,18 +104,20 @@ namespace NetStreams.Specs.Specifications.Integration
                 .ToTopic<string, TestMessage>(_destinationTopic)
                 .Build();
 
-                var streamTask = stream.StartAsync(_cancellationTokenSource.Token);
+                var streamTask = _stream.StartAsync(_cancellationTokenSource.Token);
 
                 _producer.ProduceAsync(Guid.NewGuid().ToString(), firstTestMessage).BlockUntil(() => _offsets.Count == 1).Await();
 
-                stream.Stop();
+                _stream.Stop();
 
                 streamTask.BlockUntil(() => streamTask.Status == TaskStatus.RanToCompletion).Await();
 
-                stream.StartAsync(CancellationToken.None);
+                _stream.StartAsync(CancellationToken.None);
             };
 
             Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _offsets.Count == 2).Await();
+
+            Cleanup after = () => _stream.Stop();
 
             It should_commit_the_offset = () => _offsets[0].ShouldBeLessThan(_offsets[1]);
         }
@@ -123,13 +129,15 @@ namespace NetStreams.Specs.Specifications.Integration
             static readonly string _destinationTopic = $"f.{Guid.NewGuid()}";
             static TestProducerService<string, TestMessage> _producer;
             static List<TestMessage> _consumedMessages = new List<TestMessage>();
+            static INetStream _stream;
+
             Establish context = () =>
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
                 _producer = new TestProducerService<string, TestMessage>(_sourceTopic);
 
-                new NetStreamBuilder<string, TestMessage>(cfg =>
+                _stream = new NetStreamBuilder<string, TestMessage>(cfg =>
                 {
                     cfg.BootstrapServers = "localhost:9092";
                     cfg.ConsumerGroup = Guid.NewGuid().ToString();
@@ -143,13 +151,15 @@ namespace NetStreams.Specs.Specifications.Integration
                     throw new Exception("Bang!");
                 })
                 .ToTopic<string, TestMessage>(_destinationTopic)
-                .Build()
-                .StartAsync(CancellationToken.None);
+                .Build();
+                _stream.StartAsync(CancellationToken.None);
 
                 _producer.Produce(Guid.NewGuid().ToString(), new TestMessage());
             };
 
             Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _consumedMessages.Count == 2).Await();
+
+            Cleanup after = () => _stream.Stop();
 
             It should_continue_processing_the_next_message = () => _consumedMessages.Count.ShouldEqual(2);
         }
@@ -157,8 +167,8 @@ namespace NetStreams.Specs.Specifications.Integration
         [Subject("Consume Failure")]
         class when_consuming_a_message_and_configured_to_retry_on_error
         {
-            static readonly string _sourceTopic = $"retry.{Guid.NewGuid()}";
-            static readonly string _destinationTopic = $"retry.{Guid.NewGuid()}";
+            static readonly string _sourceTopic = $"ri.{Guid.NewGuid()}";
+            static readonly string _destinationTopic = $"ri.{Guid.NewGuid()}";
             static TestProducerService<string, TestMessage> _producer;
             static INetStream _stream;
             static List<long> _consumedOffsets = new List<long>();
@@ -168,7 +178,8 @@ namespace NetStreams.Specs.Specifications.Integration
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
                 _producer = new TestProducerService<string, TestMessage>(_sourceTopic);
-                new NetStreamBuilder<string, TestMessage>(cfg =>
+
+                _stream = new NetStreamBuilder<string, TestMessage>(cfg =>
                         {
                             cfg.BootstrapServers = "localhost:9092";
                             cfg.ConsumerGroup = Guid.NewGuid().ToString();
@@ -182,15 +193,18 @@ namespace NetStreams.Specs.Specifications.Integration
                             throw new Exception("Bang!");
                         })
                         .ToTopic<string, TestMessage>(_destinationTopic)
-                        .Build()
-                        .StartAsync(CancellationToken.None);
+                        .Build();
+
+                _stream.StartAsync(CancellationToken.None);
 
                 _producer.Produce(Guid.NewGuid().ToString(), new TestMessage());
             };
 
-            Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _consumedOffsets.Count > 6).Await();
+            Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _consumedOffsets.Count > 3).Await();
 
-            It should_retry_the_same_offset = () => _consumedOffsets.ForEach(offset => offset.ShouldEqual(0));
+            Cleanup after = () => _stream.Stop();
+
+            It should_retry_the_same_offset = () => _consumedOffsets.TrueForAll(x => x == 0);
         }
     }
 }

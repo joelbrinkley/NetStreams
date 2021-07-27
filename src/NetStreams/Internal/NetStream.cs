@@ -61,7 +61,7 @@ namespace NetStreams.Internal
                     ConsumeResult<TKey, TMessage> consumeResult = null;
                     try
                     {
-                        consumeResult = _consumer.Consume(token);
+                        consumeResult = _consumer.Consume(100);
                         await ProcessMessageAsync(consumeResult, token);
                     }
                     catch (ConsumeException ce) when (ce.InnerException is MalformedMessageException && _configuration.ShouldSkipMalformedMessages)
