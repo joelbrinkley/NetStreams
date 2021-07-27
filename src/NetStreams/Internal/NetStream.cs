@@ -58,17 +58,11 @@ namespace NetStreams.Internal
             {
                 while (!token.IsCancellationRequested && Status != NetStreamStatus.Stopped)
                 {
+                    ConsumeResult<TKey, TMessage> consumeResult = null;
                     try
                     {
-                        var consumeResult = _consumer.Consume(100);
-                        if (consumeResult != null)
-                        {
-                            var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
-
-                            _log.Debug($"Begin consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
-                            await _pipeline.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
-                            _log.Debug($"Finished consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
-                        }
+                        consumeResult = _consumer.Consume(token);
+                        await ProcessMessageAsync(consumeResult, token);
                     }
                     catch (ConsumeException ce) when (ce.InnerException is MalformedMessageException && _configuration.ShouldSkipMalformedMessages)
                     {
@@ -81,11 +75,20 @@ namespace NetStreams.Internal
                         _onError(ex);
                         if (!_configuration.ContinueOnError)
                         {
-                            Stop();
+                            ResetOffset(consumeResult);
                         }
                     }
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
+        }
+
+        private void ResetOffset(ConsumeResult<TKey, TMessage> consumeResult)
+        {
+            if (consumeResult != null)
+            {
+                _log.Debug($"Resetting offset to topic: {consumeResult.TopicPartitionOffset.Topic}, partition:{consumeResult.TopicPartition.Partition}, offset: {consumeResult.TopicPartitionOffset.Offset}");
+                _consumer.Seek(consumeResult.TopicPartitionOffset);
+            }
         }
 
         public void Stop()
@@ -116,6 +119,18 @@ namespace NetStreams.Internal
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: false);
+        }
+
+        private async Task ProcessMessageAsync(ConsumeResult<TKey, TMessage> consumeResult, CancellationToken token)
+        {
+            if (consumeResult != null)
+            {
+                var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
+
+                _log.Debug($"Begin consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
+                await _pipeline.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
+                _log.Debug($"Finished consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
+            }
         }
 
         public void Dispose()

@@ -164,6 +164,22 @@ new NetStreamBuilder<Null, MyMessage>(
     })
 ```
 
+# Controlling Netstreams on Error
+
+By default Netstreams is set to set to continue on error.  This means that if an exception is encountered when processing a message, Netstreams will log the exception and move on to the next offset. NetStreams does not commit until a successful message is processed.
+
+NetStreams can be configured to *not* continue on error but instead continue to process the the same offset until it is processed succesfully or manually skipped.
+
+```
+new NetStreamBuilder<Null, MyMessage>(
+    cfg =>
+    {
+        cfg.BootstrapServers = "localhost:9092";
+        cfg.ConsumerGroup = "my-consumer";
+        cfg.ContinueOnError = false;
+    })
+```
+
 # Generating New Certs for Docker Cluster and Testing
 
 In the ``/secrets`` folder you'll find a handful of bash scripts.  These can be used to generate a new round of certs if you need them.

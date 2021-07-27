@@ -69,7 +69,7 @@ namespace NetStreams.Specs.Specifications.Component
                 _expectedException = exceptionToThrow.ToExpectedObject();
 
                 _mockConsumer
-                    .Setup(x => x.Consume(Parameter.IsAny<int>()))
+                    .Setup(x => x.Consume(Parameter.IsAny<CancellationToken>()))
                     .Throws(exceptionToThrow);
 
                 var configuration = new NetStreamConfiguration<string, TestMessage>
