@@ -7,15 +7,17 @@ namespace NetStreams.Configuration
     {
         public static ProducerConfig ToProducerConfig(this INetStreamConfigurationContext config)
         {
-            return new ProducerConfig()
+            var producerConfig = new ProducerConfig()
             {
                 BootstrapServers = config.BootstrapServers,
             };
+            config.AuthenticationMethod.Apply(producerConfig);
+            return producerConfig;
         }
 
         public static ConsumerConfig ToConsumerConfig(this INetStreamConfigurationContext config)
         {
-            return new ConsumerConfig()
+            var consumerConfig = new ConsumerConfig()
             {
                 BootstrapServers = config.BootstrapServers,
                 GroupId = config.ConsumerGroup,
@@ -23,6 +25,8 @@ namespace NetStreams.Configuration
                 AutoCommitIntervalMs = config.DeliveryMode.AutoCommitIntervalMs,
                 AutoOffsetReset = config.AutoOffsetReset,
             };
+            config.AuthenticationMethod.Apply(consumerConfig);
+            return consumerConfig;
         }
     }
 }

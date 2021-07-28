@@ -27,10 +27,11 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _producerService = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
-                DefaultBuilder.New<string, TestMessage>()
+                _stream = DefaultBuilder.New<string, TestMessage>()
                                     .Stream(_sourceTopic)
                                     .Handle(context => _actualMessages.Add(context.Message))
                                     .Build();
+
                 _stream.StartAsync(CancellationToken.None);
 
                 _expectedMessages.Add(new TestMessage() { Description = "hello" });

@@ -38,7 +38,7 @@ namespace NetStreams.Specs.Infrastructure.Mothers
             {
                 var sslCaCertPath = GetSslSecretPath("snakeoil-ca-1.crt");
                 cfg.BootstrapServers = "localhost:9095";
-                cfg.UseAuthentication(new SaslScram256Authentication(sslCaCertPath, "client", "client-secret"));
+                cfg.UseAuthentication(new SaslScram256Authentication("client", "client-secret", sslCaCertPath));
                 cfg.ConsumerGroup = Guid.NewGuid().ToString();
                 cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
             });
