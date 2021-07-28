@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.1.0 (2021-07-28)
+
+
+### Features
+
+* add authentication methods ([#51](https://github.com/joelbrinkley/NetStreams/issues/51)) ([da36835](https://github.com/joelbrinkley/NetStreams/commit/da36835c1e02661b3796d34dd0bb76cf118b0bed))
+
 ### 2.0.1 (2021-07-27)
 
 ## 2.0.0-rc.15 (2021-07-22)
