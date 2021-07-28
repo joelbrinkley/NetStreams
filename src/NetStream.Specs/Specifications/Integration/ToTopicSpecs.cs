@@ -5,9 +5,9 @@ using System.Threading;
 using Confluent.Kafka;
 using Machine.Specifications;
 using NetStreams.Internal;
-using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Models;
+using NetStreams.Specs.Infrastructure.Mothers;
 using NetStreams.Specs.Infrastructure.Services;
 
 namespace NetStreams.Specs.Specifications.Integration
@@ -27,18 +27,18 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producerService = TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 _message = new TestMessage { Description = "Hello World" };
 
-               DefaultBuilder.Plaintext<string, TestMessage>()
+               DefaultBuilder.New<string, TestMessage>()
                     .Stream(_sourceTopic)
                     .Transform(context => context.Message)
                     .ToTopic<string, TestMessage>(_destinationTopic, message => message.Id)
                     .Build()
                     .StartAsync(CancellationToken.None);
 
-               DefaultBuilder.Plaintext<string, TestMessage>()
+               DefaultBuilder.New<string, TestMessage>()
                     .Stream(_destinationTopic)
                     .Handle(context => _actualKey = context.Key)
                     .Build()
@@ -62,18 +62,18 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producerService = TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 _message = new TestMessage { Description = "Hello World" };
 
-                DefaultBuilder.Plaintext<string, TestMessage>()
+                DefaultBuilder.New<string, TestMessage>()
                      .Stream(_sourceTopic)
                     .Transform(context => context.Message)
                     .ToTopic<string, TestMessage>(_destinationTopic)
                     .Build()
                     .StartAsync(CancellationToken.None);
 
-                DefaultBuilder.Plaintext<string, TestMessage>()
+                DefaultBuilder.New<string, TestMessage>()
                     .Stream(_destinationTopic)
                     .Handle(context => _actualKey = context.Key)
                     .Build()
@@ -99,18 +99,18 @@ namespace NetStreams.Specs.Specifications.Integration
                 new TopicService().CreateDefaultTopic(_sourceTopic);
                 new TopicService().CreateDefaultTopic(_destinationTopic);
 
-                _producerService = TestProducerFactory.Plaintext<int, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<int, TestMessage>(_sourceTopic);
 
                 _message = new TestMessage { Description = "Hello World" };
 
-                DefaultBuilder.Plaintext<int, TestMessage>()
+                DefaultBuilder.New<int, TestMessage>()
                   .Stream(_sourceTopic)
                     .Transform(context => context.Message)
                     .ToTopic<int, TestMessage>(_destinationTopic)
                     .Build()
                     .StartAsync(CancellationToken.None);
 
-                DefaultBuilder.Plaintext<int, TestMessage>()
+                DefaultBuilder.New<int, TestMessage>()
                     .Stream(_destinationTopic)
                     .Handle(context => _actualKey = context.Key)
                     .Build()
@@ -137,7 +137,7 @@ namespace NetStreams.Specs.Specifications.Integration
                 new TopicService().CreateDefaultTopic(_sourceTopic);
                 new TopicService().CreateDefaultTopic(_destinationTopic);
 
-                _producerService = TestProducerFactory.Plaintext<int, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<int, TestMessage>(_sourceTopic);
 
                 _message = new TestMessage { Description = "Hello World" };
 
@@ -153,7 +153,7 @@ namespace NetStreams.Specs.Specifications.Integration
                 .Build()
                 .StartAsync(CancellationToken.None);
 
-                DefaultBuilder.Plaintext<string, TestMessage>()
+                DefaultBuilder.New<string, TestMessage>()
                     .Stream(_destinationTopic)
                     .Handle(context => _actualHeaders = context.Headers)
                     .Build()

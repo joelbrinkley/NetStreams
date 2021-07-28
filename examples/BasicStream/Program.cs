@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
 using NetStreams;
+using NetStreams.Authentication;
 using NetStreams.Serialization;
 using System;
 using System.Threading;
@@ -21,10 +22,10 @@ namespace BasicStream
             var builder = new NetStreamBuilder<Null, MyMessage>(
                 cfg =>
                 {
-                    cfg.AuthenticateWithPlaintext();
-                    //cfg.AuthenticateWithSsl("sslCaCertPath", "sslClientCertPath", "sslClientKeyPath", "sslClientKeyPwd");
-                    //cfg.AuthenticateWithSaslScram256("username", "password", "sslCaCertPath");
-                    //cfg.AuthenticateWithSaslScram512("username", "password", "sslCaCertPath");
+                    cfg.UseAuthentication(new PlainTextAuthentication());
+                    //cfg.UseAuthentication(new SslAuthentication("sslCaCertPath", "sslClientCertPath", "sslClientKeyPath", "sslClientKeyPwd"));
+                    //cfg.UseAuthentication(new SaslScram256Authentication("username", "password", "sslCaCertPath"));
+                    //cfg.UseAuthentication(new SaslScram512Authentication("username", "password", "sslCaCertPath"));
                     cfg.BootstrapServers = "localhost:9092";
                     cfg.ConsumerGroup = "BasicStream.Consumer";
                     cfg.AddTopicConfiguration(cfg =>

@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Models;
 using NetStreams.Specs.Infrastructure.Services;
+using NetStreams.Specs.Infrastructure.Mothers;
 
 namespace NetStreams.Specs.Specifications.Integration
 {
@@ -24,16 +24,16 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producerService = TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
-                DefaultBuilder.Plaintext<string, TestMessage>()
+                DefaultBuilder.New<string, TestMessage>()
                     .Stream(_sourceTopic)
                     .Filter(f => f.Message.Description == "hello")
                     .ToTopic<string, TestMessage>(_destinationTopic, message => message.Id)
                     .Build()
                     .StartAsync(CancellationToken.None);
 
-                DefaultBuilder.Plaintext<string, TestMessage>()
+                DefaultBuilder.New<string, TestMessage>()
                     .Stream(_destinationTopic)
                     .Handle(context => _actualHandledMessages.Add(context.Message))
                     .Build()

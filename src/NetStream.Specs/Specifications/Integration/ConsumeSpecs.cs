@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,10 +7,10 @@ using Confluent.Kafka;
 using ExpectedObjects;
 using Machine.Specifications;
 using NetStreams.Configuration;
-using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Mocks;
 using NetStreams.Specs.Infrastructure.Models;
+using NetStreams.Specs.Infrastructure.Mothers;
 using NetStreams.Specs.Infrastructure.Services;
 
 namespace NetStreams.Specs.Specifications.Integration
@@ -21,8 +22,7 @@ namespace NetStreams.Specs.Specifications.Integration
         {
             static readonly string _sourceTopic = $"malform.{Guid.NewGuid()}";
             static readonly string _destinationTopic = $"malform.{Guid.NewGuid()}";
-            static INetStreamBuilder<string, TestMessage> _streamBuilder;
-            static readonly List<TestMessage> _actualMessages = new List<TestMessage>();
+            static readonly List<TestMessage> _actualMessages = new();
             static TestMessage _expectedMessage;
             static TestProducerService<string, TestMessage> _testMessageProducer;
             static MockLog _mockLogger;
@@ -34,30 +34,30 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                var stringProducer = Infrastructure.Services.TestProducerFactory.Plaintext<string, string>(_sourceTopic);
-                _testMessageProducer = Infrastructure.Services.TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
+                var stringProducer = TestProducerMother.New<string, string>(_sourceTopic);
+                _testMessageProducer = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 stringProducer.Produce(Guid.NewGuid().ToString(), "{ malformed }");
 
                 _mockLogger = new MockLog();
                 _stream = new NetStreamBuilder<string, TestMessage>(cfg =>
-                    {
-                        cfg.BootstrapServers = "localhost:9092";
-                        cfg.ConsumerGroup = Guid.NewGuid().ToString();
-                        cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
-                        cfg.ConfigureLogging(logging => logging.AddLogger(_mockLogger));
-                    })
+                {
+                    cfg.BootstrapServers = "localhost:9092";
+                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
+                    cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
+                    cfg.ConfigureLogging(logging => logging.AddLogger(_mockLogger));
+                })
                     .Stream(_sourceTopic)
                     .ToTopic<string, TestMessage>(_destinationTopic)
                     .Build();
-                    _stream.StartAsync(CancellationToken.None);
+                _stream.StartAsync(CancellationToken.None);
 
                 _expectedLogMessage =
                     $"A malformed message was encountered on topic { _sourceTopic}. Skipping message. Skipping offset 0 on partition 0";
 
                 _expectedMessage = new TestMessage { Description = "hello" };
 
-                DefaultBuilder.Plaintext<string, TestMessage>()
+                DefaultBuilder.New<string, TestMessage>()
                     .Stream(_destinationTopic)
                     .Handle(context => _actualMessages.Add(context.Message))
                     .Build()
@@ -89,7 +89,7 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producer = Infrastructure.Services.TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
+                _producer = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 var firstTestMessage = new TestMessage();
                 var consumerGroup = Guid.NewGuid().ToString();
@@ -136,7 +136,7 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producer = Infrastructure.Services.TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
+                _producer = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 _stream = new NetStreamBuilder<string, TestMessage>(cfg =>
                 {
@@ -178,14 +178,15 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producer = Infrastructure.Services.TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
+                _producer = TestProducerMother.New<string, TestMessage>(_sourceTopic);
+
                 _stream = new NetStreamBuilder<string, TestMessage>(cfg =>
-                        {
-                            cfg.BootstrapServers = "localhost:9092";
-                            cfg.ConsumerGroup = Guid.NewGuid().ToString();
-                            cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
-                            cfg.ContinueOnError = false;
-                        })
+                {
+                    cfg.BootstrapServers = "localhost:9092";
+                    cfg.ConsumerGroup = Guid.NewGuid().ToString();
+                    cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
+                    cfg.ContinueOnError = false;
+                })
                         .Stream(_sourceTopic)
                         .Handle(context =>
                         {
@@ -203,45 +204,6 @@ namespace NetStreams.Specs.Specifications.Integration
             Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _consumedOffsets.Count > 3).Await();
 
             Cleanup after = () => _stream.Stop();
-            It should_complete_the_stream_task = () => _streamTask.Status.ShouldEqual(TaskStatus.RanToCompletion);
-        }
-
-        [Subject("Consume")]
-        class when_starting_a_stopped_stream
-        {
-            static readonly string _sourceTopic = $"r.{Guid.NewGuid()}";
-            static readonly string _destinationTopic = $"r.{Guid.NewGuid()}";
-            static TestProducerService<string, TestMessage> _producer;
-            static INetStream _stream;
-            static List<TestMessage> _consumedMessages = new List<TestMessage>();
-            static Task _streamTask;
-
-            Establish context = () =>
-            {
-                new TopicService().CreateAll(_sourceTopic, _destinationTopic);
-
-                _producer = Infrastructure.Services.TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
-
-                var firstTestMessage = new TestMessage();
-
-                var stream = DefaultBuilder.Plaintext<string, TestMessage>()
-                .Stream(_sourceTopic)
-                .Handle(context => _consumedMessages.Add(context.Message))
-                .ToTopic<string, TestMessage>(_destinationTopic)
-                .Build();
-
-                var streamTask = stream.StartAsync(CancellationToken.None);
-
-                _producer.ProduceAsync(Guid.NewGuid().ToString(), firstTestMessage).BlockUntil(() => _consumedMessages.Count == 1).Await();
-
-                stream.Stop();
-
-                streamTask.BlockUntil(() => streamTask.Status == TaskStatus.RanToCompletion).Await();
-
-                stream.StartAsync(CancellationToken.None);
-
-            };
-            Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _consumedMessages.Count == 2).Await();
 
             It should_retry_the_same_offset = () => _consumedOffsets.TrueForAll(x => x == 0);
         }

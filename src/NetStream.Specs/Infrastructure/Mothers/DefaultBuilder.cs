@@ -2,12 +2,13 @@
 using System.IO;
 using System.Reflection;
 using Confluent.Kafka;
+using NetStreams.Authentication;
 
-namespace NetStreams.Specs.Infrastructure
+namespace NetStreams.Specs.Infrastructure.Mothers
 {
     internal static class DefaultBuilder
     {
-        public static INetStreamBuilder<TKey, TMessage> Plaintext<TKey, TMessage>()
+        public static INetStreamBuilder<TKey, TMessage> New<TKey, TMessage>()
         {
             return new NetStreamBuilder<TKey, TMessage>(cfg =>
             {
@@ -17,7 +18,7 @@ namespace NetStreams.Specs.Infrastructure
             });
         }
 
-        public static INetStreamBuilder<TKey, TMessage> Ssl<TKey, TMessage>()
+        public static INetStreamBuilder<TKey, TMessage> UseSsl<TKey, TMessage>()
         {
             return new NetStreamBuilder<TKey, TMessage>(cfg =>
             {
@@ -25,19 +26,19 @@ namespace NetStreams.Specs.Infrastructure
                 var sslClientCertPath = GetSslSecretPath("client.pem");
                 var sslClientKeyPath = GetSslSecretPath("client.key");
                 cfg.BootstrapServers = "localhost:9093";
-                cfg.AuthenticateWithSsl(sslCaCertPath, sslClientCertPath, sslClientKeyPath, "confluent");
+                cfg.UseAuthentication(new SslAuthentication(sslCaCertPath, sslClientCertPath, sslClientKeyPath, "confluent"));
                 cfg.ConsumerGroup = Guid.NewGuid().ToString();
                 cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
             });
         }
 
-        public static INetStreamBuilder<TKey, TMessage> SaslScram256<TKey, TMessage>()
+        public static INetStreamBuilder<TKey, TMessage> UseSaslScram256<TKey, TMessage>()
         {
             return new NetStreamBuilder<TKey, TMessage>(cfg =>
             {
                 var sslCaCertPath = GetSslSecretPath("snakeoil-ca-1.crt");
                 cfg.BootstrapServers = "localhost:9095";
-                cfg.AuthenticateWithSaslScram256(sslCaCertPath, "client", "client-secret");
+                cfg.UseAuthentication(new SaslScram256Authentication(sslCaCertPath, "client", "client-secret"));
                 cfg.ConsumerGroup = Guid.NewGuid().ToString();
                 cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
             });

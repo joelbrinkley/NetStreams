@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Models;
 using NetStreams.Specs.Infrastructure.Services;
+using NetStreams.Specs.Infrastructure.Mothers;
 
 namespace NetStreams.Specs.Specifications.Integration
 {
@@ -25,9 +25,9 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateDefaultTopic(_sourceTopic);
 
-                _producerService = TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
-                
-                DefaultBuilder.Plaintext<string, TestMessage>()
+                _producerService = TestProducerMother.New<string, TestMessage>(_sourceTopic);
+
+                DefaultBuilder.New<string, TestMessage>()
                                     .Stream(_sourceTopic)
                                     .Handle(context => _actualMessages.Add(context.Message))
                                     .Build();
@@ -57,11 +57,11 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producer = TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
+                _producer = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 var firstTestMessage = new TestMessage();
 
-                _stream = DefaultBuilder.Plaintext<string, TestMessage>()
+                _stream = DefaultBuilder.New<string, TestMessage>()
                 .Stream(_sourceTopic)
                 .Handle(context => _consumedMessages.Add(context.Message))
                 .ToTopic<string, TestMessage>(_destinationTopic)
@@ -83,62 +83,6 @@ namespace NetStreams.Specs.Specifications.Integration
             Cleanup after = () => _stream.Stop();
 
             It should_resume_consuming_messages = () => _consumedMessages.Count.ShouldEqual(2);
-            
-        class when_a_stream_is_started_on_ssl_cluster
-        {
-            static string _sourceTopic = $"start.{Guid.NewGuid()}";
-            static TestProducerService<string, TestMessage> _producerService;
-            static List<TestMessage> _actualMessages = new List<TestMessage>();
-            static List<TestMessage> _expectedMessages = new List<TestMessage>();
-
-            Establish context = () =>
-            {
-                new TopicService().CreateDefaultTopic(_sourceTopic);
-
-                _producerService = TestProducerFactory.Ssl<string, TestMessage>(_sourceTopic);
-
-                DefaultBuilder.Ssl<string, TestMessage>()
-                    .Stream(_sourceTopic)
-                    .Handle(context => _actualMessages.Add(context.Message))
-                    .Build()
-                    .StartAsync(CancellationToken.None);
-
-                _expectedMessages.Add(new TestMessage() { Description = "hello" });
-                _expectedMessages.Add(new TestMessage() { Description = "world" });
-            };
-
-            Because of = () => Task.Run(() => _expectedMessages.ForEach(x => _producerService.Produce(x.Id, x))).BlockUntil(() => _actualMessages.Count == _expectedMessages.Count).Await();
-
-            It should_consume_messages = () => _expectedMessages.Count.ShouldEqual(_actualMessages.Count);
-        }
-
-        [Subject("Start")]
-        class when_a_stream_is_started_on_sasl_cluster
-        {
-            static string _sourceTopic = $"start.{Guid.NewGuid()}";
-            static TestProducerService<string, TestMessage> _producerService;
-            static List<TestMessage> _actualMessages = new List<TestMessage>();
-            static List<TestMessage> _expectedMessages = new List<TestMessage>();
-
-            Establish context = () =>
-            {
-                new TopicService().CreateDefaultTopic(_sourceTopic);
-
-                _producerService = TestProducerFactory.SaslScram256<string, TestMessage>(_sourceTopic);
-
-                DefaultBuilder.SaslScram256<string, TestMessage>()
-                    .Stream(_sourceTopic)
-                    .Handle(context => _actualMessages.Add(context.Message))
-                    .Build()
-                    .StartAsync(CancellationToken.None);
-
-                _expectedMessages.Add(new TestMessage() { Description = "hello" });
-                _expectedMessages.Add(new TestMessage() { Description = "world" });
-            };
-
-            Because of = () => Task.Run(() => _expectedMessages.ForEach(x => _producerService.Produce(x.Id, x))).BlockUntil(() => _actualMessages.Count == _expectedMessages.Count).Await();
-
-            It should_consume_messages = () => _expectedMessages.Count.ShouldEqual(_actualMessages.Count);
         }
     }
 }

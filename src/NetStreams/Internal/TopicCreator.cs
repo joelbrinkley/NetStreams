@@ -20,12 +20,8 @@ namespace NetStreams.Internal
             var adminConfig = new AdminClientConfig
             {
                 BootstrapServers = configuration.BootstrapServers,
-                SslCertificateLocation = configuration.SslCertificateLocation,
-                SslCaLocation = configuration.SslCaLocation,
-                SslKeyLocation = configuration.SslKeyLocation,
-                SslKeyPassword = configuration.SslKeyPassword,
-                SecurityProtocol = configuration.ParseSecurityProtocol()
             };
+            configuration.AuthenticationMethod.Apply(adminConfig);
 
             var adminClientBuilder = new AdminClientBuilder(adminConfig);
             _adminClient = new Lazy<IAdminClient>(() => adminClientBuilder.Build());
