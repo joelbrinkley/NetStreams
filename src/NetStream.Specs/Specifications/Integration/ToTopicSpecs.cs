@@ -5,9 +5,9 @@ using System.Threading;
 using Confluent.Kafka;
 using Machine.Specifications;
 using NetStreams.Internal;
-using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Models;
+using NetStreams.Specs.Infrastructure.Mothers;
 using NetStreams.Specs.Infrastructure.Services;
 
 namespace NetStreams.Specs.Specifications.Integration
@@ -27,7 +27,7 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 _message = new TestMessage { Description = "Hello World" };
 
@@ -62,7 +62,7 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 _message = new TestMessage { Description = "Hello World" };
 
@@ -99,7 +99,7 @@ namespace NetStreams.Specs.Specifications.Integration
                 new TopicService().CreateDefaultTopic(_sourceTopic);
                 new TopicService().CreateDefaultTopic(_destinationTopic);
 
-                _producerService = new TestProducerService<int, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<int, TestMessage>(_sourceTopic);
 
                 _message = new TestMessage { Description = "Hello World" };
 
@@ -137,7 +137,7 @@ namespace NetStreams.Specs.Specifications.Integration
                 new TopicService().CreateDefaultTopic(_sourceTopic);
                 new TopicService().CreateDefaultTopic(_destinationTopic);
 
-                _producerService = new TestProducerService<int, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<int, TestMessage>(_sourceTopic);
 
                 _message = new TestMessage { Description = "Hello World" };
 

@@ -6,7 +6,7 @@ using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Models;
 using NetStreams.Specs.Infrastructure.Services;
 using System.Threading.Tasks;
-using NetStreams.Specs.Infrastructure;
+using NetStreams.Specs.Infrastructure.Mothers;
 
 namespace NetStreams.Specs.Specifications.Integration
 {
@@ -28,7 +28,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _message = new TestMessage() { Description = "Hello World" };
 
-                _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 var testEvent = new TestEvent()
                 {
@@ -72,7 +72,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _message = new TestMessage() { Description = "Hello World" };
 
-                _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
 
                 var testEvent = new TestEvent()
@@ -116,7 +116,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _message = new TestMessage() { Description = "Hello World" };
 
-                _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 DefaultBuilder.New<string, TestMessage>()
                     .Stream(_sourceTopic)
@@ -145,7 +145,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _message = new TestMessage() { Description = "Hello World" };
 
-                _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 DefaultBuilder.New<string, TestMessage>()
                     .Stream(_sourceTopic)

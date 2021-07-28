@@ -3,17 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Models;
 using NetStreams.Specs.Infrastructure.Services;
+using NetStreams.Specs.Infrastructure.Mothers;
 
 namespace NetStreams.Specs.Specifications.Integration
 {
     class StartSpecs
     {
         [Subject("Start")]
-        class when_a_stream_is_started
+        class when_a_stream_is_started_on_plaintext_cluster
         {
             static string _sourceTopic = $"start.{Guid.NewGuid()}";
             static TestProducerService<string, TestMessage> _producerService;
@@ -25,12 +25,13 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateDefaultTopic(_sourceTopic);
 
-                _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producerService = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 _stream = DefaultBuilder.New<string, TestMessage>()
                                     .Stream(_sourceTopic)
                                     .Handle(context => _actualMessages.Add(context.Message))
                                     .Build();
+
                 _stream.StartAsync(CancellationToken.None);
 
                 _expectedMessages.Add(new TestMessage() { Description = "hello" });
@@ -57,7 +58,7 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producer = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producer = TestProducerMother.New<string, TestMessage>(_sourceTopic);
 
                 var firstTestMessage = new TestMessage();
 

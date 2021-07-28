@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Confluent.Kafka;
+using NetStreams.Authentication;
 using NetStreams.Logging;
 
 namespace NetStreams.Configuration
@@ -14,11 +15,7 @@ namespace NetStreams.Configuration
         public string ConsumerGroup { get; set; }
         public List<ITopicConfiguration> TopicConfigurations { get; set; } = new List<ITopicConfiguration>();
         public bool TopicCreationEnabled { get; private set; }
-        public string SecurityProtocol { get; set; }
-        public string SslCertificateLocation { get; set; }
-        public string SslCaLocation { get; set; }
-        public string SslKeyLocation { get; set; }
-        public string SslKeyPassword { get; set; }
+        public AuthenticationMethod AuthenticationMethod { get; set; } = new PlainTextAuthentication();
         public bool ShouldSkipMalformedMessages { get; set; } = true;
 
         public Stack<PipelineStep<TKey, TMessage>> PipelineSteps { get; set; } =
@@ -35,6 +32,12 @@ namespace NetStreams.Configuration
             return this;
         }
 
+        public INetStreamConfigurationBuilderContext<TKey, TMessage> UseAuthentication(AuthenticationMethod authenticationMethod)
+        {
+            AuthenticationMethod = authenticationMethod;
+            return this;
+        }
+
         public INetStreamConfigurationBuilderContext<TKey, TMessage> AddTopicConfiguration(Action<ITopicConfiguration> cfg)
         {
             TopicCreationEnabled = true;
@@ -44,6 +47,7 @@ namespace NetStreams.Configuration
             return this;
         }
     }
+
     public class TopicConfiguration : ITopicConfiguration
     {
         public string Name { get; set; }
@@ -66,12 +70,7 @@ namespace NetStreams.Configuration
         bool ShouldSkipMalformedMessages { get; set; }
         string ConsumerGroup { get; set; }
         string BootstrapServers { get; set; }
-        DeliveryMode DeliveryMode { get; set; }
-        string SecurityProtocol { get; set; }
-        string SslCertificateLocation { get; set; }
-        string SslCaLocation { get; set; }
-        string SslKeyLocation { get; set; }
-        string SslKeyPassword { get; set; }
+        DeliveryMode DeliveryMode { get; set; }        
         Stack<PipelineStep<TKey, TMessage>> PipelineSteps { get; }
         /// <summary>
         /// By default the EnableMessageTypeHeader boolean is set to true.  This will instruct the
@@ -82,7 +81,7 @@ namespace NetStreams.Configuration
         bool ContinueOnError { get; set; }
 
         INetStreamConfigurationBuilderContext<TKey, TMessage> AddTopicConfiguration(Action<ITopicConfiguration> cfg);
-
+        INetStreamConfigurationBuilderContext<TKey, TMessage> UseAuthentication(AuthenticationMethod authenticationMethod);
         INetStreamConfigurationBuilderContext<TKey, TMessage> ConfigureLogging(Action<LogContext> cfg);
     }
 }
