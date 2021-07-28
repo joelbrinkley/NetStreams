@@ -21,6 +21,10 @@ namespace BasicStream
             var builder = new NetStreamBuilder<Null, MyMessage>(
                 cfg =>
                 {
+                    cfg.AuthenticateWithPlaintext();
+                    //cfg.AuthenticateWithSsl("sslCaCertPath", "sslClientCertPath", "sslClientKeyPath", "sslClientKeyPwd");
+                    //cfg.AuthenticateWithSaslScram256("username", "password", "sslCaCertPath");
+                    //cfg.AuthenticateWithSaslScram512("username", "password", "sslCaCertPath");
                     cfg.BootstrapServers = "localhost:9092";
                     cfg.ConsumerGroup = "BasicStream.Consumer";
                     cfg.AddTopicConfiguration(cfg =>

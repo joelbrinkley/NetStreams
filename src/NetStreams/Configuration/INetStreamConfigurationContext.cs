@@ -17,6 +17,9 @@ namespace NetStreams.Configuration
         string SslCaLocation { get; set; }
         string SslKeyLocation { get; set; }
         string SslKeyPassword { get; set; }
+        string SaslMechanism { get; set; }
+        string SaslUsername { get; set; }
+        string SaslPassword { get; set; }
         AutoOffsetReset AutoOffsetReset { get; set; }
     }
 

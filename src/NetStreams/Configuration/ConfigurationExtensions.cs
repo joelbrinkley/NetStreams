@@ -14,7 +14,10 @@ namespace NetStreams.Configuration
                 SslCertificateLocation = config.SslCertificateLocation,
                 SslCaLocation = config.SslCaLocation,
                 SslKeyLocation = config.SslKeyLocation,
-                SslKeyPassword = config.SslKeyPassword
+                SslKeyPassword = config.SslKeyPassword,
+                SaslMechanism = ParseSaslMechanism(config),
+                SaslUsername = config.SaslUsername,
+                SaslPassword = config.SaslPassword
             };
         }
 
@@ -31,7 +34,10 @@ namespace NetStreams.Configuration
                 SslCertificateLocation = config.SslCertificateLocation,
                 SslCaLocation = config.SslCaLocation,
                 SslKeyLocation = config.SslKeyLocation,
-                SslKeyPassword = config.SslKeyPassword
+                SslKeyPassword = config.SslKeyPassword,
+                SaslMechanism = ParseSaslMechanism(config),
+                SaslUsername = config.SaslUsername,
+                SaslPassword = config.SaslPassword
             };
         }
 
@@ -46,6 +52,23 @@ namespace NetStreams.Configuration
                 else
                 {
                     throw new ArgumentException(nameof(config.SecurityProtocol));
+                }
+            }
+
+            return null;
+        }
+
+        public static SaslMechanism? ParseSaslMechanism(this INetStreamConfigurationContext config)
+        {
+            if (!string.IsNullOrEmpty(config.SaslMechanism))
+            {
+                if (Enum.TryParse<SaslMechanism>(config.SaslMechanism, true, out var saslMechanism))
+                {
+                    return saslMechanism;
+                }
+                else
+                {
+                    throw new ArgumentException(nameof(config.SaslMechanism));
                 }
             }
 

@@ -24,16 +24,16 @@ namespace NetStreams.Specs.Specifications.Integration
             {
                 new TopicService().CreateAll(_sourceTopic, _destinationTopic);
 
-                _producerService = new TestProducerService<string, TestMessage>(_sourceTopic);
+                _producerService = TestProducerFactory.Plaintext<string, TestMessage>(_sourceTopic);
 
-                DefaultBuilder.New<string, TestMessage>()
+                DefaultBuilder.Plaintext<string, TestMessage>()
                     .Stream(_sourceTopic)
                     .Filter(f => f.Message.Description == "hello")
                     .ToTopic<string, TestMessage>(_destinationTopic, message => message.Id)
                     .Build()
                     .StartAsync(CancellationToken.None);
 
-                DefaultBuilder.New<string, TestMessage>()
+                DefaultBuilder.Plaintext<string, TestMessage>()
                     .Stream(_destinationTopic)
                     .Handle(context => _actualHandledMessages.Add(context.Message))
                     .Build()
