@@ -180,6 +180,25 @@ new NetStreamBuilder<Null, MyMessage>(
     })
 ```
 
+# Cluster Authentication
+NetStreams supports the following cluster authentication methods:
+- PlainText
+- SSL
+- SaslScram256
+- SaslScram512
+
+```
+var builder = new NetStreamBuilder<Null, MyMessage>(
+    cfg =>
+    {
+        cfg.UseAuthentication(new PlainTextAuthentication());
+        //cfg.UseAuthentication(new SslAuthentication("sslCaCertPath", "sslClientCertPath", "sslClientKeyPath", "sslClientKeyPwd"));
+        //cfg.UseAuthentication(new SaslScram256Authentication("username", "password", "sslCaCertPath"));
+        //cfg.UseAuthentication(new SaslScram512Authentication("username", "password", "sslCaCertPath"));
+        cfg.BootstrapServers = "localhost:9092";
+    })
+```
+
 # Generating New Certs for Docker Cluster and Testing
 
 In the ``/secrets`` folder you'll find a handful of bash scripts.  These can be used to generate a new round of certs if you need them.
