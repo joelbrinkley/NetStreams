@@ -4,10 +4,12 @@ A light weight .NET streaming api for Kafka.
 
 ## Running the project locally
 
-Clone the repository and execute docker compose up  to standup zookeeper and a broker for testing
+NPM & Docker will need to be installed.
+
+Clone the repository and execute the npm script `docker-up`.  This script will start kafka locally and enable different authentication methods.
 
 ```
-docker-compose up -d
+npm run docker-up
 ```
 
 ## Create a stream and handle messages
