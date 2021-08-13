@@ -16,7 +16,7 @@ namespace NetStreams.Internal.Pipeline
         {
             if (result != null && result.HasValue && _writer != null)
             {
-                await _writer.WriteAsync(result.Message);
+                await _writer.WriteAsync(result);
             }
 
             return await base.Next.Execute(consumeContext, token, result);

@@ -19,14 +19,14 @@ namespace NetStreams.Internal
             _producer = producer;
         }
 
-        public async Task WriteAsync(TResponse message)
+        public async Task WriteAsync(NetStreamResult<TResponse> result)
         {
-            await _producer.ProduceAsync(_resolveKey(message), message);
+            await _producer.ProduceAsync(_resolveKey(result.Message), result.Message, result.Headers);
         }
 
-        public async Task WriteAsync(object message)
+        public async Task WriteAsync(NetStreamResult result)
         {
-            await this.WriteAsync((TResponse)message);
+            await this.WriteAsync(new NetStreamResult<TResponse>(result.Message, result.Headers));
         }
     }
 }

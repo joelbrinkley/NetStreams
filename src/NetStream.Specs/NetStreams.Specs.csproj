@@ -16,6 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\NetStreams.Correlation\NetStreams.Correlation.csproj" />
 		<ProjectReference Include="..\NetStreams\NetStreams.csproj" />
 	</ItemGroup>
 
