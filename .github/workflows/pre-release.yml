@@ -25,6 +25,3 @@ jobs:
 
     - run: npm run build
       name: Build
-
-    - run: npm run publish:nuget --api_key=${{ secrets.NUGET_API_KEY }}
-      name: Push packages to Nuget
