@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 3.0.0 (2021-08-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* Middleware to enable message correlation through the kafka header (#52)
+
+### Features
+
+* Middleware to enable message correlation through the kafka header ([#52](https://github.com/joelbrinkley/NetStreams/issues/52)) ([fa258e6](https://github.com/joelbrinkley/NetStreams/commit/fa258e601a00069c14a9aee48cdd8974b2749294))
+
 ## 2.1.0 (2021-07-28)
 
 
