@@ -1,14 +1,19 @@
-﻿namespace NetStreams
+﻿using System.Collections.Generic;
+
+namespace NetStreams
 {
     public class NetStreamResult
     {
-        public NetStreamResult(object message)
+        public NetStreamResult(object message, List<KeyValuePair<string, string>> headers = null)
         {
             Message = message;
+            Headers = headers ?? new List<KeyValuePair<string, string>>();
         }
         
         public object Message { get; }
         public bool HasValue => Message != null;
+
+        public List<KeyValuePair<string, string>> Headers { get; }
 
         public T GetMessage<T>()
         {
@@ -20,7 +25,7 @@
     {
         public new TMessage Message => GetMessage<TMessage>();
 
-        public NetStreamResult(object message) : base(message)
+        public NetStreamResult(object message, List<KeyValuePair<string, string>> headers = null) : base(message, headers)
         {
         }
     }

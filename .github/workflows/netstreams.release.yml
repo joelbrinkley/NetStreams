@@ -1,8 +1,9 @@
-name: release
+name: netstreams-release
 
 on:
   push:
-    branches: [ main ]
+    paths:
+      - 'src/NetStreams/**'
 
 jobs:
   build:

@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetStreams.Serilog", "NetSt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SerilogExample", "..\examples\Serilog\SerilogExample.csproj", "{EDB5DAE7-D66E-4DB2-9CA2-5EAD32FBD8D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetStreams.Correlation", "NetStreams.Correlation\NetStreams.Correlation.csproj", "{968FF99B-D53F-4544-9310-291CB0F166DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{EDB5DAE7-D66E-4DB2-9CA2-5EAD32FBD8D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDB5DAE7-D66E-4DB2-9CA2-5EAD32FBD8D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDB5DAE7-D66E-4DB2-9CA2-5EAD32FBD8D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{968FF99B-D53F-4544-9310-291CB0F166DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{968FF99B-D53F-4544-9310-291CB0F166DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{968FF99B-D53F-4544-9310-291CB0F166DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{968FF99B-D53F-4544-9310-291CB0F166DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +82,7 @@ Global
 		{8DE5B2F2-64F8-4C3E-9E0F-A230B2D4D0E5} = {C3A0B79F-6844-4D0C-B55B-92081C14A515}
 		{E020ADD6-9299-4A71-945B-0D65B269D6D7} = {7C318F8C-8717-443B-802C-C0DDA357D63E}
 		{EDB5DAE7-D66E-4DB2-9CA2-5EAD32FBD8D0} = {C3A0B79F-6844-4D0C-B55B-92081C14A515}
+		{968FF99B-D53F-4544-9310-291CB0F166DF} = {7C318F8C-8717-443B-802C-C0DDA357D63E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F1A5A1B3-A3A6-487D-A202-B537AFEBF966}

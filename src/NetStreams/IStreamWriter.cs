@@ -4,10 +4,10 @@ namespace NetStreams
 {
     public interface IStreamWriter<TKey, TMessage> : IStreamWriter
     {
-        Task WriteAsync(TMessage context);
+        Task WriteAsync(NetStreamResult<TMessage> result);
     }
     public interface IStreamWriter
     {
-        Task WriteAsync(object context);
+        Task WriteAsync(NetStreamResult netStreamResult);
     }
 }

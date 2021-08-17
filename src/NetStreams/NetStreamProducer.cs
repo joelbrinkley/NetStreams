@@ -25,7 +25,7 @@ namespace NetStreams
             _producer?.Dispose();
         }
 
-        public async Task ProduceAsync(TKey key, TMessage message)
+        public async Task ProduceAsync(TKey key, TMessage message, List<KeyValuePair<string, string>> headers = null)
         {
             var kafkaMessage = new Message<TKey, TMessage>()
             {
@@ -34,6 +34,9 @@ namespace NetStreams
                 Headers = new Headers()
             };
 
+            if(headers != null) headers.ForEach(header => kafkaMessage.Headers.Add(new Header(header.Key, Encoding.UTF8.GetBytes(header.Value))));
+
+            //TODO: Think about passing this in via method headers parameter
             if (_enableMessageTypeHeader)
             {
                 kafkaMessage.Headers.Add(new Header(NetStreamConstants.HEADER_TYPE,
@@ -46,7 +49,7 @@ namespace NetStreams
 
     public interface IMessageProducer<TKey, TMessage> : IDisposable
     {
-        Task ProduceAsync(TKey key, TMessage message);
+        Task ProduceAsync(TKey key, TMessage message, List<KeyValuePair<string, string>> headers = null);
     }
 
 }
