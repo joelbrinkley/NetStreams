@@ -3,7 +3,7 @@ name: netstreams-release
 on:
   push:
     paths:
-      - 'src/NetStreams/**'
+      - 'src/**'
 
 jobs:
   build:
