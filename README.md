@@ -213,3 +213,18 @@ To generate a new batch of secrets:
     * snakeoil-ca-1.crt
     * client.key
     * client.pem
+
+
+# Enable Message Correlation
+
+Message correlation between a consumed message and one produced can be enabled using the CorrelationPipelineBehavior.  This value is stored in the Kafka headers as `X-NETSTREAM-CORRELATION`
+
+To enable this functionality, reference the NetStreams.Correlation library and enable the behavior using the configuration extension.
+```
+var builder = new NetStreamBuilder<Null, MyMessage>(
+    cfg =>
+    {
+        cfg.BootstrapServers = "localhost:9092";
+        cfg.EnableMessageCorrelation();
+    })
+```
