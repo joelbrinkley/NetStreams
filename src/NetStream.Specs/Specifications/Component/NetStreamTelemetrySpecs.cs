@@ -64,7 +64,7 @@ namespace NetStreams.Specs.Specifications.Component
         }
 
         [Subject("Telemetry")]
-        class when_the_stopping_a_straem
+        class when_the_stopping_a_stream
         {
             private static MockTelemetryClient _mockTelemetryClient;
             private static NetStream<string, TestMessage> _netStream;
