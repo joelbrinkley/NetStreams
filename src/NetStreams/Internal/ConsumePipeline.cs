@@ -21,6 +21,7 @@ namespace NetStreams.Internal
 
         public async Task ExecuteAsync(IConsumeContext<TKey, TMessage> context, CancellationToken token)
         {
+            if (_head == null) return;
            await _head.Execute(context, token, new NetStreamResult(context.Message));
 
         }

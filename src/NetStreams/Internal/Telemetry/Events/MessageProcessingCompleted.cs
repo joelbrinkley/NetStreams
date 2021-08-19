@@ -2,9 +2,9 @@
 
 namespace NetStreams.Internal
 {
-    internal class ProcessingConsumeResultCompleted<TKey, TMessage> : NetStreamsTelemetryEvent
+    internal class MessageProcessingCompleted<TKey, TMessage> : NetStreamsTelemetryEvent
     {
-        public ProcessingConsumeResultCompleted(
+        public MessageProcessingCompleted(
             string streamProcessorName, 
             IConsumeContext<TKey, TMessage> consumeContext) 
             : base(streamProcessorName)

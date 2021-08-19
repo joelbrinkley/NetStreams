@@ -133,11 +133,11 @@ namespace NetStreams.Internal
             {              
                 var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
 
-                await _telemetryClient.SendAsync(new ProcessingConsumeResultStarted<TKey, TMessage>(_name, consumeContext), token);
+                await _telemetryClient.SendAsync(new MessageProcessingStarted<TKey, TMessage>(_name, consumeContext), token);
 
                 await _pipeline.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
 
-                await _telemetryClient.SendAsync(new ProcessingConsumeResultCompleted<TKey, TMessage>(_name, consumeContext), token);
+                await _telemetryClient.SendAsync(new MessageProcessingCompleted<TKey, TMessage>(_name, consumeContext), token);
             }
         }
 

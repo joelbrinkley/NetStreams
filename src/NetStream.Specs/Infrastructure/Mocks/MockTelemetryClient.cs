@@ -20,10 +20,15 @@ namespace NetStreams.Specs.Infrastructure.Mocks
             return Task.CompletedTask;
         }
 
-        public void ShouldContainOnlyOne<T>(ExpectedObject expectedTelemetryEvent)
+        public void ShouldContainOnlyOne<T>(Dictionary<Type, ExpectedObject> expectedTelemetryEvents)
         {
+            var expectedEvent = expectedTelemetryEvents[typeof(T)];
+
+            expectedEvent.ShouldNotBeNull();
+
             var actual = TelemetryEvents.SingleOrDefault(x => x.EventName == typeof(T).FullName);
-            expectedTelemetryEvent.ShouldMatch(actual);
+
+            expectedEvent.ShouldMatch(actual);
         }
     }
 }
