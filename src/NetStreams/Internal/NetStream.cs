@@ -13,11 +13,14 @@ namespace NetStreams.Internal
     {
         public NetStreamStatus Status { get; private set; } = NetStreamStatus.NotStarted;
         readonly IConsumePipeline<TKey, TMessage> _pipeline;
+        readonly string _name;
         readonly ITopicCreator _topicCreator;
         readonly ILog _log;
         readonly string _topic;
         readonly NetStreamConfiguration<TKey, TMessage> _configuration;
         readonly IConsumer<TKey, TMessage> _consumer;
+        readonly INetStreamTelemetryClient _telemetryClient;
+
         bool disposedValue;
         Action<Exception> _onError { get; } = exception => { };
 
@@ -28,22 +31,24 @@ namespace NetStreams.Internal
             NetStreamConfiguration<TKey, TMessage> configuration,
             IConsumer<TKey, TMessage> consumer,
             ITopicCreator topicCreator,
-            ILog log,
+            INetStreamTelemetryClient telemetryClient = null,
             IConsumePipeline<TKey, TMessage> pipeline = null,
-            Action<Exception> onError = null)
+            Action<Exception> onError = null,
+            string name = null)
         {
             _configuration = configuration;
             _topic = topic;
             _consumer = consumer;
             _topicCreator = topicCreator;
-            _log = log;
+            _telemetryClient = telemetryClient ?? new NoOpTelemetryClient();
             _pipeline = pipeline ?? new ConsumePipeline<TKey, TMessage>();
+            _name = name ?? $"{topic}:{configuration.ConsumerGroup}";
             if (onError != null) _onError = onError;
         }
 
         public Task StartAsync(CancellationToken token)
         {
-            _log.Information($"Starting stream for topic {_topic}");
+            _telemetryClient.SendAsync(new StreamStarted(_name, _topic, Configuration), token).Wait();
 
             Status = NetStreamStatus.Running;
 
@@ -66,34 +71,35 @@ namespace NetStreams.Internal
                     }
                     catch (ConsumeException ce) when (ce.InnerException is MalformedMessageException && _configuration.ShouldSkipMalformedMessages)
                     {
-                        _log.Error(ce, $"A malformed message was encountered on topic { _topic}. Skipping message. Skipping offset {ce.ConsumerRecord.Offset} on partition {ce.ConsumerRecord.Partition.Value}");
                         _consumer.Commit();
+                        await _telemetryClient.SendAsync(new MalformedMessageSkipped(_name), token);
                     }
                     catch (Exception ex)
                     {
-                        _log.Error(ex, $"An error occurred processing messages from topic {_topic}");
+                        await _telemetryClient.SendAsync(new NetStreamExceptionOccurred(_name), token);
                         _onError(ex);
                         if (!_configuration.ContinueOnError)
                         {
-                            ResetOffset(consumeResult);
+                            await ResetOffsetAsync(consumeResult, token);
                         }
                     }
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
         }
 
-        private void ResetOffset(ConsumeResult<TKey, TMessage> consumeResult)
+        private async Task ResetOffsetAsync(ConsumeResult<TKey, TMessage> consumeResult, CancellationToken token)
         {
             if (consumeResult != null)
             {
-                _log.Debug($"Resetting offset to topic: {consumeResult.TopicPartitionOffset.Topic}, partition:{consumeResult.TopicPartition.Partition}, offset: {consumeResult.TopicPartitionOffset.Offset}");
+                await _telemetryClient.SendAsync(new ResetOffset(_name), token);
                 _consumer.Seek(consumeResult.TopicPartitionOffset);
             }
         }
 
-        public void Stop()
+        public async Task StopAsync(CancellationToken token)
         {
             Status = NetStreamStatus.Stopped;
+            await _telemetryClient.SendAsync(new StreamStopped(_name), token);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -124,12 +130,14 @@ namespace NetStreams.Internal
         private async Task ProcessMessageAsync(ConsumeResult<TKey, TMessage> consumeResult, CancellationToken token)
         {
             if (consumeResult != null)
-            {
+            {              
                 var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
 
-                _log.Debug($"Begin consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
+                await _telemetryClient.SendAsync(new ProcessingConsumeResultStarted<TKey, TMessage>(_name, consumeContext), token);
+
                 await _pipeline.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
-                _log.Debug($"Finished consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
+
+                await _telemetryClient.SendAsync(new ProcessingConsumeResultCompleted<TKey, TMessage>(_name, consumeContext), token);
             }
         }
 
