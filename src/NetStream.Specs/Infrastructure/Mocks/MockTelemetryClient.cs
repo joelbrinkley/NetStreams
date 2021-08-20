@@ -22,7 +22,7 @@ namespace NetStreams.Specs.Infrastructure.Mocks
 
         public void ShouldContainOnlyOne<T>(ExpectedObject expectedTelemetryEvent)
         {
-            var actual = TelemetryEvents.SingleOrDefault(x => x.EventName == typeof(T).FullName);
+            var actual = TelemetryEvents.SingleOrDefault(x => x.EventName == typeof(T).Name);
 
             expectedTelemetryEvent.ShouldMatch(actual);
         }
