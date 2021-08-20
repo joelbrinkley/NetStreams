@@ -5,7 +5,7 @@ using Microsoft.ApplicationInsights.DataContracts;
 
 namespace NetStreams.ApplicationInsights
 {
-    public class ApplicationInsightsPipelineStep<TKey, TMessage> : PipelineStep<TKey,TMessage>
+    public class ApplicationInsightsPipelineStep<TKey, TMessage> : PipelineStep<TKey, TMessage>
     {
         readonly TelemetryClient _client;
 
@@ -13,14 +13,9 @@ namespace NetStreams.ApplicationInsights
         {
             _client = client;
         }
-        public override async Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext,CancellationToken token, NetStreamResult result = null)
+        public override async Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result = null)
         {
-            var eventName = $"Consumed from {consumeContext.TopicName}, partition {consumeContext.Partition}";
             var operationName = $"Consume {consumeContext.TopicName}";
-            var telemetryEvent = new EventTelemetry(eventName);
-            telemetryEvent.Properties.Add("Topic", consumeContext.TopicName);
-            telemetryEvent.Properties.Add("Offset", consumeContext.Offset.ToString());
-            telemetryEvent.Properties.Add("Partition", consumeContext.Partition.ToString());
 
             NetStreamResult response;
 
@@ -30,9 +25,7 @@ namespace NetStreams.ApplicationInsights
                         $"Lag:{consumeContext.ConsumeGroup}:{consumeContext.TopicName}:{consumeContext.Partition}")
                     .TrackValue(consumeContext.Lag);
 
-                response  = await base.Execute(consumeContext, token, result);
-
-                _client.TrackEvent(telemetryEvent);
+                response = await base.Execute(consumeContext, token, result);
             }
 
             return response;

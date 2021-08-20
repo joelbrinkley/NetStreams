@@ -46,7 +46,8 @@ namespace ApplicationInsights
                         log.UseConsole();
                     });
 
-                    cfg.UseApplicationInsights(telemetryClient);
+                    cfg.AddApplicationInsightsOperationBehavior(telemetryClient);
+                    cfg.UseApplicationInsightTelemetryClient(telemetryClient);
                 })
                 .Stream(sourceTopic)
                 .Filter(context => context.Message.Value % 3 == 0)

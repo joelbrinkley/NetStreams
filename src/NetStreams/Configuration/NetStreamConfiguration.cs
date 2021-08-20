@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using Confluent.Kafka;
 using NetStreams.Authentication;
+using NetStreams.Internal;
 using NetStreams.Logging;
 
 namespace NetStreams.Configuration
 {
     public class NetStreamConfiguration<TKey, TMessage> : INetStreamConfigurationContext, INetStreamConfigurationBuilderContext<TKey, TMessage>
     {
+        public INetStreamTelemetryClient TelemetryClient = new NoOpTelemetryClient();
         public ILog Log { get; set; } = new LogContext();
         public DeliveryMode DeliveryMode { get; set; } = DeliveryMode.At_Least_Once;
         public AutoOffsetReset AutoOffsetReset { get; set; } = AutoOffsetReset.Latest;
@@ -44,6 +46,12 @@ namespace NetStreams.Configuration
             var topicConfig = new TopicConfiguration();
             cfg(topicConfig);
             TopicConfigurations.Add(topicConfig);
+            return this;
+        }
+
+        public INetStreamConfigurationBuilderContext<TKey, TMessage> SendTelemetry(INetStreamTelemetryClient telemetryClient)
+        {
+            TelemetryClient = telemetryClient;
             return this;
         }
     }
@@ -83,5 +91,6 @@ namespace NetStreams.Configuration
         INetStreamConfigurationBuilderContext<TKey, TMessage> AddTopicConfiguration(Action<ITopicConfiguration> cfg);
         INetStreamConfigurationBuilderContext<TKey, TMessage> UseAuthentication(AuthenticationMethod authenticationMethod);
         INetStreamConfigurationBuilderContext<TKey, TMessage> ConfigureLogging(Action<LogContext> cfg);
+        INetStreamConfigurationBuilderContext<TKey, TMessage> SendTelemetry(INetStreamTelemetryClient telemetryClient);
     }
 }

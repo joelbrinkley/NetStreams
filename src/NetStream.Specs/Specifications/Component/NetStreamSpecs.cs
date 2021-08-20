@@ -82,7 +82,8 @@ namespace NetStreams.Specs.Specifications.Component
                 {
                     Id = Expect.NotDefault<Guid>(),
                     OccurredOn = Expect.NotDefault<DateTimeOffset>(),
-                    EventName = typeof(StreamStarted).FullName,
+                    EventName = typeof(StreamStarted).Name,
+                    FullName = typeof(StreamStarted).FullName,
                     StreamProcessorName = "TestProcessor",
                     Source = topic,
                     Configuration = configuration
@@ -141,7 +142,8 @@ namespace NetStreams.Specs.Specifications.Component
                 {
                     Id = Expect.NotDefault<Guid>(),
                     OccurredOn = Expect.NotDefault<DateTimeOffset>(),
-                    EventName = typeof(NetStreamExceptionOccurred<string, TestMessage>).FullName,
+                    EventName = typeof(NetStreamExceptionOccurred<string, TestMessage>).Name,
+                    FullName = typeof(NetStreamExceptionOccurred<string, TestMessage>).FullName,
                     StreamProcessorName = "TestProcessor",
                     Exception = exceptionToThrow,
                     ConsumeContext = Expect.Null()
@@ -189,7 +191,8 @@ namespace NetStreams.Specs.Specifications.Component
                 {
                     Id = Expect.NotDefault<Guid>(),
                     OccurredOn = Expect.NotDefault<DateTimeOffset>(),
-                    EventName = typeof(MessageProcessingStarted<string, TestMessage>).FullName,
+                    EventName = typeof(MessageProcessingStarted<string, TestMessage>).Name,
+                    FullName = typeof(MessageProcessingStarted<string, TestMessage>).FullName,
                     StreamProcessorName = "TestProcessor"
                 }.ToExpectedObject();
 
@@ -197,7 +200,8 @@ namespace NetStreams.Specs.Specifications.Component
                 {
                     Id = Expect.NotDefault<Guid>(),
                     OccurredOn = Expect.NotDefault<DateTimeOffset>(),
-                    EventName = typeof(MessageProcessingCompleted<string, TestMessage>).FullName,
+                    EventName = typeof(MessageProcessingCompleted<string, TestMessage>).Name,
+                    FullName = typeof(MessageProcessingCompleted<string, TestMessage>).FullName,
                     StreamProcessorName = "TestProcessor"
                 }.ToExpectedObject();
 
@@ -245,7 +249,8 @@ namespace NetStreams.Specs.Specifications.Component
                 {
                     Id = Expect.NotDefault<Guid>(),
                     OccurredOn = Expect.NotDefault<DateTimeOffset>(),
-                    EventName = typeof(StreamStopped).FullName,
+                    EventName = typeof(StreamStopped).Name,
+                    FullName = typeof(StreamStopped).FullName,
                     StreamProcessorName = "TestProcessor"
                 }.ToExpectedObject();
 
