@@ -40,6 +40,7 @@ namespace NetStreams
                 _configurationContext,
                 consumer,
                 new TopicCreator(_configurationContext, _configurationContext.Log),
+                _configurationContext.Log,
                 _telemetryClient,
                 _pipeline,
                 _onError);

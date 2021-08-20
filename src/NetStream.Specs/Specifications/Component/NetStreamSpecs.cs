@@ -37,7 +37,8 @@ namespace NetStreams.Specs.Specifications.Component
                     Guid.NewGuid().ToString(),
                     new NetStreamConfiguration<string, TestMessage>(),
                     mockConsumer.Object,
-                    new NullTopicCreator());
+                    new NullTopicCreator(),
+                    new MockLog());
 
                 _startTask = netStream.StartAsync(_tokenSource.Token);
             };
@@ -71,6 +72,7 @@ namespace NetStreams.Specs.Specifications.Component
                     configuration,
                     mockConsumer.Object,
                     new NullTopicCreator(),
+                    new MockLog(),
                     _mockTelemetryClient,
                     null,
                     null,
@@ -125,6 +127,7 @@ namespace NetStreams.Specs.Specifications.Component
                     configuration,
                     _mockConsumer.Object,
                     new NullTopicCreator(),
+                    new MockLog(),
                     _mockTelemetryClient,
                     null,
                     ex =>
@@ -138,7 +141,7 @@ namespace NetStreams.Specs.Specifications.Component
                 {
                     Id = Expect.NotDefault<Guid>(),
                     OccurredOn = Expect.NotDefault<DateTimeOffset>(),
-                    EventName = typeof(StreamStarted).FullName,
+                    EventName = typeof(NetStreamExceptionOccurred<string, TestMessage>).FullName,
                     StreamProcessorName = "TestProcessor",
                     Exception = exceptionToThrow,
                     ConsumeContext = Expect.Null()
@@ -176,6 +179,7 @@ namespace NetStreams.Specs.Specifications.Component
                     configuration,
                     mockConsumer.Object,
                     new NullTopicCreator(),
+                    new MockLog(),
                     _mockTelemetryClient,
                     null,
                     null,
@@ -230,7 +234,8 @@ namespace NetStreams.Specs.Specifications.Component
                    topic,
                     configuration,
                     mockConsumer.Object,
-                    new NullTopicCreator(),
+                    new NullTopicCreator(), 
+                    new MockLog(),
                     _mockTelemetryClient,
                     null,
                     null,

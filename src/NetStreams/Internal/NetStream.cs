@@ -31,6 +31,7 @@ namespace NetStreams.Internal
             NetStreamConfiguration<TKey, TMessage> configuration,
             IConsumer<TKey, TMessage> consumer,
             ITopicCreator topicCreator,
+            ILog log,
             INetStreamTelemetryClient telemetryClient = null,
             IConsumePipeline<TKey, TMessage> pipeline = null,
             Action<Exception> onError = null,
@@ -40,6 +41,7 @@ namespace NetStreams.Internal
             _topic = topic;
             _consumer = consumer;
             _topicCreator = topicCreator;
+            _log = log;
             _telemetryClient = telemetryClient ?? new NoOpTelemetryClient();
             _pipeline = pipeline ?? new ConsumePipeline<TKey, TMessage>();
             _name = name ?? $"{topic}:{configuration.ConsumerGroup}";
@@ -48,6 +50,8 @@ namespace NetStreams.Internal
 
         public Task StartAsync(CancellationToken token)
         {
+            _log.Information($"Starting stream for topic {_topic}");
+
             _telemetryClient.SendAsync(new StreamStarted(_name, _topic, Configuration), token).Wait();
 
             Status = NetStreamStatus.Running;
@@ -71,6 +75,7 @@ namespace NetStreams.Internal
                     }
                     catch (ConsumeException ce) when (ce.InnerException is MalformedMessageException && _configuration.ShouldSkipMalformedMessages)
                     {
+                        _log.Error(ce, $"A malformed message was encountered on topic { _topic}. Skipping message. Skipping offset {ce.ConsumerRecord.Offset} on partition {ce.ConsumerRecord.Partition.Value}");
                         _consumer.Commit();
                         await _telemetryClient.SendAsync(new MalformedMessageSkipped(_name), token);
                     }
@@ -92,6 +97,7 @@ namespace NetStreams.Internal
         {
             if (consumeResult != null)
             {
+                _log.Debug($"Resetting offset to topic: {consumeResult.TopicPartitionOffset.Topic}, partition:{consumeResult.TopicPartition.Partition}, offset: {consumeResult.TopicPartitionOffset.Offset}");
                 await _telemetryClient.SendAsync(new ResetOffset(_name), token);
                 _consumer.Seek(consumeResult.TopicPartitionOffset);
             }
@@ -134,11 +140,15 @@ namespace NetStreams.Internal
             {
                 var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
 
+                _log.Debug($"Begin consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
+
                 await _telemetryClient.SendAsync(new MessageProcessingStarted<TKey, TMessage>(_name, consumeContext), token);
 
                 await _pipeline.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
 
                 await _telemetryClient.SendAsync(new MessageProcessingCompleted<TKey, TMessage>(_name, consumeContext), token);
+
+                _log.Debug($"Finished consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
             }
         }
 
