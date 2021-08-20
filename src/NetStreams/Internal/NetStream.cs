@@ -76,7 +76,8 @@ namespace NetStreams.Internal
                     }
                     catch (Exception ex)
                     {
-                        await _telemetryClient.SendAsync(new NetStreamExceptionOccurred(_name), token);
+                        var consumeContext = consumeResult == null ? null : new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
+                        await _telemetryClient.SendAsync(new NetStreamExceptionOccurred<TKey, TMessage>(_name, ex, consumeContext), token);
                         _onError(ex);
                         if (!_configuration.ContinueOnError)
                         {
@@ -130,7 +131,7 @@ namespace NetStreams.Internal
         private async Task ProcessMessageAsync(ConsumeResult<TKey, TMessage> consumeResult, CancellationToken token)
         {
             if (consumeResult != null)
-            {              
+            {
                 var consumeContext = new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
 
                 await _telemetryClient.SendAsync(new MessageProcessingStarted<TKey, TMessage>(_name, consumeContext), token);

@@ -30,5 +30,17 @@ namespace NetStreams.Specs.Infrastructure.Mocks
 
             return mockConsumer;
         }
+
+        internal static Mock<IConsumer<string, TestMessage>> SetupToThrowError(Exception toThrow)
+        {
+            var mockConsumer = new
+            Mock<IConsumer<string, TestMessage>>();
+
+            mockConsumer
+                .Setup(x => x.Consume(Parameter.IsAny<int>()))
+                .Throws(toThrow);
+
+            return mockConsumer;
+        }
     }
 }
