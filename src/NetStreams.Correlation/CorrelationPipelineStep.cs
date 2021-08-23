@@ -14,7 +14,7 @@ namespace NetStreams.Correlation
     {
        
 
-        public override async Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result = null)
+        public override async Task<NetStreamResult> ExecuteAsync(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result = null)
         {
             var doesValueExist = consumeContext.Headers.Any(header => header.Key == CorrelationHeader.Value);
 
@@ -27,7 +27,7 @@ namespace NetStreams.Correlation
                 result.Headers.Add(new KeyValuePair<string, string>(CorrelationHeader.Value, consumeContext.Headers.First(header => header.Key == CorrelationHeader.Value).Value));
             }
 
-            return await base.Execute(consumeContext, token, result);
+            return await base.ExecuteAsync(consumeContext, token, result);
         }
     }
 }

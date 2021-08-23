@@ -8,7 +8,7 @@ namespace NetStreams.Internal.Pipeline
 {
     internal class NoOpStep<TKey, TMessage> : PipelineStep<TKey, TMessage>
     {
-        public override Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result = null)
+        public override Task<NetStreamResult> ExecuteAsync(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result = null)
         {
             return Task.FromResult(result);
         }

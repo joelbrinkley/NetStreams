@@ -2,10 +2,7 @@
 using Microsoft.ApplicationInsights.DataContracts;
 using NetStreams.Serialization;
 using NetStreams.Telemetry;
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
