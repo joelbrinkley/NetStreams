@@ -15,6 +15,7 @@ namespace NetStreams.Configuration
         DeliveryMode DeliveryMode { get; }
         AuthenticationMethod AuthenticationMethod { get; }
         AutoOffsetReset AutoOffsetReset { get; }
+        TimeSpan HeartBeatDelayMs { get; }
     }
 
 }

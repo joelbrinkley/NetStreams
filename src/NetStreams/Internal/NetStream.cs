@@ -65,12 +65,18 @@ namespace NetStreams.Internal
 
             return Task.Factory.StartNew(async () =>
             {
+                var heartBeatThrottler = new Throttler(Configuration.HeartBeatDelayMs);
+
                 while (!token.IsCancellationRequested && Status != NetStreamStatus.Stopped)
                 {
                     ConsumeResult<TKey, TMessage> consumeResult = null;
                     try
                     {
                         consumeResult = _consumer.Consume(100);
+
+                        //only send a heart beat every 30 seconds
+                        heartBeatThrottler.Throttle(async () => await _telemetryClient.SendAsync(new StreamHeartBeat(_name), token));
+
                         await ProcessMessageAsync(consumeResult, token);
                     }
                     catch (ConsumeException ce) when (ce.InnerException is MalformedMessageException && _configuration.ShouldSkipMalformedMessages)
@@ -98,7 +104,7 @@ namespace NetStreams.Internal
             if (consumeResult != null)
             {
                 _log.Debug($"Resetting offset to topic: {consumeResult.TopicPartitionOffset.Topic}, partition:{consumeResult.TopicPartition.Partition}, offset: {consumeResult.TopicPartitionOffset.Offset}");
-                await _telemetryClient.SendAsync(new ResetOffset(_name), token);
+                await _telemetryClient.SendAsync(new OffsetResetted(_name), token);
                 _consumer.Seek(consumeResult.TopicPartitionOffset);
             }
         }

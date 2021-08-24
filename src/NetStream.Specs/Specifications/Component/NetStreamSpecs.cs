@@ -97,6 +97,56 @@ namespace NetStreams.Specs.Specifications.Component
             It should_send_stream_started_event = () => _mockTelemetryClient.ShouldContainOnlyOne<StreamStarted>(_expectedStartEvent);
         }
 
+        [Subject("Running")]
+        class when_a_stream_is_running
+        {
+            static INetStream _stream;
+            static ExpectedObject _expectedHeartBeat;
+            static MockTelemetryClient _mockTelemetryClient;
+            private static TimeSpan _expectedDuration;
+            Establish context = () =>
+            {
+
+                var mockConsumer = MockConsumer.SetupToConsumeSingleTestMessage();
+
+                _mockTelemetryClient = new MockTelemetryClient();
+
+                var topic = Guid.NewGuid().ToString();
+                _expectedDuration = TimeSpan.FromMilliseconds(200);
+
+                var configuration = new NetStreamConfiguration<string, TestMessage>()
+                {
+                    HeartBeatDelayMs = _expectedDuration
+                };
+
+                _stream = new NetStream<string, TestMessage>(
+                   topic,
+                    configuration,
+                    mockConsumer.Object,
+                        new NullTopicCreator(),
+                        new MockLog(),
+                        _mockTelemetryClient,
+                        null,
+                        null,
+                        "TestProcessor");
+
+                _expectedHeartBeat = new
+                {
+                    Id = Expect.NotDefault<Guid>(),
+                    OccurredOn = Expect.NotDefault<DateTimeOffset>(),
+                    EventName = typeof(StreamHeartBeat).Name,
+                    FullName = typeof(StreamHeartBeat).FullName,
+                    StreamProcessorName = "TestProcessor"
+                }.ToExpectedObject();
+
+                _stream.StartAsync(CancellationToken.None);
+            };
+
+            Because of = () => Task.Delay(TimeSpan.FromSeconds(1)).Await();
+
+            It should_emit_a_heart_beat_once_per_duration = () => _mockTelemetryClient.VerifyHeartBeatEvents(5, _expectedDuration);
+        }
+
         [Subject("ErrorHandling")]
         class when_an_error_occurs_while_streaming_with_an_onerror
         {
@@ -238,7 +288,7 @@ namespace NetStreams.Specs.Specifications.Component
                    topic,
                     configuration,
                     mockConsumer.Object,
-                    new NullTopicCreator(), 
+                    new NullTopicCreator(),
                     new MockLog(),
                     _mockTelemetryClient,
                     null,
