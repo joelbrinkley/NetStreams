@@ -5,6 +5,7 @@ using Confluent.Kafka;
 using NetStreams.Configuration;
 using NetStreams.Internal.Exceptions;
 using NetStreams.Logging;
+using NetStreams.Telemetry.Events;
 
 namespace NetStreams.Internal
 {
@@ -52,7 +53,7 @@ namespace NetStreams.Internal
         {
             _log.Information($"Starting stream for topic {_topic}");
 
-            _telemetryClient.SendAsync(new StreamStarted(_name, _topic, Configuration), token).Wait();
+            _telemetryClient.SendAsync(new StreamStarted(_name, _topic, Configuration as NetStreamConfiguration), token).Wait();
 
             Status = NetStreamStatus.Running;
 
@@ -83,12 +84,12 @@ namespace NetStreams.Internal
                     {
                         _log.Error(ce, $"A malformed message was encountered on topic { _topic}. Skipping message. Skipping offset {ce.ConsumerRecord.Offset} on partition {ce.ConsumerRecord.Partition.Value}");
                         _consumer.Commit();
-                        await _telemetryClient.SendAsync(new MalformedMessageSkipped(_name), token);
+                        await _telemetryClient.SendAsync(new MalformedMessageSkipped(_name, ce.ConsumerRecord.Offset), token);
                     }
                     catch (Exception ex)
                     {
                         var consumeContext = consumeResult == null ? null : new ConsumeContext<TKey, TMessage>(consumeResult, _consumer, Configuration.ConsumerGroup);
-                        await _telemetryClient.SendAsync(new NetStreamExceptionOccurred<TKey, TMessage>(_name, ex, consumeContext), token);
+                        await _telemetryClient.SendAsync(NetStreamExceptionOccurred.Create<TKey, TMessage>(_name, ex, consumeContext), token);
                         _onError(ex);
                         if (!_configuration.ContinueOnError)
                         {
@@ -103,16 +104,19 @@ namespace NetStreams.Internal
         {
             if (consumeResult != null)
             {
-                _log.Debug($"Resetting offset to topic: {consumeResult.TopicPartitionOffset.Topic}, partition:{consumeResult.TopicPartition.Partition}, offset: {consumeResult.TopicPartitionOffset.Offset}");
-                await _telemetryClient.SendAsync(new OffsetResetted(_name), token);
+                _log.Debug($"Resetting offset to topic: {consumeResult.TopicPartitionOffset.Topic}, partition:{consumeResult.Offset}, offset: {consumeResult.Offset}");
+                await _telemetryClient.SendAsync(new OffsetResetted(_name, consumeResult.Offset), token);
                 _consumer.Seek(consumeResult.TopicPartitionOffset);
             }
         }
 
         public async Task StopAsync(CancellationToken token)
         {
-            Status = NetStreamStatus.Stopped;
-            await _telemetryClient.SendAsync(new StreamStopped(_name), token);
+            if(Status == NetStreamStatus.Running)
+            {
+                Status = NetStreamStatus.Stopped;
+                await _telemetryClient.SendAsync(new StreamStopped(_name), token);
+            }         
         }
 
         protected virtual void Dispose(bool disposing)
@@ -121,6 +125,7 @@ namespace NetStreams.Internal
             {
                 if (disposing)
                 {
+                    this.StopAsync(CancellationToken.None).Wait();
                     _consumer?.Unsubscribe();
                     _consumer?.Close();
                     _consumer?.Dispose();
@@ -148,11 +153,11 @@ namespace NetStreams.Internal
 
                 _log.Debug($"Begin consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
 
-                await _telemetryClient.SendAsync(new MessageProcessingStarted<TKey, TMessage>(_name, consumeContext), token);
+                await _telemetryClient.SendAsync(MessageProcessingStarted.Create<TKey, TMessage>(_name, consumeContext), token);
 
                 await _pipeline.ExecuteAsync(consumeContext, token).ConfigureAwait(false);
 
-                await _telemetryClient.SendAsync(new MessageProcessingCompleted<TKey, TMessage>(_name, consumeContext), token);
+                await _telemetryClient.SendAsync(MessageProcessingCompleted.Create<TKey, TMessage>(_name, consumeContext), token);
 
                 _log.Debug($"Finished consuming offset {consumeContext.Offset} on partition {consumeContext.Partition} ");
             }

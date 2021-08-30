@@ -5,6 +5,9 @@ using System.Linq;
 using System.Text;
 using NetStreams.Internal;
 using NetStreams.Internal.Exceptions;
+using System.Reflection;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace NetStreams.Serialization
 {
@@ -24,7 +27,7 @@ namespace NetStreams.Serialization
 
                 var typeString = Encoding.UTF8.GetString(typeHeader.GetValueBytes());
 
-                var type = Type.GetType(typeString);
+                var type = Type.GetType(typeString, AssemblyResolver, null);
 
                 return (TType) JsonConvert.DeserializeObject(str, type);
             }
@@ -38,6 +41,23 @@ namespace NetStreams.Serialization
         {
             var json = JsonConvert.SerializeObject(data);
             return Encoding.UTF8.GetBytes(json);
+        }
+
+        private static ConcurrentDictionary<AssemblyName, Assembly> _assemblyCache = new ConcurrentDictionary<AssemblyName, Assembly>();
+
+        private static Assembly AssemblyResolver(AssemblyName assemblyName)
+        {
+            assemblyName.Version = null;
+
+            var fetched = _assemblyCache.TryGetValue(assemblyName, out var assembly);
+
+            if (!fetched)
+            {
+                assembly = Assembly.Load(assemblyName);
+                _assemblyCache.TryAdd(assemblyName, assembly);
+            }
+
+            return assembly;
         }
     }
 

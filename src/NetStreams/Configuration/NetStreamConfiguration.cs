@@ -7,25 +7,29 @@ using NetStreams.Logging;
 
 namespace NetStreams.Configuration
 {
-    public class NetStreamConfiguration<TKey, TMessage> : INetStreamConfigurationContext, INetStreamConfigurationBuilderContext<TKey, TMessage>
+    public class NetStreamConfiguration
     {
-        public TimeSpan HeartBeatDelayMs { get; set; } = TimeSpan.FromSeconds(30);
-        public INetStreamTelemetryClient TelemetryClient = new NoOpTelemetryClient();
-        public ILog Log { get; set; } = new LogContext();
-        public DeliveryMode DeliveryMode { get; set; } = DeliveryMode.At_Least_Once;
-        public AutoOffsetReset AutoOffsetReset { get; set; } = AutoOffsetReset.Latest;
+        public bool EnableMessageTypeHeader { get; set; } = true;
+        public bool ContinueOnError { get; set; } = true;
         public string BootstrapServers { get; set; }
         public string ConsumerGroup { get; set; }
         public List<ITopicConfiguration> TopicConfigurations { get; set; } = new List<ITopicConfiguration>();
-        public bool TopicCreationEnabled { get; private set; }
+        public bool TopicCreationEnabled { get;  set; }
+        public DeliveryMode DeliveryMode { get; set; } = DeliveryMode.At_Least_Once;
         public AuthenticationMethod AuthenticationMethod { get; set; } = new PlainTextAuthentication();
+        public AutoOffsetReset AutoOffsetReset { get; set; } = AutoOffsetReset.Latest;
+        public TimeSpan HeartBeatDelayMs { get; set; } = TimeSpan.FromSeconds(30);
         public bool ShouldSkipMalformedMessages { get; set; } = true;
+    }
+
+    public class NetStreamConfiguration<TKey, TMessage> : NetStreamConfiguration, INetStreamConfigurationContext, INetStreamConfigurationBuilderContext<TKey, TMessage>
+    {        
+        public INetStreamTelemetryClient TelemetryClient = new NoOpTelemetryClient();
+        public ILog Log { get; set; } = new LogContext();           
 
         public Stack<PipelineStep<TKey, TMessage>> PipelineSteps { get; set; } =
             new Stack<PipelineStep<TKey, TMessage>>();
 
-        public bool EnableMessageTypeHeader { get; set; } = true;
-        public bool ContinueOnError { get; set; } = true;
 
         public INetStreamConfigurationBuilderContext<TKey, TMessage> ConfigureLogging(Action<LogContext> cfg)
         {

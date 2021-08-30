@@ -1,8 +1,8 @@
 ﻿using NetStreams.Telemetry;
 
-namespace NetStreams.Internal
+namespace NetStreams.Telemetry.Events
 {
-    internal class StreamStopped : NetStreamsTelemetryEvent
+    public class StreamStopped : NetStreamTelemetryEvent
     {
         public StreamStopped(string streamProcessorName) : base(streamProcessorName)
         {

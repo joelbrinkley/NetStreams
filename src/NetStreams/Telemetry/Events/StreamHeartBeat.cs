@@ -1,12 +1,11 @@
 ﻿using NetStreams.Telemetry;
 
-namespace NetStreams.Internal
+namespace NetStreams.Telemetry.Events
 {
-    internal class StreamHeartBeat : NetStreamsTelemetryEvent
+    public class StreamHeartBeat : NetStreamTelemetryEvent
     {
         public StreamHeartBeat(string streamProcessorName) : base(streamProcessorName)
         {
-
         }
     }
 }

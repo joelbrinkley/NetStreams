@@ -6,7 +6,7 @@ namespace NetStreams
 {
     public interface INetStreamBuilder<TKey, TMessage> : INetStreamBuilder
     {
-
+        INetStreamBuilder<TKey, TMessage> Name(string name);
         INetStreamBuilder<TKey, TMessage> Stream(string sourceTopic);
         INetStreamBuilder<TKey, TMessage> Filter(Func<IConsumeContext<TKey, TMessage>, bool> filterPredicate);
         INetStreamBuilder<TKey, TMessage> Transform(Func<IConsumeContext<TKey, TMessage>, object> handleConsumeContext);

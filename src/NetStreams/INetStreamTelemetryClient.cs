@@ -9,6 +9,6 @@ namespace NetStreams
 {
     public interface INetStreamTelemetryClient
     {
-        Task SendAsync(NetStreamsTelemetryEvent telemetryEvent, CancellationToken token);
+        Task SendAsync(NetStreamTelemetryEvent telemetryEvent, CancellationToken token);
     }
 }

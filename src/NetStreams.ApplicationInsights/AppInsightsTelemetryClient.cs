@@ -19,7 +19,7 @@ namespace NetStreams.ApplicationInsights
             _jsonSerializer = jsonSerializer;
         }
 
-        public Task SendAsync(NetStreamsTelemetryEvent telemetryEvent, CancellationToken token)
+        public Task SendAsync(NetStreamTelemetryEvent telemetryEvent, CancellationToken token)
         {
             var @event = new EventTelemetry()
             {

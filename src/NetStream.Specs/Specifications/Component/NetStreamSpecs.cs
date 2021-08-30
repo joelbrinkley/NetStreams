@@ -12,6 +12,7 @@ using NetStreams.Specs.Infrastructure;
 using NetStreams.Specs.Infrastructure.Extensions;
 using NetStreams.Specs.Infrastructure.Mocks;
 using NetStreams.Specs.Infrastructure.Models;
+using NetStreams.Telemetry.Events;
 using It = Machine.Specifications.It;
 
 namespace NetStreams.Specs.Specifications.Component
@@ -144,7 +145,7 @@ namespace NetStreams.Specs.Specifications.Component
 
             Because of = () => Task.Delay(TimeSpan.FromSeconds(1)).Await();
 
-            It should_emit_a_heart_beat_once_per_duration = () => _mockTelemetryClient.VerifyHeartBeatEvents(5, _expectedDuration);
+            It should_emit_a_heart_beat_once_per_duration = () => _mockTelemetryClient.VerifyHeartBeatEvents(4, _expectedDuration);
         }
 
         [Subject("ErrorHandling")]
@@ -192,11 +193,10 @@ namespace NetStreams.Specs.Specifications.Component
                 {
                     Id = Expect.NotDefault<Guid>(),
                     OccurredOn = Expect.NotDefault<DateTimeOffset>(),
-                    EventName = typeof(NetStreamExceptionOccurred<string, TestMessage>).Name,
-                    FullName = typeof(NetStreamExceptionOccurred<string, TestMessage>).FullName,
+                    EventName = typeof(NetStreamExceptionOccurred).Name,
+                    FullName = typeof(NetStreamExceptionOccurred).FullName,
                     StreamProcessorName = "TestProcessor",
                     Exception = exceptionToThrow,
-                    ConsumeContext = Expect.Null()
                 }.ToExpectedObject();
 
                 _streamTask = _stream.StartAsync(_cancellationTokenSource.Token);
@@ -206,7 +206,7 @@ namespace NetStreams.Specs.Specifications.Component
 
             It should_call_on_error_with_exception = () => _expectedException.ShouldMatch(_actualException);
 
-            It should_send_error_telemetry_event = () => _mockTelemetryClient.ShouldContainOnlyOne<NetStreamExceptionOccurred<string, TestMessage>>(_expectedTelemetryEvent);
+            It should_send_error_telemetry_event = () => _mockTelemetryClient.ShouldContainOnlyOne<NetStreamExceptionOccurred>(_expectedTelemetryEvent);
         }
 
         [Subject("Consume")]
@@ -241,8 +241,8 @@ namespace NetStreams.Specs.Specifications.Component
                 {
                     Id = Expect.NotDefault<Guid>(),
                     OccurredOn = Expect.NotDefault<DateTimeOffset>(),
-                    EventName = typeof(MessageProcessingStarted<string, TestMessage>).Name,
-                    FullName = typeof(MessageProcessingStarted<string, TestMessage>).FullName,
+                    EventName = typeof(MessageProcessingStarted).Name,
+                    FullName = typeof(MessageProcessingStarted).FullName,
                     StreamProcessorName = "TestProcessor"
                 }.ToExpectedObject();
 
@@ -250,21 +250,21 @@ namespace NetStreams.Specs.Specifications.Component
                 {
                     Id = Expect.NotDefault<Guid>(),
                     OccurredOn = Expect.NotDefault<DateTimeOffset>(),
-                    EventName = typeof(MessageProcessingCompleted<string, TestMessage>).Name,
-                    FullName = typeof(MessageProcessingCompleted<string, TestMessage>).FullName,
+                    EventName = typeof(MessageProcessingCompleted).Name,
+                    FullName = typeof(MessageProcessingCompleted).FullName,
                     StreamProcessorName = "TestProcessor"
                 }.ToExpectedObject();
 
                 _netStream.StartAsync(CancellationToken.None);
             };
 
-            Because of = () => Task.CompletedTask.BlockUntil(() => _mockTelemetryClient.TelemetryEvents.Any(x => x.GetType() == typeof(MessageProcessingCompleted<string, TestMessage>))).Await();
+            Because of = () => Task.CompletedTask.BlockUntil(() => _mockTelemetryClient.TelemetryEvents.Any(x => x.GetType() == typeof(MessageProcessingCompleted))).Await();
 
             Cleanup after = () => _netStream.StopAsync(CancellationToken.None).Await();
 
-            It should_send_processing_started_event = () => _mockTelemetryClient.ShouldContainOnlyOne<MessageProcessingStarted<string, TestMessage>>(_expectedStartEvent);
+            It should_send_processing_started_event = () => _mockTelemetryClient.ShouldContainOnlyOne<MessageProcessingStarted>(_expectedStartEvent);
 
-            It should_send_processing_completed_event = () => _mockTelemetryClient.ShouldContainOnlyOne<MessageProcessingCompleted<string, TestMessage>>(_expectedCompletedEvent);
+            It should_send_processing_completed_event = () => _mockTelemetryClient.ShouldContainOnlyOne<MessageProcessingCompleted>(_expectedCompletedEvent);
         }
 
         [Subject("Stop")]
@@ -306,7 +306,7 @@ namespace NetStreams.Specs.Specifications.Component
 
                 var task = _netStream.StartAsync(CancellationToken.None);
 
-                Task.CompletedTask.BlockUntil(() => _mockTelemetryClient.TelemetryEvents.Any(x => x.GetType() == typeof(MessageProcessingCompleted<string, TestMessage>))).Await();
+                Task.CompletedTask.BlockUntil(() => _mockTelemetryClient.TelemetryEvents.Any(x => x.GetType() == typeof(MessageProcessingCompleted))).Await();
             };
 
             Because of = () => _netStream.StopAsync(CancellationToken.None).Await();
@@ -314,6 +314,44 @@ namespace NetStreams.Specs.Specifications.Component
             It set_status_to_stopped = () => _netStream.Status.ShouldEqual(NetStreamStatus.Stopped);
 
             It should_send_stream_stopped_telemetry_event = () => _mockTelemetryClient.ShouldContainOnlyOne<StreamStopped>(_expectedTelemetryEvent);
+        }
+
+        [Subject("Stop")]
+        class when_stopping_a_stream_that_isnt_running
+        {
+            static MockTelemetryClient _mockTelemetryClient;
+            static NetStream<string, TestMessage> _netStream;
+            static ExpectedObject _expectedTelemetryEvent;
+
+            Establish context = () =>
+            {
+                var mockConsumer = MockConsumer.SetupToConsumeSingleTestMessage();
+
+                _mockTelemetryClient = new MockTelemetryClient();
+
+                var topic = Guid.NewGuid().ToString();
+
+                var configuration = new NetStreamConfiguration<string, TestMessage>();
+
+                _netStream = new NetStream<string, TestMessage>(
+                   topic,
+                    configuration,
+                    mockConsumer.Object,
+                    new NullTopicCreator(),
+                    new MockLog(),
+                    _mockTelemetryClient,
+                    null,
+                    null,
+                    "TestProcessor");
+
+                Task.CompletedTask.BlockUntil(() => _mockTelemetryClient.TelemetryEvents.Any(x => x.GetType() == typeof(MessageProcessingCompleted))).Await();
+            };
+
+            Because of = () => _netStream.StopAsync(CancellationToken.None).Await();
+
+            It status_should_not_change = () => _netStream.Status.ShouldEqual(NetStreamStatus.NotStarted);
+
+            It should_not_send_telemetry_event = () => _mockTelemetryClient.ShouldNotContain<StreamStopped>();
         }
     }
 }

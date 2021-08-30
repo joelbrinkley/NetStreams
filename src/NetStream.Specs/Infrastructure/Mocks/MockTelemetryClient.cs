@@ -1,7 +1,7 @@
 ﻿using ExpectedObjects;
 using Machine.Specifications;
-using NetStreams.Internal;
 using NetStreams.Telemetry;
+using NetStreams.Telemetry.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +13,9 @@ namespace NetStreams.Specs.Infrastructure.Mocks
 {
     internal class MockTelemetryClient : INetStreamTelemetryClient
     {
-        public List<NetStreamsTelemetryEvent> TelemetryEvents = new List<NetStreamsTelemetryEvent>();
+        public List<NetStreamTelemetryEvent> TelemetryEvents = new List<NetStreamTelemetryEvent>();
 
-        public Task SendAsync(NetStreamsTelemetryEvent telemetryEvent, CancellationToken token)
+        public Task SendAsync(NetStreamTelemetryEvent telemetryEvent, CancellationToken token)
         {
             TelemetryEvents.Add(telemetryEvent);
             return Task.CompletedTask;
@@ -26,6 +26,13 @@ namespace NetStreams.Specs.Infrastructure.Mocks
             var actual = TelemetryEvents.SingleOrDefault(x => x.EventName == typeof(T).Name);
 
             expectedTelemetryEvent.ShouldMatch(actual);
+        }
+
+        public void ShouldNotContain<T>()
+        {
+            var actual = TelemetryEvents.FirstOrDefault(x => x.EventName == typeof(T).Name);
+
+            actual.ShouldBeNull();
         }
 
         internal void ShouldContainAtleastOne<T>(ExpectedObject expectedTelemetryEvent)

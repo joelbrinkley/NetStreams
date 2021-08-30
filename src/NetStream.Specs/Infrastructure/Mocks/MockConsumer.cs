@@ -15,18 +15,25 @@ namespace NetStreams.Specs.Infrastructure.Mocks
         {
             var mockConsumer = new Mock<IConsumer<string, TestMessage>>();
 
-           var returnResult = new ConsumeResult<string, TestMessage>()
+            var topic = Guid.NewGuid().ToString();
+            var returnResult = new ConsumeResult<string, TestMessage>()
             {
                 Message = new Message<string, TestMessage>
                 {
                     Key = Guid.NewGuid().ToString(),
-                    Value = new TestMessage()
-                }
+                    Value = new TestMessage(),
+                    Headers = new Headers()
+                },
+                Topic = topic,
+                TopicPartitionOffset = new TopicPartitionOffset(new TopicPartition(topic, new Partition(1)), new Offset(10))
             };
 
             mockConsumer.Setup(x => x.Consume(Parameter.IsAny<int>()))
                 .Returns(() => returnResult)
                 .Callback(() => returnResult = null);
+
+            mockConsumer.Setup(x => x.GetWatermarkOffsets(Parameter.IsAny<TopicPartition>()))
+                .Returns(() => new WatermarkOffsets(new Offset(10), new Offset(20)));
 
             return mockConsumer;
         }
