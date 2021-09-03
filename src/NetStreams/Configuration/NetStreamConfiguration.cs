@@ -13,7 +13,7 @@ namespace NetStreams.Configuration
         public bool ContinueOnError { get; set; } = true;
         public string BootstrapServers { get; set; }
         public string ConsumerGroup { get; set; }
-        public List<ITopicConfiguration> TopicConfigurations { get; set; } = new List<ITopicConfiguration>();
+        public List<TopicConfiguration> TopicConfigurations { get; set; } = new List<TopicConfiguration>();
         public bool TopicCreationEnabled { get;  set; }
         public DeliveryMode DeliveryMode { get; set; } = DeliveryMode.At_Least_Once;
         public AuthenticationMethod AuthenticationMethod { get; set; } = new PlainTextAuthentication();
@@ -45,7 +45,7 @@ namespace NetStreams.Configuration
             return this;
         }
 
-        public INetStreamConfigurationBuilderContext<TKey, TMessage> AddTopicConfiguration(Action<ITopicConfiguration> cfg)
+        public INetStreamConfigurationBuilderContext<TKey, TMessage> AddTopicConfiguration(Action<TopicConfiguration> cfg)
         {
             TopicCreationEnabled = true;
             var topicConfig = new TopicConfiguration();
@@ -61,20 +61,12 @@ namespace NetStreams.Configuration
         }
     }
 
-    public class TopicConfiguration : ITopicConfiguration
+    public class TopicConfiguration
     {
         public string Name { get; set; }
         public int Partitions { get; set; } = 1;
         public long RetentionMs { get; set; } = 9999999999999;
         public short ReplicationFactor { get; set; } = 1;
-    }
-
-    public interface ITopicConfiguration
-    {
-        string Name { get; set; }
-        int Partitions { get; set; }
-        long RetentionMs { get; set; }
-        short ReplicationFactor { get; set; }
     }
 
     public interface INetStreamConfigurationBuilderContext<TKey, TMessage>
@@ -112,7 +104,7 @@ namespace NetStreams.Configuration
         /// </summary>
         bool ContinueOnError { get; set; }
 
-        INetStreamConfigurationBuilderContext<TKey, TMessage> AddTopicConfiguration(Action<ITopicConfiguration> cfg);
+        INetStreamConfigurationBuilderContext<TKey, TMessage> AddTopicConfiguration(Action<TopicConfiguration> cfg);
         INetStreamConfigurationBuilderContext<TKey, TMessage> UseAuthentication(AuthenticationMethod authenticationMethod);
         INetStreamConfigurationBuilderContext<TKey, TMessage> ConfigureLogging(Action<LogContext> cfg);
         INetStreamConfigurationBuilderContext<TKey, TMessage> SendTelemetry(INetStreamTelemetryClient telemetryClient);

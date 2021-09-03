@@ -7,5 +7,10 @@ namespace NetStreams.Telemetry.Events
         public StreamStopped(string streamProcessorName) : base(streamProcessorName)
         {
         }
+
+        public StreamStopped()
+        {
+
+        }
     }
 }

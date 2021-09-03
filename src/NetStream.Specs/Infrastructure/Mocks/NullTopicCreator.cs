@@ -11,12 +11,12 @@ namespace NetStreams.Specs.Infrastructure.Mocks
         {
         }
 
-        public Task Create(ITopicConfiguration topicConfig)
+        public Task Create(TopicConfiguration topicConfig)
         {
             return Task.CompletedTask;
         }
 
-        public Task CreateAll(IEnumerable<ITopicConfiguration> topicConfigurations)
+        public Task CreateAll(IEnumerable<TopicConfiguration> topicConfigurations)
         {
             return Task.CompletedTask;
         }

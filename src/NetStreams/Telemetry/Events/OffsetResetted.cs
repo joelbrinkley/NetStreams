@@ -10,5 +10,10 @@ namespace NetStreams.Telemetry.Events
         {
             Offset = offset;
         }
+
+        public OffsetResetted()
+        {
+
+        }
     }
 }

@@ -19,5 +19,10 @@
             : base(streamProcessorName)
         {
         }
+
+        public MessageProcessingCompleted()
+        {
+
+        }
     }
 }

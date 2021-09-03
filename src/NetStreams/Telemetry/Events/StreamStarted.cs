@@ -16,5 +16,10 @@ namespace NetStreams.Telemetry.Events
             Configuration = configuration;
             Source = source;
         }
+
+        public StreamStarted()
+        {
+
+        }
     }
 }

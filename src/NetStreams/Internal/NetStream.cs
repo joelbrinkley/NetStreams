@@ -51,7 +51,7 @@ namespace NetStreams.Internal
 
         public Task StartAsync(CancellationToken token)
         {
-            _log.Information($"Starting stream for topic {_topic}");
+            //_log.Information($"Starting stream for topic {_topic}");
 
             _telemetryClient.SendAsync(new StreamStarted(_name, _topic, Configuration as NetStreamConfiguration), token).Wait();
 

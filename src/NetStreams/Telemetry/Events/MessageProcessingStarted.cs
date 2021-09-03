@@ -35,5 +35,10 @@ namespace NetStreams.Telemetry.Events
             : base(streamProcessorName)
         {
         }
+
+        public MessageProcessingStarted()
+        {
+
+        }
     }
 }

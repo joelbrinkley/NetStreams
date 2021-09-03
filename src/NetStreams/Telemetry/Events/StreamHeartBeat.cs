@@ -7,5 +7,10 @@ namespace NetStreams.Telemetry.Events
         public StreamHeartBeat(string streamProcessorName) : base(streamProcessorName)
         {
         }
+
+        public StreamHeartBeat()
+        {
+
+        }
     }
 }

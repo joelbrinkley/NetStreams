@@ -10,7 +10,7 @@ namespace NetStreams.Configuration
         bool EnableMessageTypeHeader { get; }
         string BootstrapServers { get; }
         string ConsumerGroup { get; }
-        List<ITopicConfiguration> TopicConfigurations { get; }
+        List<TopicConfiguration> TopicConfigurations { get; }
         bool TopicCreationEnabled { get;  }
         DeliveryMode DeliveryMode { get; }
         AuthenticationMethod AuthenticationMethod { get; }

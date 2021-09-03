@@ -30,5 +30,10 @@ namespace NetStreams.Telemetry.Events
         {
             Exception = exception;
         }
+
+        public NetStreamExceptionOccurred()
+        {
+
+        }
     }
 }
