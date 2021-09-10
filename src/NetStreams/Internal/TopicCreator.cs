@@ -27,7 +27,7 @@ namespace NetStreams.Internal
             _adminClient = new Lazy<IAdminClient>(() => adminClientBuilder.Build());
         }
 
-        public async Task Create(ITopicConfiguration topicConfig)
+        public async Task Create(TopicConfiguration topicConfig)
         {
             if (!_adminClient.Value.TopicExists(topicConfig.Name, out _))
             {
@@ -56,7 +56,7 @@ namespace NetStreams.Internal
             }
         }
 
-        public async Task CreateAll(IEnumerable<ITopicConfiguration> topicConfigurations)
+        public async Task CreateAll(IEnumerable<TopicConfiguration> topicConfigurations)
         {
             foreach (var topicConfig in topicConfigurations)
             {
@@ -72,7 +72,7 @@ namespace NetStreams.Internal
     }
     public interface ITopicCreator : IDisposable
     {
-        Task Create(ITopicConfiguration topicConfig);
-        Task CreateAll(IEnumerable<ITopicConfiguration> topicConfigurations);
+        Task Create(TopicConfiguration topicConfig);
+        Task CreateAll(IEnumerable<TopicConfiguration> topicConfigurations);
     }
 }

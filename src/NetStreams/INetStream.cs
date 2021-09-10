@@ -10,6 +10,6 @@ namespace NetStreams
         NetStreamStatus Status { get; }
         INetStreamConfigurationContext Configuration { get; }
         Task StartAsync(CancellationToken token);
-        void Stop();
+        Task StopAsync(CancellationToken token);
     }
 }

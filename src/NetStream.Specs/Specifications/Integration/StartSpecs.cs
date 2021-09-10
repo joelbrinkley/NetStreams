@@ -40,7 +40,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
             Because of = () => Task.Run(() => _expectedMessages.ForEach(x => _producerService.Produce(x.Id, x))).BlockUntil(() => _actualMessages.Count == _expectedMessages.Count).Await();
 
-            Cleanup after = () => _stream.Stop();
+            Cleanup after = () => _stream.StopAsync(CancellationToken.None).Await();
 
             It should_consume_messages = () => _expectedMessages.Count.ShouldEqual(_actualMessages.Count);
         }
@@ -72,7 +72,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _producer.ProduceAsync(Guid.NewGuid().ToString(), firstTestMessage).BlockUntil(() => _consumedMessages.Count == 1).Await();
 
-                _stream.Stop();
+                _stream.StopAsync(CancellationToken.None).Await();
 
                 streamTask.BlockUntil(() => streamTask.Status == TaskStatus.RanToCompletion).Await();
 
@@ -81,7 +81,7 @@ namespace NetStreams.Specs.Specifications.Integration
             };
             Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _consumedMessages.Count == 2).Await();
 
-            Cleanup after = () => _stream.Stop();
+            Cleanup after = () => _stream.StopAsync(CancellationToken.None).Await();
 
             It should_resume_consuming_messages = () => _consumedMessages.Count.ShouldEqual(2);
         }

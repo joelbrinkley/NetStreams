@@ -109,7 +109,7 @@ namespace NetStreams.Specs.Specifications.Integration
               .StartAsync(CancellationToken.None);
             };
 
-            Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _expectedCorrelationId != null).Await();
+            Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _actualCorrelationId != null).Await();
 
             It should_be_published_with_the_consumed_message_correlation_id = () => _actualCorrelationId.ShouldEqual(_expectedCorrelationId);
         }

@@ -17,10 +17,17 @@ namespace NetStreams
         readonly IConsumePipeline<TKey, TMessage> _pipeline = new ConsumePipeline<TKey, TMessage>();
         string _consumerTopic;
         Action<Exception> _onError;
+        string _name;
 
         public NetStreamBuilder(Action<INetStreamConfigurationBuilderContext<TKey, TMessage>> setup)
         {
             setup(_configurationContext);
+        }
+
+        public INetStreamBuilder<TKey, TMessage> Name(string name)
+        {
+            _name = name;
+            return this;
         }
 
         public INetStreamBuilder<TKey, TMessage> Stream(string topic)
@@ -40,8 +47,10 @@ namespace NetStreams
                 consumer,
                 new TopicCreator(_configurationContext, _configurationContext.Log),
                 _configurationContext.Log,
+                _configurationContext.TelemetryClient,
                 _pipeline,
-                _onError);
+                _onError,
+                _name);
         }
 
         void BuildPipeline(IConsumer<TKey, TMessage> consumer)

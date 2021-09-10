@@ -17,11 +17,11 @@ namespace NetStreams.Specs.Infrastructure.Models
             Name = name;
             _handle = handle;
         }
-        public override async Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result)
+        public override async Task<NetStreamResult> ExecuteAsync(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result)
         {
             _handle(consumeContext);
 
-            if (Next != null) return await Next.Execute(consumeContext, token, new NetStreamResult(null));
+            if (Next != null) return await Next.ExecuteAsync(consumeContext, token, new NetStreamResult(null));
 
             return new NetStreamResult(result.Message);
         }

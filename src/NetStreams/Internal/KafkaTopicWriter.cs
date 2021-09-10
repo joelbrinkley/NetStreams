@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetStreams.Internal
@@ -19,14 +20,14 @@ namespace NetStreams.Internal
             _producer = producer;
         }
 
-        public async Task WriteAsync(NetStreamResult<TResponse> result)
+        public async Task WriteAsync(NetStreamResult<TResponse> result, CancellationToken token)
         {
-            await _producer.ProduceAsync(_resolveKey(result.Message), result.Message, result.Headers);
+            await _producer.ProduceAsync(_resolveKey(result.Message), result.Message, result.Headers, token);
         }
 
-        public async Task WriteAsync(NetStreamResult result)
+        public async Task WriteAsync(NetStreamResult result, CancellationToken token)
         {
-            await this.WriteAsync(new NetStreamResult<TResponse>(result.Message, result.Headers));
+            await this.WriteAsync(new NetStreamResult<TResponse>(result.Message, result.Headers), token);
         }
     }
 }

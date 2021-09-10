@@ -67,7 +67,7 @@ namespace NetStreams.Specs.Specifications.Integration
             Because of = () =>
                 _testMessageProducer.ProduceAsync(_expectedMessage.Id, _expectedMessage).BlockUntil(() => _actualMessages.Count == 1).Await();
 
-            Cleanup after = () => _stream.Stop();
+            Cleanup after = () => _stream.StopAsync(CancellationToken.None).Await();
 
             It should_log_skip_message_information = () => _mockLogger.ShouldContain(_expectedLogMessage);
 
@@ -109,7 +109,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
                 _producer.ProduceAsync(Guid.NewGuid().ToString(), firstTestMessage).BlockUntil(() => _offsets.Count == 1).Await();
 
-                _stream.Stop();
+                _stream.StopAsync(_cancellationTokenSource.Token).Await();
 
                 streamTask.BlockUntil(() => streamTask.Status == TaskStatus.RanToCompletion).Await();
 
@@ -118,7 +118,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
             Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _offsets.Count == 2).Await();
 
-            Cleanup after = () => _stream.Stop();
+            Cleanup after = () => _stream.StopAsync(_cancellationTokenSource.Token).Await();
 
             It should_commit_the_offset = () => _offsets[0].ShouldBeLessThan(_offsets[1]);
         }
@@ -160,7 +160,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
             Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _consumedMessages.Count == 2).Await();
 
-            Cleanup after = () => _stream.Stop();
+            Cleanup after = () => _stream.StopAsync(CancellationToken.None).Await();
 
             It should_continue_processing_the_next_message = () => _consumedMessages.Count.ShouldEqual(2);
         }
@@ -203,7 +203,7 @@ namespace NetStreams.Specs.Specifications.Integration
 
             Because of = () => _producer.ProduceAsync(Guid.NewGuid().ToString(), new TestMessage()).BlockUntil(() => _consumedOffsets.Count > 3).Await();
 
-            Cleanup after = () => _stream.Stop();
+            Cleanup after = () => _stream.StopAsync(CancellationToken.None).Await();
 
             It should_retry_the_same_offset = () => _consumedOffsets.TrueForAll(x => x == 0);
         }

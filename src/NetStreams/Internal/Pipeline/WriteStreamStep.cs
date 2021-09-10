@@ -12,14 +12,14 @@ namespace NetStreams.Internal.Pipeline
             _writer = writer;
         }
 
-        public override async Task<NetStreamResult> Execute(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result )
+        public override async Task<NetStreamResult> ExecuteAsync(IConsumeContext<TKey, TMessage> consumeContext, CancellationToken token, NetStreamResult result )
         {
             if (result != null && result.HasValue && _writer != null)
             {
-                await _writer.WriteAsync(result);
+                await _writer.WriteAsync(result, token);
             }
 
-            return await base.Next.Execute(consumeContext, token, result);
+            return await base.Next.ExecuteAsync(consumeContext, token, result);
         }
     }
 }

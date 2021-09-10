@@ -1,13 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace NetStreams
 {
     public interface IStreamWriter<TKey, TMessage> : IStreamWriter
     {
-        Task WriteAsync(NetStreamResult<TMessage> result);
+        Task WriteAsync(NetStreamResult<TMessage> result, CancellationToken token);
     }
     public interface IStreamWriter
     {
-        Task WriteAsync(NetStreamResult netStreamResult);
+        Task WriteAsync(NetStreamResult netStreamResult, CancellationToken token);
     }
 }
