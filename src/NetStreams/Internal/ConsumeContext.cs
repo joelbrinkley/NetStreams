@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Confluent.Kafka;
@@ -10,6 +11,7 @@ namespace NetStreams
         readonly ConsumeResult<TKey, TMessage> _consumeResult;
 
         readonly IConsumer<TKey, TMessage> _consumer;
+        public Guid Id { get; }
         public string ConsumeGroup { get; }
         public TMessage Message => _consumeResult.Message.Value;
         public string TopicName => _consumeResult.Topic;
@@ -22,6 +24,7 @@ namespace NetStreams
             new KeyValuePair<string, string>(h.Key, Encoding.UTF8.GetString(h.GetValueBytes()))).ToList();
         public ConsumeContext(ConsumeResult<TKey, TMessage> consumeResult, IConsumer<TKey, TMessage> consumer, string consumerGroup)
         {
+            Id = Guid.NewGuid();
             _consumeResult = consumeResult;
             _consumer = consumer;
             ConsumeGroup = consumerGroup;

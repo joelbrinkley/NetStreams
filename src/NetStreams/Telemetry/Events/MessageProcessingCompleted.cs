@@ -1,7 +1,10 @@
-﻿namespace NetStreams.Telemetry.Events
+﻿using System;
+
+namespace NetStreams.Telemetry.Events
 {
     public class MessageProcessingCompleted : NetStreamTelemetryEvent
     {
+        public Guid ConsumeContextId { get; set; }
         public long Offset { get; set; }
         public string ConsumerGroup { get; set; }
 
@@ -9,6 +12,7 @@
         {
             return new MessageProcessingCompleted(streamProcessorName)
             {
+                ConsumeContextId = consumeContext.Id,
                 Offset = consumeContext.Offset,
                 ConsumerGroup = consumeContext.ConsumeGroup,
             };

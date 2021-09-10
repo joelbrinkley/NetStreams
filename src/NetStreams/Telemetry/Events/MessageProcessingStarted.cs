@@ -1,4 +1,5 @@
 ﻿using NetStreams.Telemetry;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,6 +7,7 @@ namespace NetStreams.Telemetry.Events
 {
     public class MessageProcessingStarted : NetStreamTelemetryEvent
     {
+        public Guid ConsumeContextId { get; set; }
         public object Message { get; set; }
         public object Key { get; set; }
         public long Lag { get; set; }
@@ -19,6 +21,7 @@ namespace NetStreams.Telemetry.Events
         {
             return new MessageProcessingStarted(streamProcessorName)
             {
+                ConsumeContextId = context.Id,
                 Message = context.Message,
                 Key = context.Key,
                 Lag = context.Lag,
